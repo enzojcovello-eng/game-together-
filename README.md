@@ -61,8 +61,8 @@ em branco, espere um pouco e recarregue.
 
 ## Como funciona
 
-1. Na primeira vez, escolha um nickname (apelido de jogo, não o seu nome
-   real). Sem senha, sem e-mail. O nickname é único e é como as pessoas vão
+1. Na primeira vez, escolha um nickname: o nome pelo qual quer ser chamado
+   no site, que não precisa ser o seu nome real. Sem senha, sem e-mail. O nickname é único e é como as pessoas vão
    te ver. Nas próximas vezes o app já abre nele.
 2. Na tela inicial, clique no jogo.
 3. Escolha a quantidade de pessoas, o idioma e, se o jogo não tiver
@@ -213,8 +213,8 @@ blank screen, wait a bit and reload.
 
 ## How it works
 
-1. The first time, pick a nickname (a gamer tag, not your real name). No
-   password, no email. The nickname is unique and it is how people will see
+1. The first time, pick a nickname: the name you want to be called by on
+   the site, which does not need to be your real name. No password, no email. The nickname is unique and it is how people will see
    you. Next time the app opens already with it.
 2. On the home screen, click the game.
 3. Pick how many people, the language and, if the game has no crossplay,
