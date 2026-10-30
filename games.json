@@ -1,14 +1,42 @@
 {
   "languages": [
-    { "code": "pt-BR", "label": "Português (BR)", "flag": "🇧🇷" },
-    { "code": "en-US", "label": "English (US)", "flag": "🇺🇸" }
+    {
+      "code": "pt-BR",
+      "label": "Português (BR)",
+      "flag": "🇧🇷"
+    },
+    {
+      "code": "en-US",
+      "label": "English (US)",
+      "flag": "🇺🇸"
+    }
   ],
   "platforms": {
-    "pc": { "pt-BR": "PC", "en-US": "PC", "icon": "🖥️" },
-    "playstation": { "pt-BR": "PlayStation", "en-US": "PlayStation", "icon": "🎮" },
-    "xbox": { "pt-BR": "Xbox", "en-US": "Xbox", "icon": "🎮" },
-    "switch": { "pt-BR": "Nintendo Switch", "en-US": "Nintendo Switch", "icon": "🕹️" },
-    "mobile": { "pt-BR": "Celular", "en-US": "Mobile", "icon": "📱" }
+    "pc": {
+      "pt-BR": "PC",
+      "en-US": "PC",
+      "icon": "🖥️"
+    },
+    "playstation": {
+      "pt-BR": "PlayStation",
+      "en-US": "PlayStation",
+      "icon": "🎮"
+    },
+    "xbox": {
+      "pt-BR": "Xbox",
+      "en-US": "Xbox",
+      "icon": "🎮"
+    },
+    "switch": {
+      "pt-BR": "Nintendo Switch",
+      "en-US": "Nintendo Switch",
+      "icon": "🕹️"
+    },
+    "mobile": {
+      "pt-BR": "Celular",
+      "en-US": "Mobile",
+      "icon": "📱"
+    }
   },
   "games": [
     {
@@ -18,7 +46,13 @@
       "emoji": "🦖",
       "color": "#2e7d32",
       "maxPlayers": 5,
-      "platforms": ["pc", "playstation", "xbox", "switch", "mobile"],
+      "platforms": [
+        "pc",
+        "playstation",
+        "xbox",
+        "switch",
+        "mobile"
+      ],
       "crossplay": false
     },
     {
@@ -28,7 +62,11 @@
       "emoji": "🦕",
       "color": "#00897b",
       "maxPlayers": 5,
-      "platforms": ["pc", "playstation", "xbox"],
+      "platforms": [
+        "pc",
+        "playstation",
+        "xbox"
+      ],
       "crossplay": true
     },
     {
@@ -38,7 +76,12 @@
       "emoji": "🚗",
       "color": "#1e88e5",
       "maxPlayers": 4,
-      "platforms": ["pc", "playstation", "xbox", "switch"],
+      "platforms": [
+        "pc",
+        "playstation",
+        "xbox",
+        "switch"
+      ],
       "crossplay": true
     },
     {
@@ -48,7 +91,13 @@
       "emoji": "🪂",
       "color": "#8e24aa",
       "maxPlayers": 4,
-      "platforms": ["pc", "playstation", "xbox", "switch", "mobile"],
+      "platforms": [
+        "pc",
+        "playstation",
+        "xbox",
+        "switch",
+        "mobile"
+      ],
       "crossplay": true
     },
     {
@@ -58,8 +107,29 @@
       "emoji": "🧱",
       "color": "#e53935",
       "maxPlayers": 5,
-      "platforms": ["pc", "playstation", "xbox", "mobile"],
+      "platforms": [
+        "pc",
+        "playstation",
+        "xbox",
+        "mobile"
+      ],
       "crossplay": true
+    },
+    {
+      "id": "terraria",
+      "name": "Terraria",
+      "short": "Terraria",
+      "emoji": "⚔️",
+      "color": "#f9a825",
+      "maxPlayers": 5,
+      "platforms": [
+        "pc",
+        "playstation",
+        "xbox",
+        "switch",
+        "mobile"
+      ],
+      "crossplay": false
     }
   ]
 }

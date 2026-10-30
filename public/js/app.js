@@ -17,6 +17,8 @@
     lang: null,
     platform: null,
     name: '',
+    token: null,
+    authTab: 'register',
     localStream: null,
     muted: false,
     room: null,
@@ -51,6 +53,7 @@
       $$('#lang-choice input').forEach((i) => { i.checked = i.value === lang; });
     }
     renderGameGrid();
+    setAuthTab(state.authTab);
     if (state.game) renderSetupTexts();
     if (state.room) renderRoom();
   }
@@ -87,6 +90,84 @@
     el.hidden = false;
   }
 
+  // ---------- conta ----------
+  function api(path, { method = 'GET', body } = {}) {
+    const headers = { 'Content-Type': 'application/json' };
+    if (state.token) headers.Authorization = `Bearer ${state.token}`;
+    return fetch(path, { method, headers, body: body ? JSON.stringify(body) : undefined })
+      .then(async (r) => {
+        const data = await r.json().catch(() => ({}));
+        if (!r.ok) throw new Error(data.error || 'generic');
+        return data;
+      });
+  }
+
+  function setUser(name, token) {
+    state.name = name || '';
+    state.token = token || null;
+    try {
+      if (token) { localStorage.setItem('gt:token', token); localStorage.setItem('gt:name', name); }
+      else { localStorage.removeItem('gt:token'); localStorage.removeItem('gt:name'); }
+    } catch (_) {}
+    renderUser();
+  }
+
+  function renderUser() {
+    const pill = $('#user-pill');
+    pill.hidden = !state.token;
+    $('#user-name').textContent = state.name;
+    $('#user-avatar').textContent = (state.name || '?').slice(0, 1).toUpperCase();
+  }
+
+  function setAuthTab(tab) {
+    state.authTab = tab;
+    $$('#auth-tabs .tab').forEach((b) => b.classList.toggle('active', b.dataset.tab === tab));
+    $('#auth-submit').textContent = tab === 'register' ? t('auth.register') : t('auth.loginBtn');
+    $('#auth-hint').textContent = tab === 'register' ? t('auth.hintRegister') : t('auth.hintLogin');
+    $('#auth-password').autocomplete = tab === 'register' ? 'new-password' : 'current-password';
+    setAuthError('');
+  }
+
+  function setAuthError(msg) {
+    const el = $('#auth-error');
+    el.hidden = !msg;
+    el.textContent = msg || '';
+  }
+
+  async function onAuthSubmit(e) {
+    e.preventDefault();
+    setAuthError('');
+    const name = $('#auth-name').value.trim();
+    const password = $('#auth-password').value;
+    const btn = $('#auth-submit');
+    btn.disabled = true;
+    try {
+      const path = state.authTab === 'register' ? '/api/register' : '/api/login';
+      const data = await api(path, { method: 'POST', body: { name, password } });
+      setUser(data.name, data.token);
+      $('#auth-password').value = '';
+      toast(t('auth.welcome', { name: data.name }));
+      showScreen('screen-home');
+    } catch (err) {
+      const code = err && err.message;
+      setAuthError(code === 'Failed to fetch' || code === 'generic' ? t('err.network') : t(`err.${code}`));
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
+  function logout({ expired } = {}) {
+    if (state.room) leaveRoom({ silent: true });
+    if (state.searching) { state.searching = false; socket.emit('cancel'); }
+    if (state.token && !expired) api('/api/logout', { method: 'POST' }).catch(() => {});
+    setUser('', null);
+    state.game = null;
+    setAuthTab(expired ? 'login' : 'register');
+    if (expired) toast(t('auth.expired'), 4000);
+    else toast(t('auth.loggedOut'));
+    showScreen('screen-auth');
+  }
+
   // ---------- tela inicial ----------
   function renderGameGrid() {
     const grid = $('#game-grid');
@@ -113,8 +194,6 @@
     state.game = game;
     state.platform = null;
     setError('');
-    const savedName = localStorage.getItem('gt:name');
-    if (savedName) $('#nickname').value = savedName;
 
     // idioma da chamada: segue o idioma da interface por padrão
     const langWrap = $('#lang-choice');
@@ -135,11 +214,14 @@
       }
     });
 
-    // plataformas disponíveis para o jogo
+    // plataformas: só quando o jogo não tem crossplay total
+    const fullCrossplay = game.crossplay === true && !Array.isArray(game.crossplayGroups);
+    $('#platform-field').hidden = fullCrossplay;
+    $('#crossplay-note').hidden = !fullCrossplay;
     const platWrap = $('#platform-choice');
     platWrap.innerHTML = '';
-    const savedPlat = localStorage.getItem(`gt:platform:${game.id}`);
-    for (const p of game.platforms) {
+    const savedPlat = fullCrossplay ? null : localStorage.getItem(`gt:platform:${game.id}`);
+    for (const p of fullCrossplay ? [] : game.platforms) {
       const label = document.createElement('label');
       label.className = 'choice';
       label.innerHTML = `<input type="radio" name="platform" value="${p}" ${p === savedPlat ? 'checked' : ''}>
@@ -190,12 +272,11 @@
   async function onMatchmake(e) {
     e.preventDefault();
     setError('');
-    state.name = $('#nickname').value.trim();
     state.mode = $('input[name="mode"]:checked').value;
-    if (!state.name) return setError(t('setup.needName'));
-    if (!state.platform) return setError(t('setup.needPlatform'));
-    localStorage.setItem('gt:name', state.name);
-    localStorage.setItem(`gt:platform:${state.game.id}`, state.platform);
+    if (!state.token) return logout({ expired: true });
+    const needsPlatform = !$('#platform-field').hidden;
+    if (needsPlatform && !state.platform) return setError(t('setup.needPlatform'));
+    if (needsPlatform) localStorage.setItem(`gt:platform:${state.game.id}`, state.platform);
 
     const btn = $('#matchmake-btn');
     btn.disabled = true;
@@ -210,18 +291,20 @@
     applyMute();
 
     socket.emit('find', {
-      name: state.name,
+      token: state.token,
       gameId: state.game.id,
       lang: state.lang,
-      platform: state.platform,
+      platform: needsPlatform ? state.platform : null,
       mode: state.mode,
     }, (res) => {
       btn.disabled = false;
+      if (res && res.error === 'not_logged_in') return logout({ expired: true });
       if (!res || res.error) return setError(t(res && res.error ? `err.${res.error}` : 'err.generic'));
       if (res.status === 'waiting') {
         state.searching = true;
         $('#search-summary').textContent = t('search.summary', {
-          game: state.game.name, lang: langLabel(state.lang), platform: platformLabel(state.platform),
+          game: state.game.name, lang: langLabel(state.lang),
+          platform: needsPlatform ? platformLabel(state.platform) : '🌐 ' + t('room.anyPlatform'),
         });
         showScreen('screen-searching');
       }
@@ -281,7 +364,7 @@
         <span class="avatar">${(m.name || '?').slice(0, 1).toUpperCase()}</span>
         <span class="info">
           <span class="name">${escapeHtml(m.name)}${isMe ? ` <span class="muted">(${t('room.you')})</span>` : ''}</span>
-          <span class="plat">${platformLabel(m.platform)}</span>
+          <span class="plat">${m.platform ? platformLabel(m.platform) : '🌐 ' + t('room.anyPlatform')}</span>
         </span>
         <span class="mic">🎙️</span>`;
       list.appendChild(li);
@@ -484,9 +567,13 @@
 
   // ---------- eventos da interface ----------
   $('#setup-form').addEventListener('submit', onMatchmake);
+  $('#auth-form').addEventListener('submit', onAuthSubmit);
+  $$('#auth-tabs .tab').forEach((b) => b.addEventListener('click', () => setAuthTab(b.dataset.tab)));
+  $('#logout-btn').addEventListener('click', () => logout());
   $('#setup-back').addEventListener('click', () => { state.game = null; showScreen('screen-home'); });
   $('#brand-link').addEventListener('click', (e) => {
     e.preventDefault();
+    if (!state.token) return;
     if (state.room) leaveRoom();
     if (state.searching) cancelSearch();
     state.game = null;
@@ -509,9 +596,24 @@
   // ---------- boot ----------
   fetch('/api/config')
     .then((r) => r.json())
-    .then((cfg) => {
+    .then(async (cfg) => {
       state.config = cfg;
+      let token = null; let name = '';
+      try { token = localStorage.getItem('gt:token'); name = localStorage.getItem('gt:name') || ''; } catch (_) {}
+      state.token = token; state.name = name;
       setUiLang(detectLang());
+      if (token) {
+        try {
+          const me = await api('/api/me');
+          setUser(me.name, token);
+          showScreen('screen-home');
+          return;
+        } catch (err) {
+          if (err.message === 'not_logged_in') { setUser('', null); setAuthTab('login'); }
+          else { renderUser(); showScreen('screen-home'); return; } // servidor fora: segue com o nome salvo
+        }
+      }
+      showScreen('screen-auth');
     })
     .catch(() => toast('Config error'));
 })();
