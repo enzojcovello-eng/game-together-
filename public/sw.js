@@ -1,7 +1,7 @@
 /* Service worker do Game Together.
    Guarda os arquivos da interface para o app abrir rápido e ser instalável.
    O matchmaking e a chamada sempre passam pela rede (Socket.IO e WebRTC). */
-const CACHE = 'game-together-v1';
+const CACHE = 'game-together-v2';
 const SHELL = ['/', '/index.html', '/css/style.css', '/js/app.js', '/js/i18n.js', '/manifest.webmanifest', '/icons/icon-192.png', '/icons/icon-512.png'];
 
 self.addEventListener('install', (event) => {

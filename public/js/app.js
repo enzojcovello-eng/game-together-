@@ -1,4 +1,4 @@
-/* Game Together: interface, matchmaking e chamada de voz (WebRTC, só áudio) */
+/* Game Together: interface, conta por nome, matchmaking e chamada de voz (WebRTC, só áudio) */
 (() => {
   'use strict';
 
@@ -8,23 +8,33 @@
   const ICE_SERVERS = [
     { urls: ['stun:stun.l.google.com:19302', 'stun:stun1.l.google.com:19302'] },
   ];
+  const PLATFORM_ICON = { pc: 'i-pc', playstation: 'i-playstation', xbox: 'i-xbox', switch: 'i-switch', mobile: 'i-mobile' };
 
   const state = {
     config: null,
     uiLang: null,
+    token: null,
+    name: '',
+    pendingId: null,
+    pendingName: '',
+    requests: [],
+    panelTab: 'chat',
+    panelOpen: false,
     game: null,
     mode: 'duo',
     lang: null,
     platform: null,
-    name: '',
-    token: null,
-    authTab: 'register',
     localStream: null,
     muted: false,
     room: null,
     me: null,
-    peers: new Map(), // id -> { pc, audio, name, platform, meter }
+    peers: new Map(),
     searching: false,
+  };
+
+  const store = {
+    get(k) { try { return localStorage.getItem(k); } catch (_) { return null; } },
+    set(k, v) { try { if (v == null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (_) {} },
   };
 
   // ---------- i18n ----------
@@ -34,63 +44,83 @@
     if (vars) for (const k of Object.keys(vars)) s = s.replace(new RegExp(`\\{${k}\\}`, 'g'), vars[k]);
     return s;
   }
-
   function detectLang() {
-    const saved = localStorage.getItem('gt:uiLang');
+    const saved = store.get('gt:uiLang');
     if (saved && window.I18N[saved]) return saved;
     return (navigator.language || '').toLowerCase().startsWith('pt') ? 'pt-BR' : 'en-US';
   }
-
   function setUiLang(lang, { fromCallLang } = {}) {
     state.uiLang = lang;
-    localStorage.setItem('gt:uiLang', lang);
+    store.set('gt:uiLang', lang);
     document.documentElement.lang = lang;
     $$('[data-i18n]').forEach((el) => { el.textContent = t(el.dataset.i18n); });
     $$('[data-i18n-placeholder]').forEach((el) => { el.placeholder = t(el.dataset.i18nPlaceholder); });
+    $$('[data-i18n-title]').forEach((el) => { el.title = t(el.dataset.i18nTitle); });
     $$('#ui-lang-switch button').forEach((b) => b.classList.toggle('active', b.dataset.lang === lang));
     if (!fromCallLang) {
       state.lang = lang;
       $$('#lang-choice input').forEach((i) => { i.checked = i.value === lang; });
     }
     renderGameGrid();
-    setAuthTab(state.authTab);
+    renderPending();
+    renderRequests();
     if (state.game) renderSetupTexts();
     if (state.room) renderRoom();
   }
 
-  // ---------- helpers ----------
-  function platformLabel(id) {
+  // ---------- utilidades ----------
+  const icon = (id, cls = '') => `<svg class="i ${cls}"><use href="#${id}"/></svg>`;
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  }
+  function platformName(id) {
     const p = state.config.platforms[id];
-    return p ? `${p.icon} ${p[state.uiLang] || p['en-US']}` : id;
+    return p ? (p[state.uiLang] || p['en-US']) : id;
+  }
+  function platformHtml(id) {
+    return `${icon(PLATFORM_ICON[id] || 'i-pc')}<span>${escapeHtml(platformName(id))}</span>`;
   }
   function langLabel(code) {
     const l = state.config.languages.find((x) => x.code === code);
-    return l ? `${l.flag} ${l.label}` : code;
+    return l ? l.label : code;
   }
   function gameById(id) { return state.config.games.find((g) => g.id === id); }
+  function coverOf(game) { return game.cover || `covers/${game.id}.svg`; }
+  function fullCrossplay(game) { return game.crossplay === true && !Array.isArray(game.crossplayGroups); }
 
   function showScreen(id) {
     $$('.screen').forEach((s) => s.classList.toggle('active', s.id === id));
     window.scrollTo({ top: 0 });
+    placePanel();
   }
 
   let toastTimer = null;
-  function toast(msg, ms = 2800) {
+  function toast(msg, ms = 2800, actions) {
     const el = $('#toast');
-    el.textContent = msg;
+    el.innerHTML = `<div>${escapeHtml(msg)}</div>`;
+    if (actions && actions.length) {
+      const wrap = document.createElement('div');
+      wrap.className = 'toast-actions';
+      for (const a of actions) {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = a.primary ? 'btn-primary' : 'btn-secondary';
+        b.textContent = a.label;
+        b.addEventListener('click', () => { el.hidden = true; a.onClick(); });
+        wrap.appendChild(b);
+      }
+      el.appendChild(wrap);
+    }
     el.hidden = false;
     clearTimeout(toastTimer);
     toastTimer = setTimeout(() => { el.hidden = true; }, ms);
   }
-
-  function setError(msg) {
-    const el = $('#setup-error');
-    if (!msg) { el.hidden = true; el.textContent = ''; return; }
-    el.textContent = msg;
-    el.hidden = false;
+  function setError(sel, msg) {
+    const el = $(sel);
+    el.hidden = !msg;
+    el.textContent = msg || '';
   }
 
-  // ---------- conta ----------
   function api(path, { method = 'GET', body } = {}) {
     const headers = { 'Content-Type': 'application/json' };
     if (state.token) headers.Authorization = `Bearer ${state.token}`;
@@ -101,89 +131,227 @@
         return data;
       });
   }
+  const errText = (err) => {
+    const code = err && err.message;
+    if (!code || code === 'generic' || code === 'Failed to fetch' || /fetch/i.test(code)) return t('err.network');
+    return t(`err.${code}`);
+  };
 
+  // ---------- conta ----------
   function setUser(name, token) {
     state.name = name || '';
     state.token = token || null;
-    try {
-      if (token) { localStorage.setItem('gt:token', token); localStorage.setItem('gt:name', name); }
-      else { localStorage.removeItem('gt:token'); localStorage.removeItem('gt:name'); }
-    } catch (_) {}
+    store.set('gt:token', token || null);
+    store.set('gt:name', token ? name : null);
     renderUser();
+    socket.emit('hello', { token: state.token });
   }
-
   function renderUser() {
-    const pill = $('#user-pill');
-    pill.hidden = !state.token;
+    $('#user-pill').hidden = !state.token;
+    $('#panel-btn').hidden = !state.token;
     $('#user-name').textContent = state.name;
     $('#user-avatar').textContent = (state.name || '?').slice(0, 1).toUpperCase();
   }
 
-  function setAuthTab(tab) {
-    state.authTab = tab;
-    $$('#auth-tabs .tab').forEach((b) => b.classList.toggle('active', b.dataset.tab === tab));
-    $('#auth-submit').textContent = tab === 'register' ? t('auth.register') : t('auth.loginBtn');
-    $('#auth-hint').textContent = tab === 'register' ? t('auth.hintRegister') : t('auth.hintLogin');
-    $('#auth-password').autocomplete = tab === 'register' ? 'new-password' : 'current-password';
-    setAuthError('');
-  }
-
-  function setAuthError(msg) {
-    const el = $('#auth-error');
-    el.hidden = !msg;
-    el.textContent = msg || '';
-  }
-
   async function onAuthSubmit(e) {
     e.preventDefault();
-    setAuthError('');
+    setError('#auth-error', '');
     const name = $('#auth-name').value.trim();
-    const password = $('#auth-password').value;
     const btn = $('#auth-submit');
     btn.disabled = true;
     try {
-      const path = state.authTab === 'register' ? '/api/register' : '/api/login';
-      const data = await api(path, { method: 'POST', body: { name, password } });
-      setUser(data.name, data.token);
-      $('#auth-password').value = '';
-      toast(t('auth.welcome', { name: data.name }));
-      showScreen('screen-home');
+      const r = await api('/api/claim', { method: 'POST', body: { name } });
+      if (r.status === 'pending') {
+        startPending(r.requestId, r.name);
+      } else {
+        setUser(r.name, r.token);
+        toast(t('auth.welcome', { name: r.name }));
+        showScreen('screen-home');
+      }
     } catch (err) {
-      const code = err && err.message;
-      setAuthError(code === 'Failed to fetch' || code === 'generic' ? t('err.network') : t(`err.${code}`));
+      setError('#auth-error', errText(err));
     } finally {
       btn.disabled = false;
     }
   }
 
-  function logout({ expired } = {}) {
+  function logout({ silent, reason } = {}) {
     if (state.room) leaveRoom({ silent: true });
     if (state.searching) { state.searching = false; socket.emit('cancel'); }
-    if (state.token && !expired) api('/api/logout', { method: 'POST' }).catch(() => {});
+    if (state.token && !reason) api('/api/logout', { method: 'POST' }).catch(() => {});
     setUser('', null);
     state.game = null;
-    setAuthTab(expired ? 'login' : 'register');
-    if (expired) toast(t('auth.expired'), 4000);
-    else toast(t('auth.loggedOut'));
+    state.requests = [];
+    renderRequests();
+    closePanel();
+    if (!silent) toast(reason ? t(reason) : t('auth.loggedOut'), reason ? 6000 : 2800);
     showScreen('screen-auth');
   }
 
-  // ---------- tela inicial ----------
+  // ---------- pedido de login (quem está esperando) ----------
+  let pendingPoll = null;
+  function startPending(id, name) {
+    state.pendingId = id;
+    state.pendingName = name;
+    store.set('gt:pending', JSON.stringify({ id, name }));
+    renderPending();
+    showScreen('screen-pending');
+    socket.emit('watch-claim', { requestId: id });
+    clearInterval(pendingPoll);
+    pendingPoll = setInterval(checkPending, 5000);
+    checkPending();
+  }
+  function renderPending() {
+    if (!state.pendingName) return;
+    $('#pending-body').textContent = t('pending.body', { name: state.pendingName });
+  }
+  async function checkPending() {
+    if (!state.pendingId) return;
+    try {
+      const r = await api(`/api/claim/${state.pendingId}`);
+      if (r.status === 'approved' && r.token) finishPending(r.name, r.token);
+      else if (r.status === 'denied' || r.status === 'unknown') failPending();
+    } catch (_) { /* tenta de novo no próximo ciclo */ }
+  }
+  function finishPending(name, token) {
+    clearPending();
+    setUser(name, token);
+    toast(t('auth.welcome', { name }));
+    showScreen('screen-home');
+  }
+  function failPending() {
+    clearInterval(pendingPoll);
+    $('#pending-status').textContent = t('pending.denied');
+    $('#pending-ring').hidden = true;
+    state.pendingId = null;
+    store.set('gt:pending', null);
+  }
+  function clearPending() {
+    clearInterval(pendingPoll);
+    state.pendingId = null;
+    state.pendingName = '';
+    store.set('gt:pending', null);
+    $('#pending-ring').hidden = false;
+    $('#pending-status').textContent = t('pending.wait');
+  }
+  function cancelPending() {
+    if (state.pendingId) api(`/api/claim/${state.pendingId}`, { method: 'DELETE' }).catch(() => {});
+    clearPending();
+    showScreen('screen-auth');
+  }
+
+  // ---------- pedidos de login (quem está com a conta) ----------
+  function setRequests(list) {
+    state.requests = Array.isArray(list) ? list : [];
+    renderRequests();
+  }
+  async function refreshRequests() {
+    if (!state.token) return;
+    try { setRequests((await api('/api/requests')).requests); } catch (_) {}
+  }
+  function renderRequests() {
+    const n = state.requests.length;
+    for (const id of ['#panel-badge', '#logins-badge']) {
+      const b = $(id);
+      b.hidden = n === 0;
+      b.textContent = n;
+    }
+    const list = $('#logins-list');
+    $('#logins-empty').hidden = n > 0;
+    list.innerHTML = '';
+    for (const r of state.requests) {
+      const li = document.createElement('li');
+      li.className = 'login-req';
+      const min = Math.max(0, Math.round((Date.now() - r.createdAt) / 60000));
+      li.innerHTML = `<div>${escapeHtml(t('req.item', { name: state.name }))}</div>
+        <div class="when">${min === 0 ? t('req.now') : t('req.when', { min })}</div>
+        <div class="actions">
+          <button type="button" class="btn-primary" data-act="approve">${t('req.approve')}</button>
+          <button type="button" class="btn-secondary" data-act="deny">${t('req.deny')}</button>
+        </div>`;
+      li.querySelector('[data-act="approve"]').addEventListener('click', () => approveRequest(r.id));
+      li.querySelector('[data-act="deny"]').addEventListener('click', () => denyRequest(r.id));
+      list.appendChild(li);
+    }
+  }
+  let approving = false;
+  async function approveRequest(id) {
+    approving = true;
+    try {
+      await api(`/api/requests/${id}/approve`, { method: 'POST' });
+      // a conta foi para o outro aparelho: este sai
+      if (state.token) logout({ reason: 'req.approved' });
+    } catch (err) { toast(errText(err)); refreshRequests(); }
+    approving = false;
+  }
+  async function denyRequest(id) {
+    try {
+      await api(`/api/requests/${id}/deny`, { method: 'POST' });
+      setRequests(state.requests.filter((r) => r.id !== id));
+      toast(t('req.denied'));
+    } catch (err) { toast(errText(err)); refreshRequests(); }
+  }
+  function onLoginRequest(req) {
+    if (!state.token) return;
+    if (!state.requests.some((r) => r.id === req.id)) state.requests.push(req);
+    renderRequests();
+    toast(t('req.toast'), 15000, [
+      { label: t('req.approve'), primary: true, onClick: () => approveRequest(req.id) },
+      { label: t('req.deny'), onClick: () => denyRequest(req.id) },
+    ]);
+  }
+
+  // ---------- painel (chat + logins) ----------
+  function placePanel() {
+    const panel = $('#panel');
+    const inRoom = $('#screen-room').classList.contains('active');
+    if (inRoom) {
+      if (panel.parentElement !== $('#room-panel-slot')) $('#room-panel-slot').appendChild(panel);
+      panel.classList.add('inline');
+      panel.classList.remove('drawer');
+      panel.hidden = false;
+      $('#panel-backdrop').hidden = true;
+    } else {
+      if (panel.parentElement !== document.body) document.body.appendChild(panel);
+      panel.classList.add('drawer');
+      panel.classList.remove('inline');
+      panel.hidden = !state.panelOpen;
+      $('#panel-backdrop').hidden = !state.panelOpen;
+    }
+    $('#chat-empty').hidden = Boolean(state.room);
+    $('#chat-form').hidden = !state.room;
+  }
+  function setPanelTab(tab) {
+    state.panelTab = tab;
+    $$('#panel-tabs .tab').forEach((b) => b.classList.toggle('active', b.dataset.tab === tab));
+    $('#tab-chat').hidden = tab !== 'chat';
+    $('#tab-logins').hidden = tab !== 'logins';
+  }
+  function openPanel(tab) {
+    state.panelOpen = true;
+    if (tab) setPanelTab(tab);
+    placePanel();
+  }
+  function closePanel() {
+    state.panelOpen = false;
+    placePanel();
+  }
+
+  // ---------- início ----------
   function renderGameGrid() {
     const grid = $('#game-grid');
     if (!state.config) return;
     grid.innerHTML = '';
     for (const g of state.config.games) {
+      const cross = fullCrossplay(g) || Array.isArray(g.crossplayGroups);
       const b = document.createElement('button');
       b.type = 'button';
       b.className = 'game-card';
-      b.style.setProperty('--game-color', g.color);
       b.innerHTML = `
-        <span class="emoji">${g.emoji}</span>
-        <span class="badge ${g.crossplay || g.crossplayGroups ? 'cross' : 'nocross'}">${g.crossplay || g.crossplayGroups ? 'crossplay' : (state.uiLang === 'pt-BR' ? 'sem crossplay' : 'no crossplay')}</span>
-        <span class="name">${g.name}</span>
-        <span class="meta">👥 ${t('game.upTo', { n: g.maxPlayers })}</span>
-        <span class="meta">${g.platforms.map((p) => state.config.platforms[p].icon).join(' ')}</span>`;
+        <span class="cover"><img src="${coverOf(g)}" alt="${escapeHtml(g.name)}" loading="lazy"><span class="tag ${cross ? '' : 'nocross'}">${cross ? t('game.crossplay') : t('game.noCrossplay')}</span></span>
+        <span class="name">${escapeHtml(g.name)}</span>
+        <span class="meta">${icon('i-users')}<span>${t('game.upTo', { n: g.maxPlayers })}</span></span>
+        <span class="plats">${g.platforms.map((p) => icon(PLATFORM_ICON[p] || 'i-pc')).join('')}</span>`;
       b.addEventListener('click', () => openSetup(g));
       grid.appendChild(b);
     }
@@ -193,9 +361,8 @@
   function openSetup(game) {
     state.game = game;
     state.platform = null;
-    setError('');
+    setError('#setup-error', '');
 
-    // idioma da chamada: segue o idioma da interface por padrão
     const langWrap = $('#lang-choice');
     langWrap.innerHTML = '';
     for (const l of state.config.languages) {
@@ -206,26 +373,24 @@
       langWrap.appendChild(label);
     }
     state.lang = state.uiLang;
-    langWrap.addEventListener('change', (e) => {
+    langWrap.onchange = (e) => {
       if (e.target.name === 'lang') {
         state.lang = e.target.value;
-        // escolher o idioma da chamada também traduz a interface
         setUiLang(state.lang, { fromCallLang: true });
       }
-    });
+    };
 
-    // plataformas: só quando o jogo não tem crossplay total
-    const fullCrossplay = game.crossplay === true && !Array.isArray(game.crossplayGroups);
-    $('#platform-field').hidden = fullCrossplay;
-    $('#crossplay-note').hidden = !fullCrossplay;
+    const cross = fullCrossplay(game);
+    $('#platform-field').hidden = cross;
+    $('#crossplay-note').hidden = !cross;
     const platWrap = $('#platform-choice');
     platWrap.innerHTML = '';
-    const savedPlat = fullCrossplay ? null : localStorage.getItem(`gt:platform:${game.id}`);
-    for (const p of fullCrossplay ? [] : game.platforms) {
+    const savedPlat = cross ? null : store.get(`gt:platform:${game.id}`);
+    for (const p of cross ? [] : game.platforms) {
       const label = document.createElement('label');
       label.className = 'choice';
       label.innerHTML = `<input type="radio" name="platform" value="${p}" ${p === savedPlat ? 'checked' : ''}>
-        <span class="choice-box"><strong>${platformLabel(p)}</strong></span>`;
+        <span class="choice-box"><strong>${platformHtml(p)}</strong></span>`;
       platWrap.appendChild(label);
     }
     if (savedPlat && game.platforms.includes(savedPlat)) state.platform = savedPlat;
@@ -236,7 +401,7 @@
     modeDuo.checked = true;
     state.mode = 'duo';
     modeGroup.disabled = game.maxPlayers < 3;
-    modeGroup.closest('.choice').style.opacity = modeGroup.disabled ? 0.45 : 1;
+    modeGroup.closest('.choice').classList.toggle('disabled', modeGroup.disabled);
 
     renderSetupTexts();
     showScreen('screen-setup');
@@ -244,14 +409,12 @@
 
   function renderSetupTexts() {
     const g = state.game;
-    $('#setup-emoji').textContent = g.emoji;
+    $('#setup-cover').src = coverOf(g);
     $('#setup-title').textContent = g.name;
-    $('#setup-sub').textContent = `👥 ${t('game.upTo', { n: g.maxPlayers })} · ${g.crossplay || g.crossplayGroups ? t('game.crossplay') : t('game.noCrossplay')}`;
+    $('#setup-sub').textContent = `${t('game.upTo', { n: g.maxPlayers })} · ${fullCrossplay(g) ? t('game.crossplayLong') : t('game.noCrossplayLong')}`;
     $('#group-desc').textContent = t('setup.groupDesc', { n: g.maxPlayers });
-    $('#platform-hint').textContent = g.crossplay || g.crossplayGroups ? t('setup.platformCross') : t('setup.platformNoCross');
     $$('#platform-choice .choice').forEach((label) => {
-      const input = label.querySelector('input');
-      label.querySelector('strong').textContent = platformLabel(input.value);
+      label.querySelector('strong').innerHTML = platformHtml(label.querySelector('input').value);
     });
   }
 
@@ -271,12 +434,12 @@
 
   async function onMatchmake(e) {
     e.preventDefault();
-    setError('');
+    setError('#setup-error', '');
     state.mode = $('input[name="mode"]:checked').value;
-    if (!state.token) return logout({ expired: true });
+    if (!state.token) return logout({ reason: 'auth.expired' });
     const needsPlatform = !$('#platform-field').hidden;
-    if (needsPlatform && !state.platform) return setError(t('setup.needPlatform'));
-    if (needsPlatform) localStorage.setItem(`gt:platform:${state.game.id}`, state.platform);
+    if (needsPlatform && !state.platform) return setError('#setup-error', t('setup.needPlatform'));
+    if (needsPlatform) store.set(`gt:platform:${state.game.id}`, state.platform);
 
     const btn = $('#matchmake-btn');
     btn.disabled = true;
@@ -284,9 +447,9 @@
       await getMic();
     } catch (err) {
       btn.disabled = false;
-      if (err && err.message === 'insecure') return setError(t('setup.insecure'));
-      if (err && err.message === 'noWebRTC') return setError(t('setup.noWebRTC'));
-      return setError(t('setup.micDenied'));
+      if (err && err.message === 'insecure') return setError('#setup-error', t('setup.insecure'));
+      if (err && err.message === 'noWebRTC') return setError('#setup-error', t('setup.noWebRTC'));
+      return setError('#setup-error', t('setup.micDenied'));
     }
     applyMute();
 
@@ -298,17 +461,16 @@
       mode: state.mode,
     }, (res) => {
       btn.disabled = false;
-      if (res && res.error === 'not_logged_in') return logout({ expired: true });
-      if (!res || res.error) return setError(t(res && res.error ? `err.${res.error}` : 'err.generic'));
+      if (res && res.error === 'not_logged_in') return logout({ reason: 'auth.expired' });
+      if (!res || res.error) return setError('#setup-error', t(res && res.error ? `err.${res.error}` : 'err.generic'));
       if (res.status === 'waiting') {
         state.searching = true;
         $('#search-summary').textContent = t('search.summary', {
           game: state.game.name, lang: langLabel(state.lang),
-          platform: needsPlatform ? platformLabel(state.platform) : '🌐 ' + t('room.anyPlatform'),
+          platform: needsPlatform ? platformName(state.platform) : t('room.anyPlatform'),
         });
         showScreen('screen-searching');
       }
-      // "matched" chega pelo evento 'matched'
     });
   }
 
@@ -325,9 +487,8 @@
     state.me = me;
     $('#chat-log').innerHTML = '';
     renderRoom();
+    setPanelTab(state.requests.length ? 'logins' : 'chat');
     showScreen('screen-room');
-    // O servidor diz com quem devemos iniciar a oferta; com os demais só
-    // preparamos a conexão e esperamos a oferta deles.
     const initiators = new Set(initiateWith || []);
     for (const m of room.members) {
       if (m.id !== me) connectPeer(m, initiators.has(m.id));
@@ -338,8 +499,8 @@
   function renderRoom() {
     const room = state.room;
     if (!room) return;
-    const g = gameById(room.gameId) || { emoji: '🎮', name: room.gameName };
-    $('#room-emoji').textContent = g.emoji;
+    const g = gameById(room.gameId) || { name: room.gameName, id: room.gameId };
+    $('#room-cover').src = coverOf(g);
     $('#room-title').textContent = g.name;
     $('#room-sub').textContent = t('room.sub', {
       lang: langLabel(room.lang),
@@ -358,28 +519,25 @@
     for (const m of room.members) {
       const li = document.createElement('li');
       const isMe = m.id === state.me;
-      li.className = 'member' + (isMe && state.muted ? ' muted' : '') + (!isMe && !(state.peers.get(m.id) || {}).connected ? ' connecting' : '');
+      const peer = state.peers.get(m.id);
+      li.className = 'member' + (isMe ? ' me' : '') + (isMe && state.muted ? ' muted' : '') + (!isMe && !(peer && peer.connected) ? ' connecting' : '');
       li.dataset.id = m.id;
       li.innerHTML = `
-        <span class="avatar">${(m.name || '?').slice(0, 1).toUpperCase()}</span>
+        <span class="avatar">${escapeHtml((m.name || '?').slice(0, 1).toUpperCase())}</span>
         <span class="info">
           <span class="name">${escapeHtml(m.name)}${isMe ? ` <span class="muted">(${t('room.you')})</span>` : ''}</span>
-          <span class="plat">${m.platform ? platformLabel(m.platform) : '🌐 ' + t('room.anyPlatform')}</span>
+          <span class="plat">${m.platform ? platformHtml(m.platform) : icon('i-globe') + `<span>${t('room.anyPlatform')}</span>`}</span>
         </span>
-        <span class="mic">🎙️</span>`;
+        <span class="mic">${icon(isMe && state.muted ? 'i-mic-off' : 'i-mic')}</span>`;
       list.appendChild(li);
     }
     $('#mute-btn .ctrl-label').textContent = state.muted ? t('room.unmute') : t('room.mute');
-    $('#mute-btn .ctrl-icon').textContent = state.muted ? '🔇' : '🎙️';
+    $('#mute-icon').setAttribute('href', state.muted ? '#i-mic-off' : '#i-mic');
     $('#mute-btn').classList.toggle('active', state.muted);
   }
 
-  function escapeHtml(s) {
-    return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-  }
-
   function connectPeer(member, initiator) {
-    if (state.peers.has(member.id)) return;
+    if (state.peers.has(member.id)) return state.peers.get(member.id);
     const pc = new RTCPeerConnection({ iceServers: ICE_SERVERS });
     const audio = document.createElement('audio');
     audio.autoplay = true;
@@ -402,9 +560,7 @@
       peer.connected = pc.connectionState === 'connected';
       const li = document.querySelector(`.member[data-id="${member.id}"]`);
       if (li) li.classList.toggle('connecting', !peer.connected);
-      if (pc.connectionState === 'failed') {
-        pc.restartIce && pc.restartIce();
-      }
+      if (pc.connectionState === 'failed' && pc.restartIce) pc.restartIce();
     };
     if (initiator) {
       pc.onnegotiationneeded = async () => {
@@ -434,15 +590,11 @@
           await pc.setLocalDescription(answer);
           socket.emit('signal', { to: from, data: { sdp: pc.localDescription } });
         }
-        // candidatos que chegaram antes da descrição remota
         const queued = peer.pending.splice(0);
         for (const c of queued) await pc.addIceCandidate(new RTCIceCandidate(c)).catch(() => {});
       } else if (data.candidate) {
-        if (pc.remoteDescription && pc.remoteDescription.type) {
-          await pc.addIceCandidate(new RTCIceCandidate(data.candidate));
-        } else {
-          peer.pending.push(data.candidate);
-        }
+        if (pc.remoteDescription && pc.remoteDescription.type) await pc.addIceCandidate(new RTCIceCandidate(data.candidate));
+        else peer.pending.push(data.candidate);
       }
     } catch (err) { console.warn('signal error', err); }
   }
@@ -463,21 +615,20 @@
     state.me = null;
     socket.emit('leave');
     if (!silent) toast(t('toast.leftRoom'));
-    showScreen('screen-setup');
+    showScreen(state.token ? 'screen-setup' : 'screen-auth');
   }
 
   function applyMute() {
     if (!state.localStream) return;
     for (const tr of state.localStream.getAudioTracks()) tr.enabled = !state.muted;
   }
-
   function toggleMute() {
     state.muted = !state.muted;
     applyMute();
     renderRoom();
   }
 
-  // ---------- medidor de voz (quem está falando) ----------
+  // ---------- medidor de voz ----------
   let audioCtx = null;
   let localMeter = null;
   function makeMeter(stream, onLevel) {
@@ -528,19 +679,15 @@
   const socket = io({ transports: ['websocket', 'polling'] });
 
   socket.on('stats', (s) => { $('#online-count').textContent = s.online; });
-
   socket.on('matched', ({ room, you, initiateWith }) => enterRoom(room, you, initiateWith));
-
   socket.on('peer-joined', ({ room, peer }) => {
     if (!state.room) return;
     state.room = room;
     renderRoom();
     toast(t('toast.joined', { name: peer.name }));
     addChat({ sys: true, text: t('toast.joined', { name: peer.name }) });
-    // o novo membro é quem inicia a oferta; aqui só preparamos a conexão
     connectPeer(peer, false);
   });
-
   socket.on('peer-left', ({ room, peerId }) => {
     if (!state.room) return;
     const gone = state.peers.get(peerId);
@@ -551,25 +698,36 @@
     toast(t('toast.left', { name }));
     addChat({ sys: true, text: t('toast.left', { name }) });
   });
-
   socket.on('signal', onSignal);
   socket.on('chat', addChat);
+
+  // conta
+  socket.on('login-request', onLoginRequest);
+  socket.on('login-requests', ({ requests }) => setRequests(requests));
+  socket.on('login-requests-changed', refreshRequests);
+  socket.on('account-transferred', () => { if (state.token) logout({ reason: approving ? 'req.approved' : 'auth.transferred' }); });
+  socket.on('claim-update', ({ requestId, status }) => {
+    if (requestId !== state.pendingId) return;
+    if (status === 'approved') checkPending();
+    else if (status === 'denied') failPending();
+  });
 
   socket.on('disconnect', () => {
     if (state.room || state.searching) toast(t('toast.disconnected'), 5000);
   });
   socket.io.on('reconnect', () => {
-    // o servidor perdeu nosso estado; voltamos para a configuração
     if (state.room) leaveRoom({ silent: true });
     if (state.searching) { state.searching = false; showScreen('screen-setup'); }
+    if (state.token) socket.emit('hello', { token: state.token });
+    if (state.pendingId) socket.emit('watch-claim', { requestId: state.pendingId });
     toast(t('toast.reconnected'));
   });
 
   // ---------- eventos da interface ----------
-  $('#setup-form').addEventListener('submit', onMatchmake);
   $('#auth-form').addEventListener('submit', onAuthSubmit);
-  $$('#auth-tabs .tab').forEach((b) => b.addEventListener('click', () => setAuthTab(b.dataset.tab)));
+  $('#pending-cancel').addEventListener('click', cancelPending);
   $('#logout-btn').addEventListener('click', () => logout());
+  $('#setup-form').addEventListener('submit', onMatchmake);
   $('#setup-back').addEventListener('click', () => { state.game = null; showScreen('screen-home'); });
   $('#brand-link').addEventListener('click', (e) => {
     e.preventDefault();
@@ -590,6 +748,10 @@
     socket.emit('chat', text);
     input.value = '';
   });
+  $('#panel-btn').addEventListener('click', () => openPanel(state.requests.length ? 'logins' : state.panelTab));
+  $('#panel-close').addEventListener('click', closePanel);
+  $('#panel-backdrop').addEventListener('click', closePanel);
+  $$('#panel-tabs .tab').forEach((b) => b.addEventListener('click', () => setPanelTab(b.dataset.tab)));
   $$('#ui-lang-switch button').forEach((b) => b.addEventListener('click', () => setUiLang(b.dataset.lang)));
   window.addEventListener('beforeunload', () => { if (state.room) socket.emit('leave'); });
 
@@ -598,19 +760,26 @@
     .then((r) => r.json())
     .then(async (cfg) => {
       state.config = cfg;
-      let token = null; let name = '';
-      try { token = localStorage.getItem('gt:token'); name = localStorage.getItem('gt:name') || ''; } catch (_) {}
-      state.token = token; state.name = name;
       setUiLang(detectLang());
+      setPanelTab('chat');
+
+      let pending = null;
+      try { pending = JSON.parse(store.get('gt:pending') || 'null'); } catch (_) {}
+      if (pending && pending.id) { startPending(pending.id, pending.name); return; }
+
+      const token = store.get('gt:token');
+      const name = store.get('gt:name') || '';
       if (token) {
+        state.token = token; state.name = name;
         try {
           const me = await api('/api/me');
           setUser(me.name, token);
+          setRequests(me.pending);
           showScreen('screen-home');
           return;
         } catch (err) {
-          if (err.message === 'not_logged_in') { setUser('', null); setAuthTab('login'); }
-          else { renderUser(); showScreen('screen-home'); return; } // servidor fora: segue com o nome salvo
+          if (err.message === 'not_logged_in') { setUser('', null); }
+          else { renderUser(); showScreen('screen-home'); return; }
         }
       }
       showScreen('screen-auth');

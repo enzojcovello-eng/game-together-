@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 800" width="600" height="800">
+<defs><filter id="grain"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/><feComponentTransfer><feFuncA type="table" tableValues="0 0 0.18"/></feComponentTransfer></filter><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0b1d4d"/><stop offset="1" stop-color="#071029"/></linearGradient><radialGradient id="ball" cx="0.35" cy="0.3" r="0.8"><stop offset="0" stop-color="#fff"/><stop offset="0.5" stop-color="#ffb347"/><stop offset="1" stop-color="#ff6a00"/></radialGradient><linearGradient id="shade" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#040a1c" stop-opacity="0"/><stop offset="1" stop-color="#040a1c" stop-opacity="0.85"/></linearGradient></defs>
+<rect width="600" height="800" fill="url(#bg)"/>
+     <g stroke="#2d5bff" stroke-width="2" opacity="0.5"><path d="M0 700 L600 560"/><path d="M0 760 L600 620"/><path d="M0 640 L600 500"/><path d="M0 580 L600 440"/></g>
+     <circle cx="330" cy="330" r="130" fill="url(#ball)"/>
+     <path d="M250 290 q80 -30 150 20" stroke="#ffffff66" stroke-width="10" fill="none" stroke-linecap="round"/>
+     <g stroke="#ff8a3d" stroke-width="10" stroke-linecap="round" opacity="0.9"><path d="M60 420 L200 380"/><path d="M40 470 L180 430"/><path d="M90 520 L190 490"/></g>
+     <path d="M380 560 l140 -40 l40 30 l-30 50 l-150 30 z" fill="#1f6bff"/><circle cx="420" cy="635" r="18" fill="#0a0a0a"/><circle cx="520" cy="605" r="18" fill="#0a0a0a"/>
+<rect width="600" height="800" filter="url(#grain)" opacity="0.6"/>
+<rect x="0" y="540" width="600" height="260" fill="url(#shade)"/>
+<text x="40" y="680" font-family="Impact, 'Arial Black', 'Helvetica Neue', Arial, sans-serif" font-size="58" font-weight="900" fill="#fff" letter-spacing="-1">ROCKET</text>
+<text x="40" y="740" font-family="Impact, 'Arial Black', 'Helvetica Neue', Arial, sans-serif" font-size="58" font-weight="900" fill="#fff" letter-spacing="-1">LEAGUE</text>
+<text x="40" y="780" font-family="Arial, Helvetica, sans-serif" font-size="20" fill="#ffffffaa" letter-spacing="4">CARROS · FUTEBOL</text>
+</svg>

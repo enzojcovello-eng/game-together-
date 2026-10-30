@@ -3,37 +3,63 @@ const assert = require('assert');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
-const { Auth } = require('../lib/auth');
+const { Auth, INACTIVE_DAYS } = require('../lib/auth');
 
 const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'gt-auth-'));
-const auth = new Auth({ dataDir: dir });
+let clock = 1_000_000;
+const auth = new Auth({ dataDir: dir, now: () => clock });
 
-assert.strictEqual(auth.register('ab', 'senha123').error, 'invalid_name', 'nome curto');
-assert.strictEqual(auth.register('Enzo', '123').error, 'weak_password', 'senha curta');
-const r = auth.register('Enzo', 'senha123');
-assert.ok(r.token && r.name === 'Enzo');
-assert.strictEqual(auth.register('enzo', 'outra123').error, 'name_taken', 'nome é único sem diferenciar maiúsculas');
-assert.deepStrictEqual(auth.verify(r.token), { name: 'Enzo' });
-assert.strictEqual(auth.verify('nada'), null);
-assert.strictEqual(auth.login('Enzo', 'errada', '1.1.1.1').error, 'bad_credentials');
-assert.strictEqual(auth.login('Ninguem', 'senha123', '1.1.1.1').error, 'bad_credentials');
-const l = auth.login('enzo', 'senha123', '1.1.1.1');
-assert.strictEqual(l.name, 'Enzo');
-assert.deepStrictEqual(auth.verify(l.token), { name: 'Enzo' });
+assert.strictEqual(auth.claim('ab').error, 'invalid_name', 'nome curto');
+assert.strictEqual(auth.claim('a@b!').error, 'invalid_name', 'caractere inválido');
 
-// senha não fica em texto no arquivo
-const raw = fs.readFileSync(path.join(dir, 'users.json'), 'utf8');
-assert.ok(!raw.includes('senha123'));
+// primeiro aparelho cria a conta
+const a = auth.claim('Enzo');
+assert.strictEqual(a.status, 'created');
+assert.ok(a.token && a.name === 'Enzo');
+assert.deepStrictEqual(auth.verify(a.token), { name: 'Enzo' });
 
-// contas sobrevivem a reinício
-const auth2 = new Auth({ dataDir: dir });
-assert.deepStrictEqual(auth2.verify(l.token), { name: 'Enzo' });
-auth2.logout(l.token);
-assert.strictEqual(auth2.verify(l.token), null);
+// segundo aparelho com o mesmo nome vira pedido
+const b = auth.claim('enzo');
+assert.strictEqual(b.status, 'pending', 'nome em uso vira pedido, sem diferenciar maiúsculas');
+assert.deepStrictEqual(auth.pendingFor(a.token).map((r) => r.id), [b.requestId]);
+assert.strictEqual(auth.requestStatus(b.requestId).status, 'pending');
 
-// bloqueio após muitas tentativas erradas
-for (let i = 0; i < 10; i++) auth2.login('Enzo', 'x', '2.2.2.2');
-assert.strictEqual(auth2.login('Enzo', 'senha123', '2.2.2.2').error, 'too_many_attempts');
+// recusar
+assert.strictEqual(auth.deny(a.token, b.requestId).ok, true);
+assert.strictEqual(auth.requestStatus(b.requestId).status, 'denied');
+assert.deepStrictEqual(auth.pendingFor(a.token), []);
+
+// aprovar: a conta passa para o outro aparelho, o token antigo morre
+const c = auth.claim('Enzo');
+assert.strictEqual(c.status, 'pending');
+assert.strictEqual(auth.approve('token-invalido', c.requestId).error, 'not_logged_in');
+assert.strictEqual(auth.approve(a.token, c.requestId).ok, true);
+const got = auth.requestStatus(c.requestId);
+assert.strictEqual(got.status, 'approved');
+assert.ok(got.token, 'quem pediu recebe o token');
+assert.strictEqual(auth.requestStatus(c.requestId).token, undefined, 'o token é entregue uma vez só');
+assert.strictEqual(auth.verify(a.token), null, 'aparelho antigo saiu');
+assert.deepStrictEqual(auth.verify(got.token), { name: 'Enzo' });
+
+// sair libera o nome: o próximo entra direto
+auth.logout(got.token);
+const d = auth.claim('Enzo');
+assert.strictEqual(d.status, 'ok', 'conta sem dono entra direto');
+
+// conta parada há mais de INACTIVE_DAYS entra direto (ninguém fica trancado)
+clock += (INACTIVE_DAYS + 1) * 24 * 60 * 60 * 1000;
+const e = auth.claim('Enzo');
+assert.strictEqual(e.status, 'ok', 'conta inativa entra direto');
+assert.strictEqual(auth.verify(d.token), null);
+
+// contas e pedidos sobrevivem a reinício
+const f = auth.claim('Enzo');
+assert.strictEqual(f.status, 'pending');
+const auth2 = new Auth({ dataDir: dir, now: () => clock });
+assert.deepStrictEqual(auth2.verify(e.token), { name: 'Enzo' });
+assert.strictEqual(auth2.pendingFor(e.token).length, 1);
+auth2.cancelRequest(f.requestId);
+assert.strictEqual(auth2.requestStatus(f.requestId).status, 'unknown');
 
 fs.rmSync(dir, { recursive: true, force: true });
 console.log('auth: todos os testes passaram');

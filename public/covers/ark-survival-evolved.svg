@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 800" width="600" height="800">
+<defs><filter id="grain"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/><feComponentTransfer><feFuncA type="table" tableValues="0 0 0.18"/></feComponentTransfer></filter><linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1b3a2a"/><stop offset="0.5" stop-color="#3d7a3f"/><stop offset="1" stop-color="#0d1f14"/></linearGradient><linearGradient id="shade" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#06120a" stop-opacity="0"/><stop offset="1" stop-color="#06120a" stop-opacity="0.85"/></linearGradient></defs>
+<rect width="600" height="800" fill="url(#sky)"/>
+     <circle cx="430" cy="210" r="110" fill="#ffcf6b" opacity="0.9"/>
+     <path d="M0 520 Q120 420 240 500 T480 480 T600 520 V800 H0Z" fill="#163d22"/>
+     <path d="M0 600 Q150 520 300 590 T600 600 V800 H0Z" fill="#0c2415"/>
+     <g fill="#07160c"><ellipse cx="300" cy="520" rx="120" ry="55"/><path d="M400 500 q40 -90 70 -170 q10 -30 40 -30 q30 0 30 25 q0 20 -25 20 l-20 0 q-30 80 -60 170 z"/><path d="M190 530 q-80 10 -150 70 q60 -30 150 -40 z"/><rect x="230" y="555" width="26" height="70" rx="8"/><rect x="290" y="560" width="26" height="70" rx="8"/><rect x="340" y="555" width="26" height="70" rx="8"/><rect x="380" y="550" width="26" height="70" rx="8"/></g>
+     <g stroke="#0a2a14" stroke-width="6" stroke-linecap="round"><path d="M40 470 q30 -90 20 -160"/><path d="M60 480 q60 -70 110 -70"/><path d="M560 470 q-20 -100 10 -170"/></g>
+<rect width="600" height="800" filter="url(#grain)" opacity="0.6"/>
+<rect x="0" y="540" width="600" height="260" fill="url(#shade)"/>
+<text x="40" y="680" font-family="Impact, 'Arial Black', 'Helvetica Neue', Arial, sans-serif" font-size="58" font-weight="900" fill="#fff" letter-spacing="-1">ARK</text>
+<text x="40" y="740" font-family="Impact, 'Arial Black', 'Helvetica Neue', Arial, sans-serif" font-size="43" font-weight="900" fill="#fff" letter-spacing="-1">SURVIVAL EVOLVED</text>
+<text x="40" y="780" font-family="Arial, Helvetica, sans-serif" font-size="20" fill="#ffffffaa" letter-spacing="4">SOBREVIVÊNCIA · DINOSSAUROS</text>
+</svg>
