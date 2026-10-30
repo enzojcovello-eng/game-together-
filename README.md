@@ -84,6 +84,13 @@ quantidade de pessoas e uma plataforma compatível.
 | Fortnite | 4 | PC, PlayStation, Xbox, Switch, Celular | Sim |
 | Roblox | 5 | PC, PlayStation, Xbox, Celular | Sim |
 | Terraria | 5 | PC, PlayStation, Xbox, Switch, Celular | Não: cada plataforma só encontra a própria |
+| Minecraft | 5 | PC, PlayStation, Xbox, Switch, Celular | Parcial: console e celular juntos (Bedrock); PC (Java) só com PC |
+| Valorant | 5 | PC, PlayStation, Xbox | Parcial: PlayStation e Xbox juntos; PC só com PC |
+| GTA V | 5 | PC, PlayStation, Xbox | Não: cada plataforma só encontra a própria |
+| Helldivers 2 | 4 | PC, PlayStation, Xbox | Sim |
+
+Cada cartão de jogo mostra quantas pessoas estão em chamada e quantas estão
+procurando naquele jogo agora. No topo da tela inicial aparece o total.
 
 Idiomas: Português (BR) e English (US). O idioma escolhido também traduz o site.
 
@@ -149,6 +156,10 @@ ilustração. Formato bom: vertical, 600 x 800 pixels ou maior.
 | Fortnite | `fortnite.jpg` |
 | Roblox | `roblox.jpg` |
 | Terraria | `terraria.jpg` |
+| Minecraft | `minecraft.jpg` |
+| Valorant | `valorant.jpg` |
+| GTA V | `gta-5.jpg` |
+| Helldivers 2 | `helldivers-2.jpg` |
 
 ---
 
@@ -236,6 +247,13 @@ call size and a compatible platform.
 | Fortnite | 4 | PC, PlayStation, Xbox, Switch, Mobile | Yes |
 | Roblox | 5 | PC, PlayStation, Xbox, Mobile | Yes |
 | Terraria | 5 | PC, PlayStation, Xbox, Switch, Mobile | No: each platform only matches itself |
+| Minecraft | 5 | PC, PlayStation, Xbox, Switch, Mobile | Partial: console and mobile together (Bedrock); PC (Java) only with PC |
+| Valorant | 5 | PC, PlayStation, Xbox | Partial: PlayStation and Xbox together; PC only with PC |
+| GTA V | 5 | PC, PlayStation, Xbox | No: each platform only matches itself |
+| Helldivers 2 | 4 | PC, PlayStation, Xbox | Yes |
+
+Each game card shows how many people are on a call and how many are
+searching in that game right now. The home screen shows the total at the top.
 
 Languages: Português (BR) and English (US). The language you pick also
 translates the site.
@@ -303,6 +321,10 @@ larger.
 | Fortnite | `fortnite.jpg` |
 | Roblox | `roblox.jpg` |
 | Terraria | `terraria.jpg` |
+| Minecraft | `minecraft.jpg` |
+| Valorant | `valorant.jpg` |
+| GTA V | `gta-5.jpg` |
+| Helldivers 2 | `helldivers-2.jpg` |
 
 ## License
 

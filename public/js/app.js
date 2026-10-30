@@ -62,6 +62,7 @@
       $$('#lang-choice input').forEach((i) => { i.checked = i.value === lang; });
     }
     renderGameGrid();
+    renderStats();
     renderPending();
     renderRequests();
     if (state.game) renderSetupTexts();
@@ -87,6 +88,43 @@
   function gameById(id) { return state.config.games.find((g) => g.id === id); }
   function coverOf(game) { return game.cover || `covers/${game.id}.svg`; }
   function fullCrossplay(game) { return game.crossplay === true && !Array.isArray(game.crossplayGroups); }
+  function partialCrossplay(game) { return Array.isArray(game.crossplayGroups) && game.crossplayGroups.length > 0; }
+  const joinNames = (list) => list.map(platformName).join(', ');
+  function crossplayVars(game) {
+    const grouped = new Set(game.crossplayGroups.flat());
+    return {
+      together: game.crossplayGroups.map((grp) => joinNames(grp)).join(' / '),
+      alone: joinNames(game.platforms.filter((p) => !grouped.has(p))) || '—',
+    };
+  }
+  function crossplayTag(game) {
+    if (fullCrossplay(game)) return { cls: '', text: t('game.crossplay') };
+    if (partialCrossplay(game)) return { cls: 'partial', text: t('game.partial') };
+    return { cls: 'nocross', text: t('game.noCrossplay') };
+  }
+  function crossplayLong(game) {
+    if (fullCrossplay(game)) return t('game.crossplayLong');
+    if (partialCrossplay(game)) return t('game.partialLong', crossplayVars(game));
+    return t('game.noCrossplayLong');
+  }
+  let lastStats = null;
+  function renderStats(st) {
+    if (st) lastStats = st;
+    if (!lastStats) return;
+    $('#online-count').textContent = lastStats.online;
+    $('#calls-count').textContent = lastStats.inCall;
+    $('#online-pill').title = t('online.calls', { n: lastStats.inCall });
+    $('#home-stats-text').textContent = t('home.stats', { online: lastStats.online, calls: lastStats.inCall });
+    const per = lastStats.games || {};
+    $$('.game-card .live').forEach((el) => {
+      const g = per[el.dataset.game] || { inCall: 0, searching: 0 };
+      const parts = [];
+      if (g.inCall) parts.push(t('game.inCall', { n: g.inCall }));
+      if (g.searching) parts.push(t('game.searching', { n: g.searching }));
+      el.querySelector('span:last-child').textContent = parts.length ? parts.join(' · ') : t('game.nobody');
+      el.classList.toggle('on', g.inCall > 0 || g.searching > 0);
+    });
+  }
 
   function showScreen(id) {
     $$('.screen').forEach((s) => s.classList.toggle('active', s.id === id));
@@ -343,18 +381,20 @@
     if (!state.config) return;
     grid.innerHTML = '';
     for (const g of state.config.games) {
-      const cross = fullCrossplay(g) || Array.isArray(g.crossplayGroups);
+      const tag = crossplayTag(g);
       const b = document.createElement('button');
       b.type = 'button';
       b.className = 'game-card';
       b.innerHTML = `
-        <span class="cover"><img src="${coverOf(g)}" alt="${escapeHtml(g.name)}" loading="lazy"><span class="tag ${cross ? '' : 'nocross'}">${cross ? t('game.crossplay') : t('game.noCrossplay')}</span></span>
+        <span class="cover"><img src="${coverOf(g)}" alt="${escapeHtml(g.name)}" loading="lazy"><span class="tag ${tag.cls}">${tag.text}</span></span>
         <span class="name">${escapeHtml(g.name)}</span>
         <span class="meta">${icon('i-users')}<span>${t('game.upTo', { n: g.maxPlayers })}</span></span>
+        <span class="live" data-game="${g.id}"><span class="dot"></span><span></span></span>
         <span class="plats">${g.platforms.map((p) => icon(PLATFORM_ICON[p] || 'i-pc')).join('')}</span>`;
       b.addEventListener('click', () => openSetup(g));
       grid.appendChild(b);
     }
+    renderStats();
   }
 
   // ---------- configuração ----------
@@ -411,7 +451,8 @@
     const g = state.game;
     $('#setup-cover').src = coverOf(g);
     $('#setup-title').textContent = g.name;
-    $('#setup-sub').textContent = `${t('game.upTo', { n: g.maxPlayers })} · ${fullCrossplay(g) ? t('game.crossplayLong') : t('game.noCrossplayLong')}`;
+    $('#setup-sub').textContent = `${t('game.upTo', { n: g.maxPlayers })} · ${crossplayLong(g)}`;
+    $('#platform-hint').textContent = partialCrossplay(g) ? t('setup.platformPartial', crossplayVars(g)) : t('setup.platformNoCross');
     $('#group-desc').textContent = t('setup.groupDesc', { n: g.maxPlayers });
     $$('#platform-choice .choice').forEach((label) => {
       label.querySelector('strong').innerHTML = platformHtml(label.querySelector('input').value);
@@ -718,7 +759,7 @@
   const socket = io({ transports: ['websocket', 'polling'] });
   socket.on('version', onServerVersion);
 
-  socket.on('stats', (s) => { $('#online-count').textContent = s.online; });
+  socket.on('stats', renderStats);
   socket.on('matched', ({ room, you, initiateWith }) => enterRoom(room, you, initiateWith));
   socket.on('peer-joined', ({ room, peer }) => {
     if (!state.room) return;

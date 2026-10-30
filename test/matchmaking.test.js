@@ -60,6 +60,27 @@ assert.strictEqual(r.status, 'matched');
 assert.deepStrictEqual(r.joined.sort(), ['u1', 'u3']);
 mm.leave('u2');
 
+// Minecraft: crossplay parcial (console e celular juntos, PC separado)
+r = mm.find('m1', { name: 'M1', gameId: 'minecraft', lang: 'pt-BR', platform: 'playstation', mode: 'duo' });
+assert.strictEqual(r.status, 'waiting');
+r = mm.find('m2', { name: 'M2', gameId: 'minecraft', lang: 'pt-BR', platform: 'pc', mode: 'duo' });
+assert.strictEqual(r.status, 'waiting', 'PC (Java) não casa com console');
+r = mm.find('m3', { name: 'M3', gameId: 'minecraft', lang: 'pt-BR', platform: 'switch', mode: 'duo' });
+assert.strictEqual(r.status, 'matched', 'Switch casa com PlayStation (Bedrock)');
+assert.deepStrictEqual(r.joined.sort(), ['m1', 'm3']);
+
+// Helldivers 2: crossplay total, limite 4 no grupo
+for (const id of ['h1', 'h2', 'h3', 'h4', 'h5']) mm.find(id, { name: id, gameId: 'helldivers-2', lang: 'en-US', mode: 'group' });
+assert.strictEqual(mm.roomOf('h1').members.size, 4);
+assert.strictEqual(mm.roomOf('h5').members.size, 1);
+
+// estatísticas por jogo
+const st = mm.stats();
+assert.strictEqual(st.games['helldivers-2'].inCall, 5);
+assert.strictEqual(st.games['minecraft'].inCall, 2);
+assert.strictEqual(st.games['minecraft'].searching, 1, 'm2 continua procurando');
+assert.strictEqual(st.games['gta-5'], undefined, 'jogo sem ninguém não aparece');
+
 // validação
 assert.strictEqual(mm.find('z', { name: 'Z', gameId: 'nope', lang: 'pt-BR', platform: 'pc', mode: 'duo' }).error, 'unknown_game');
 assert.strictEqual(mm.find('z', { name: 'Z', gameId: 'terraria', lang: 'pt-BR', mode: 'duo' }).error, 'unknown_platform', 'sem crossplay a plataforma é obrigatória');
@@ -69,6 +90,6 @@ assert.strictEqual(mm.find('z', { name: '', gameId: 'roblox', lang: 'pt-BR', pla
 // cancelar busca duo tira da fila
 mm.find('w', { name: 'W', gameId: 'roblox', lang: 'pt-BR', platform: 'pc', mode: 'duo' });
 mm.leave('w');
-assert.strictEqual(mm.stats().searching, 2, 'na fila só sobram "b" e "e"');
+assert.strictEqual(mm.stats().searching, 3, 'na fila só sobram "b", "e" e "m2"');
 
 console.log('matchmaking: todos os testes passaram');

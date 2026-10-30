@@ -50,7 +50,7 @@
       <span class="brand-name">game<em>together</em></span>
     </a>
     <div class="topbar-right">
-      <span class="online" id="online-pill"><span class="dot"></span><span id="online-count">0</span>&nbsp;<span data-i18n="online">online</span></span>
+      <span class="online" id="online-pill"><span class="dot"></span><span id="online-count">0</span>&nbsp;<span data-i18n="online">online</span><span class="sep">·</span><svg class="i"><use href="#i-mic"/></svg><span id="calls-count">0</span></span>
       <button type="button" class="icon-btn" id="panel-btn" hidden aria-label="Chat e logins">
         <svg class="i"><use href="#i-chat"/></svg>
         <span class="badge" id="panel-badge" hidden>0</span>
@@ -113,6 +113,7 @@
         <h1 data-i18n="hero.title">Encontre gente para jogar junto</h1>
         <p class="lead" data-i18n="hero.subtitle">Escolha o jogo, quantas pessoas quer na chamada e seu idioma. A gente conecta você por voz com quem escolheu o mesmo.</p>
       </div>
+      <p class="home-stats" id="home-stats"><span class="dot"></span><span id="home-stats-text"></span></p>
       <h2 class="section-title" data-i18n="home.choose">Escolha o jogo</h2>
       <div class="game-grid" id="game-grid"></div>
       <p class="hint center" data-i18n="home.hint">Sem câmera, só voz. Funciona no PC e no celular, direto no navegador.</p>
@@ -151,7 +152,7 @@
           <fieldset class="field" id="platform-field">
             <legend data-i18n="setup.platform">Sua plataforma</legend>
             <div class="choice-grid" id="platform-choice"></div>
-            <p class="hint" data-i18n="setup.platformNoCross">Este jogo não tem crossplay: você só cai com quem está na mesma plataforma.</p>
+            <p class="hint" id="platform-hint"></p>
           </fieldset>
           <p class="note" id="crossplay-note" hidden><svg class="i"><use href="#i-globe"/></svg><span data-i18n="setup.crossplayNote">Este jogo tem crossplay: você cai com gente de qualquer plataforma, não precisa escolher.</span></p>
 

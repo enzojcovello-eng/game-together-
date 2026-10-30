@@ -136,6 +136,80 @@
       ],
       "crossplay": false,
       "cover": "covers/terraria.svg"
+    },
+    {
+      "id": "minecraft",
+      "name": "Minecraft",
+      "short": "Minecraft",
+      "emoji": "⛏️",
+      "color": "#5d8f2d",
+      "maxPlayers": 5,
+      "platforms": [
+        "pc",
+        "playstation",
+        "xbox",
+        "switch",
+        "mobile"
+      ],
+      "crossplayGroups": [
+        [
+          "playstation",
+          "xbox",
+          "switch",
+          "mobile"
+        ]
+      ],
+      "cover": "covers/minecraft.jpg"
+    },
+    {
+      "id": "valorant",
+      "name": "Valorant",
+      "short": "Valorant",
+      "emoji": "🎯",
+      "color": "#ff4655",
+      "maxPlayers": 5,
+      "platforms": [
+        "pc",
+        "playstation",
+        "xbox"
+      ],
+      "crossplayGroups": [
+        [
+          "playstation",
+          "xbox"
+        ]
+      ],
+      "cover": "covers/valorant.jpg"
+    },
+    {
+      "id": "gta-5",
+      "name": "GTA V",
+      "short": "GTA 5",
+      "emoji": "🚓",
+      "color": "#2e7d32",
+      "maxPlayers": 5,
+      "platforms": [
+        "pc",
+        "playstation",
+        "xbox"
+      ],
+      "crossplay": false,
+      "cover": "covers/gta-5.jpg"
+    },
+    {
+      "id": "helldivers-2",
+      "name": "Helldivers 2",
+      "short": "Helldivers 2",
+      "emoji": "🪖",
+      "color": "#f9a825",
+      "maxPlayers": 4,
+      "platforms": [
+        "pc",
+        "playstation",
+        "xbox"
+      ],
+      "crossplay": true,
+      "cover": "covers/helldivers-2.jpg"
     }
   ]
 }
