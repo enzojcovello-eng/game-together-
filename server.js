@@ -10,20 +10,39 @@ const { Matchmaker } = require('./lib/matchmaker');
 const { Auth } = require('./lib/auth');
 
 const config = require('./games.json');
+const pkg = require('./package.json');
 const PORT = process.env.PORT || 3000;
+
+// Versão do app: muda a cada publicação. O cliente compara com a que carregou
+// e avisa para atualizar. BUILD vem do Render (commit) ou da hora de início.
+const VERSION = { version: pkg.version, build: process.env.RENDER_GIT_COMMIT || process.env.BUILD_ID || String(Date.now()) };
+
+// Capas: se existir public/covers/<id>.jpg|jpeg|png|webp, ela vence a ilustração SVG.
+const COVER_EXT = ['jpg', 'jpeg', 'png', 'webp'];
+function resolveConfig() {
+  const games = config.games.map((g) => {
+    for (const ext of COVER_EXT) {
+      const file = path.join(__dirname, 'public', 'covers', `${g.id}.${ext}`);
+      if (fs.existsSync(file)) return { ...g, cover: `covers/${g.id}.${ext}` };
+    }
+    return g;
+  });
+  return { ...config, games, ...VERSION };
+}
 
 const app = express();
 // HTTPS opcional: o microfone no celular só funciona em HTTPS ou localhost.
 // Defina SSL_KEY e SSL_CERT (caminhos dos arquivos) para subir em HTTPS.
-const server = process.env.SSL_KEY && process.env.SSL_CERT
+const isHttps = Boolean(process.env.SSL_KEY && process.env.SSL_CERT);
+const server = isHttps
   ? https.createServer({ key: fs.readFileSync(process.env.SSL_KEY), cert: fs.readFileSync(process.env.SSL_CERT) }, app)
   : http.createServer(app);
-const isHttps = Boolean(process.env.SSL_KEY && process.env.SSL_CERT);
 const io = new Server(server, { cors: { origin: '*' } });
 
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json({ limit: '10kb' }));
-app.get('/api/config', (_req, res) => res.json(config));
+app.get('/api/config', (_req, res) => res.json(resolveConfig()));
+app.get('/api/version', (_req, res) => res.json(VERSION));
 app.get('/api/stats', (_req, res) => res.json({ ...mm.stats(), online }));
 
 const mm = new Matchmaker(config);
@@ -32,31 +51,89 @@ const mm = new Matchmaker(config);
 const auth = new Auth({ dataDir: process.env.DATA_DIR });
 let online = 0;
 
-// ---- contas ----
+// ---- contas (só nome; um aparelho por vez) ----
+const acctRoom = (key) => `acct:${key}`;
+const claimRoom = (id) => `claim:${id}`;
+
 function tokenFrom(req) {
   const h = req.headers.authorization || '';
   return h.startsWith('Bearer ') ? h.slice(7) : null;
 }
-app.post('/api/register', (req, res) => {
-  const { name, password } = req.body || {};
-  const r = auth.register(name, password);
+
+// limite simples de pedidos por IP para evitar spam de nomes
+const claimsByIp = new Map();
+function tooManyClaims(ip) {
+  const now = Date.now();
+  const list = (claimsByIp.get(ip) || []).filter((t) => now - t < 15 * 60 * 1000);
+  list.push(now);
+  claimsByIp.set(ip, list);
+  return list.length > 40;
+}
+
+app.post('/api/claim', (req, res) => {
+  if (tooManyClaims(req.ip)) return res.status(429).json({ error: 'too_many_attempts' });
+  const r = auth.claim((req.body || {}).name);
   if (r.error) return res.status(400).json({ error: r.error });
+  if (r.status === 'pending') {
+    // avisa o aparelho que está com a conta, se estiver aberto
+    const key = auth.keyOfRequest(r.requestId);
+    io.to(acctRoom(key)).emit('login-request', { id: r.requestId, createdAt: Date.now() });
+  }
   res.json(r);
 });
-app.post('/api/login', (req, res) => {
-  const { name, password } = req.body || {};
-  const r = auth.login(name, password, req.ip);
-  if (r.error) return res.status(r.error === 'too_many_attempts' ? 429 : 401).json({ error: r.error });
-  res.json(r);
+
+app.get('/api/claim/:id', (req, res) => {
+  res.json(auth.requestStatus(req.params.id));
 });
+
+app.delete('/api/claim/:id', (req, res) => {
+  const key = auth.keyOfRequest(req.params.id);
+  auth.cancelRequest(req.params.id);
+  if (key) io.to(acctRoom(key)).emit('login-requests-changed');
+  res.json({ ok: true });
+});
+
 app.get('/api/me', (req, res) => {
-  const user = auth.verify(tokenFrom(req));
+  const token = tokenFrom(req);
+  const user = auth.verify(token);
   if (!user) return res.status(401).json({ error: 'not_logged_in' });
-  res.json(user);
+  auth.touch(token);
+  res.json({ ...user, pending: auth.pendingFor(token) || [] });
 });
+
+app.get('/api/requests', (req, res) => {
+  const list = auth.pendingFor(tokenFrom(req));
+  if (!list) return res.status(401).json({ error: 'not_logged_in' });
+  res.json({ requests: list });
+});
+
+app.post('/api/requests/:id/approve', (req, res) => {
+  const token = tokenFrom(req);
+  const key = auth.ownerKey(token);
+  const r = auth.approve(token, req.params.id);
+  if (r.error) return res.status(r.error === 'not_logged_in' ? 401 : 404).json({ error: r.error });
+  // quem pediu recebe o token pela rota GET /api/claim/:id; aqui só avisamos
+  io.to(claimRoom(req.params.id)).emit('claim-update', { requestId: req.params.id, status: 'approved' });
+  // todo mundo que estava com a conta no aparelho antigo é deslogado
+  io.to(acctRoom(key)).emit('account-transferred');
+  io.in(acctRoom(key)).socketsLeave(acctRoom(key));
+  res.json(r);
+});
+
+app.post('/api/requests/:id/deny', (req, res) => {
+  const token = tokenFrom(req);
+  const r = auth.deny(token, req.params.id);
+  if (r.error) return res.status(r.error === 'not_logged_in' ? 401 : 404).json({ error: r.error });
+  io.to(claimRoom(req.params.id)).emit('claim-update', { requestId: req.params.id, status: 'denied' });
+  io.to(acctRoom(auth.ownerKey(token))).emit('login-requests-changed');
+  res.json(r);
+});
+
 app.post('/api/logout', (req, res) => {
   const token = tokenFrom(req);
+  const key = auth.ownerKey(token);
   if (token) auth.logout(token);
+  if (key) io.in(acctRoom(key)).socketsLeave(acctRoom(key));
   res.json({ ok: true });
 });
 
@@ -67,6 +144,22 @@ function broadcastStats() {
 io.on('connection', (socket) => {
   online += 1;
   broadcastStats();
+  socket.emit('version', VERSION);
+
+  // o aparelho se identifica para receber avisos da conta (pedidos de login)
+  socket.on('hello', ({ token } = {}) => {
+    const key = auth.ownerKey(token);
+    for (const r of socket.rooms) if (r.startsWith('acct:')) socket.leave(r);
+    if (!key) return;
+    auth.touch(token);
+    socket.join(acctRoom(key));
+    socket.emit('login-requests', { requests: auth.pendingFor(token) || [] });
+  });
+
+  // quem está esperando aprovação acompanha o pedido ao vivo
+  socket.on('watch-claim', ({ requestId } = {}) => {
+    if (typeof requestId === 'string' && requestId.length === 64) socket.join(claimRoom(requestId));
+  });
 
   socket.on('find', (req, ack) => {
     req = req || {};
@@ -76,6 +169,7 @@ io.on('connection', (socket) => {
       if (typeof ack === 'function') ack({ error: 'not_logged_in' });
       return;
     }
+    auth.touch(req.token);
     const result = mm.find(socket.id, { ...req, name: user.name });
     if (result.error) {
       if (typeof ack === 'function') ack({ error: result.error });
@@ -88,8 +182,6 @@ io.on('connection', (socket) => {
     }
     const room = result.room;
     const pub = mm.publicRoom(room);
-    // Quem acabou de entrar recebe a sala e inicia as conexões WebRTC com
-    // quem já estava lá. Quem já estava recebe "peer-joined".
     // Para evitar colisão de ofertas, cada pessoa que entra inicia a conexão
     // só com quem já estava na sala e com quem entrou antes dela na mesma leva.
     const joinedSet = new Set(result.joined);
@@ -115,13 +207,8 @@ io.on('connection', (socket) => {
     broadcastStats();
   });
 
-  socket.on('cancel', () => {
-    handleLeave(socket);
-  });
-
-  socket.on('leave', () => {
-    handleLeave(socket);
-  });
+  socket.on('cancel', () => handleLeave(socket));
+  socket.on('leave', () => handleLeave(socket));
 
   // Sinalização WebRTC: encaminha offer/answer/ice para um peer da mesma sala.
   socket.on('signal', ({ to, data } = {}) => {

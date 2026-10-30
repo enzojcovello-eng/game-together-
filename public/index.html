@@ -3,182 +3,223 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#0f1117">
+  <meta name="theme-color" content="#15130f">
   <title>Game Together</title>
-  <meta name="description" content="Encontre pessoas para jogar junto. Chamada de voz por jogo, idioma, plataforma e quantidade de jogadores.">
+  <meta name="description" content="Encontre gente para jogar junto. Chamada de voz por jogo, idioma, plataforma e quantidade de jogadores.">
   <link rel="icon" href="/icons/icon-192.png" type="image/png">
   <link rel="manifest" href="/manifest.webmanifest">
-  <!-- iPhone / iPad: app na tela inicial -->
   <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Game Together">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Instrument+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap">
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+  <!-- ícones (desenhados à mão, sem emoji) -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <symbol id="i-logo" viewBox="0 0 24 24"><path d="M7 8h10a5 5 0 0 1 5 5v1a4 4 0 0 1-4 4h-1.5L14 15.5h-4L7.5 18H6a4 4 0 0 1-4-4v-1a5 5 0 0 1 5-5z" fill="currentColor"/><path d="M8 11.5v3M6.5 13h3" stroke="#15130f" stroke-width="1.6" stroke-linecap="round"/><circle cx="16" cy="12" r="1.1" fill="#15130f"/><circle cx="18" cy="14" r="1.1" fill="#15130f"/></symbol>
+    <symbol id="i-chat" viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-11.7 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></symbol>
+    <symbol id="i-back" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></symbol>
+    <symbol id="i-mic" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3M9 21h6"/></symbol>
+    <symbol id="i-mic-off" viewBox="0 0 24 24"><path d="M15 9.5V6a3 3 0 0 0-6 0v1M9 11v0a3 3 0 0 0 5 2.2M5 11a7 7 0 0 0 10.6 6M19 11a7 7 0 0 1-1.2 3.9M12 18v3M9 21h6M3 3l18 18"/></symbol>
+    <symbol id="i-hangup" viewBox="0 0 24 24"><path d="M3.5 13.5c5-5 12-5 17 0l-2.2 2.6a1 1 0 0 1-1.3.2l-2.6-1.6a1 1 0 0 1-.4-1.1l.4-1.5a9 9 0 0 0-4.8 0l.4 1.5a1 1 0 0 1-.4 1.1L7 16.3a1 1 0 0 1-1.3-.2z" fill="currentColor" stroke="none"/></symbol>
+    <symbol id="i-send" viewBox="0 0 24 24"><path d="M21 3L10.5 13.5M21 3l-6.5 18-4-7.5L3 9.5z"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></symbol>
+    <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></symbol>
+    <symbol id="i-users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M21.5 20a6.5 6.5 0 0 0-4.5-6.2"/></symbol>
+    <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3.5 3 14.5 0 18M12 3c-3 3.5-3 14.5 0 18"/></symbol>
+    <symbol id="i-logout" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></symbol>
+    <symbol id="i-bell" viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0"/></symbol>
+    <symbol id="i-pc" viewBox="0 0 24 24"><rect x="2.5" y="4" width="19" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></symbol>
+    <symbol id="i-playstation" viewBox="0 0 24 24"><path d="M7 7h10a5 5 0 0 1 0 10H7A5 5 0 0 1 7 7z"/><path d="M7.5 12h3M9 10.5v3"/><circle cx="15.5" cy="11" r=".9" fill="currentColor"/><circle cx="17.5" cy="13" r=".9" fill="currentColor"/></symbol>
+    <symbol id="i-xbox" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M7.5 7.5c3 2.5 5.5 6 7.5 9M16.5 7.5c-3 2.5-5.5 6-7.5 9"/></symbol>
+    <symbol id="i-switch" viewBox="0 0 24 24"><rect x="3" y="4" width="7" height="16" rx="3"/><rect x="14" y="4" width="7" height="16" rx="3"/><circle cx="6.5" cy="9" r="1.3" fill="currentColor"/><circle cx="17.5" cy="15" r="1.3" fill="currentColor"/></symbol>
+    <symbol id="i-mobile" viewBox="0 0 24 24"><rect x="7" y="2.5" width="10" height="19" rx="2"/><path d="M11 18h2"/></symbol>
+    <symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z" fill="currentColor" stroke="none"/></symbol>
+  </svg>
+
   <header class="topbar">
-    <a class="brand" href="#" id="brand-link">
-      <span class="brand-icon">🎮</span>
-      <span class="brand-name">Game Together</span>
+    <a class="brand" href="#" id="brand-link" aria-label="Game Together">
+      <svg class="i brand-mark"><use href="#i-logo"/></svg>
+      <span class="brand-name">game<em>together</em></span>
     </a>
     <div class="topbar-right">
+      <span class="online" id="online-pill"><span class="dot"></span><span id="online-count">0</span>&nbsp;<span data-i18n="online">online</span></span>
+      <button type="button" class="icon-btn" id="panel-btn" hidden aria-label="Chat e logins">
+        <svg class="i"><use href="#i-chat"/></svg>
+        <span class="badge" id="panel-badge" hidden>0</span>
+      </button>
       <span class="user-pill" id="user-pill" hidden>
         <span class="user-avatar" id="user-avatar">?</span>
         <span class="user-name" id="user-name"></span>
-        <button type="button" class="logout" id="logout-btn" data-i18n="auth.logout" title="Sair da conta">Sair</button>
-      </span>
-      <span class="online" id="online-pill" title="">
-        <span class="dot"></span>
-        <span id="online-count">0</span> <span data-i18n="online">online</span>
+        <button type="button" class="icon-btn small" id="logout-btn" data-i18n-title="auth.logout" title="Sair"><svg class="i"><use href="#i-logout"/></svg></button>
       </span>
       <div class="lang-switch" id="ui-lang-switch" role="group" aria-label="Idioma">
-        <button type="button" data-lang="pt-BR" class="active">🇧🇷 <span>PT</span></button>
-        <button type="button" data-lang="en-US">🇺🇸 <span>EN</span></button>
+        <button type="button" data-lang="pt-BR" class="active">PT</button>
+        <button type="button" data-lang="en-US">EN</button>
       </div>
     </div>
   </header>
 
+  <div class="update-banner" id="update-banner" hidden>
+    <svg class="i"><use href="#i-spark"/></svg>
+    <span id="update-text"></span>
+    <a class="btn-primary small" id="update-link" href="https://github.com/enzojcovello-eng/game-together-" target="_blank" rel="noopener" hidden></a>
+    <button type="button" class="btn-primary small" id="update-btn" hidden></button>
+  </div>
+
   <main id="app">
 
-    <!-- TELA DE CONTA: aparece na primeira vez que abre o app -->
+    <!-- ENTRAR: só o nome -->
     <section class="screen" id="screen-auth">
-      <div class="auth-card">
-        <div class="auth-logo">🎮</div>
-        <h1 data-i18n="auth.title">Bem-vindo ao Game Together</h1>
-        <p class="muted" data-i18n="auth.subtitle">Crie sua conta para começar. É só um nome e uma senha.</p>
-        <div class="tabs" id="auth-tabs" role="tablist">
-          <button type="button" class="tab active" data-tab="register" data-i18n="auth.register">Criar conta</button>
-          <button type="button" class="tab" data-tab="login" data-i18n="auth.login">Já tenho conta</button>
+      <div class="auth">
+        <div class="auth-art" aria-hidden="true">
+          <svg class="i big"><use href="#i-logo"/></svg>
         </div>
-        <form id="auth-form" autocomplete="on">
+        <h1 data-i18n="auth.title">Qual é o seu nome?</h1>
+        <p class="lead" data-i18n="auth.subtitle">É assim que as pessoas vão te ver na chamada. Sem senha, sem e-mail. Da próxima vez o app já abre no seu nome.</p>
+        <form id="auth-form" autocomplete="off">
           <label class="field">
             <span data-i18n="auth.name">Nome</span>
-            <input type="text" id="auth-name" maxlength="20" minlength="3" autocomplete="username" data-i18n-placeholder="auth.namePh" placeholder="Como as pessoas vão te ver" required>
+            <input type="text" id="auth-name" maxlength="20" minlength="3" autocomplete="nickname" data-i18n-placeholder="auth.namePh" placeholder="ex.: Enzo, Maria Clara, zé_do_ark" required>
           </label>
-          <label class="field">
-            <span data-i18n="auth.password">Senha</span>
-            <input type="password" id="auth-password" minlength="6" autocomplete="new-password" data-i18n-placeholder="auth.passwordPh" placeholder="Pelo menos 6 caracteres" required>
-          </label>
-          <p class="hint" id="auth-hint" data-i18n="auth.hintRegister">O nome é único: se já existir, escolha outro. Guarde a senha, não dá para recuperar.</p>
           <p class="error" id="auth-error" hidden></p>
-          <button type="submit" class="btn-primary btn-big" id="auth-submit" data-i18n="auth.register">Criar conta</button>
+          <button type="submit" class="btn-primary btn-big" id="auth-submit"><span data-i18n="auth.submit">Entrar</span></button>
+        </form>
+        <p class="hint" data-i18n="auth.hint">Uma conta fica em um aparelho por vez. Se você entrar com o mesmo nome em outro aparelho, o app pede sua permissão neste aqui.</p>
+      </div>
+    </section>
+
+    <!-- ESPERANDO PERMISSÃO -->
+    <section class="screen" id="screen-pending">
+      <div class="auth">
+        <div class="ring" id="pending-ring"></div>
+        <h1 data-i18n="pending.title">Esse nome já está em uso</h1>
+        <p class="lead" id="pending-body"></p>
+        <p class="status" id="pending-status" data-i18n="pending.wait">Esperando a resposta...</p>
+        <button type="button" class="btn-secondary" id="pending-cancel" data-i18n="pending.cancel">Usar outro nome</button>
+      </div>
+    </section>
+
+    <!-- INÍCIO: escolha do jogo -->
+    <section class="screen" id="screen-home">
+      <div class="hero">
+        <h1 data-i18n="hero.title">Encontre gente para jogar junto</h1>
+        <p class="lead" data-i18n="hero.subtitle">Escolha o jogo, quantas pessoas quer na chamada e seu idioma. A gente conecta você por voz com quem escolheu o mesmo.</p>
+      </div>
+      <h2 class="section-title" data-i18n="home.choose">Escolha o jogo</h2>
+      <div class="game-grid" id="game-grid"></div>
+      <p class="hint center" data-i18n="home.hint">Sem câmera, só voz. Funciona no PC e no celular, direto no navegador.</p>
+    </section>
+
+    <!-- CONFIGURAÇÃO -->
+    <section class="screen" id="screen-setup">
+      <button type="button" class="back" id="setup-back"><svg class="i"><use href="#i-back"/></svg><span data-i18n="back">Voltar</span></button>
+      <div class="setup-layout">
+        <aside class="setup-cover">
+          <img id="setup-cover" alt="">
+          <h2 id="setup-title"></h2>
+          <p class="muted" id="setup-sub"></p>
+        </aside>
+        <form id="setup-form" autocomplete="off">
+          <fieldset class="field">
+            <legend data-i18n="setup.players">Quantas pessoas na chamada</legend>
+            <div class="choice-grid two" id="mode-choice">
+              <label class="choice">
+                <input type="radio" name="mode" value="duo" checked>
+                <span class="choice-box"><strong data-i18n="setup.duo">2 pessoas</strong><small data-i18n="setup.duoDesc">Você e mais 1</small></span>
+              </label>
+              <label class="choice">
+                <input type="radio" name="mode" value="group">
+                <span class="choice-box"><strong data-i18n="setup.group">3 ou mais</strong><small id="group-desc"></small></span>
+              </label>
+            </div>
+          </fieldset>
+
+          <fieldset class="field">
+            <legend data-i18n="setup.language">Idioma da chamada</legend>
+            <div class="choice-grid two" id="lang-choice"></div>
+            <p class="hint" data-i18n="setup.languageHint">Você só vai cair com quem escolheu o mesmo idioma.</p>
+          </fieldset>
+
+          <fieldset class="field" id="platform-field">
+            <legend data-i18n="setup.platform">Sua plataforma</legend>
+            <div class="choice-grid" id="platform-choice"></div>
+            <p class="hint" data-i18n="setup.platformNoCross">Este jogo não tem crossplay: você só cai com quem está na mesma plataforma.</p>
+          </fieldset>
+          <p class="note" id="crossplay-note" hidden><svg class="i"><use href="#i-globe"/></svg><span data-i18n="setup.crossplayNote">Este jogo tem crossplay: você cai com gente de qualquer plataforma, não precisa escolher.</span></p>
+
+          <p class="error" id="setup-error" hidden></p>
+          <button type="submit" class="btn-primary btn-big" id="matchmake-btn"><svg class="i"><use href="#i-search"/></svg> Matchmake</button>
         </form>
       </div>
     </section>
 
-    <!-- TELA INICIAL: escolha do jogo -->
-    <section class="screen" id="screen-home">
-      <div class="hero">
-        <h1 data-i18n="hero.title">Encontre gente para jogar junto</h1>
-        <p data-i18n="hero.subtitle">Escolha o jogo, quantas pessoas quer na chamada e seu idioma. A gente conecta você por voz com quem escolheu o mesmo.</p>
-      </div>
-      <h2 class="section-title" data-i18n="home.choose">Escolha o jogo</h2>
-      <div class="game-grid" id="game-grid"></div>
-      <p class="hint" data-i18n="home.hint">Sem câmera, só voz. Funciona no PC e no celular, direto no navegador.</p>
-    </section>
-
-    <!-- TELA DE CONFIGURAÇÃO: jogadores, idioma, plataforma -->
-    <section class="screen" id="screen-setup">
-      <button type="button" class="back" id="setup-back">← <span data-i18n="back">Voltar</span></button>
-      <div class="game-banner" id="setup-banner">
-        <span class="game-emoji" id="setup-emoji"></span>
-        <div>
-          <h2 id="setup-title"></h2>
-          <p class="muted" id="setup-sub"></p>
-        </div>
-      </div>
-
-      <form id="setup-form" autocomplete="off">
-        <fieldset class="field">
-          <legend data-i18n="setup.players">Quantidade de pessoas na chamada</legend>
-          <div class="choice-grid two" id="mode-choice">
-            <label class="choice">
-              <input type="radio" name="mode" value="duo" checked>
-              <span class="choice-box">
-                <strong data-i18n="setup.duo">2 pessoas</strong>
-                <small data-i18n="setup.duoDesc">Você e mais 1</small>
-              </span>
-            </label>
-            <label class="choice">
-              <input type="radio" name="mode" value="group">
-              <span class="choice-box">
-                <strong data-i18n="setup.group">3 ou mais</strong>
-                <small id="group-desc"></small>
-              </span>
-            </label>
-          </div>
-        </fieldset>
-
-        <fieldset class="field">
-          <legend data-i18n="setup.language">Idioma da chamada</legend>
-          <div class="choice-grid two" id="lang-choice"></div>
-          <p class="hint" data-i18n="setup.languageHint">Você só vai cair com quem escolheu o mesmo idioma.</p>
-        </fieldset>
-
-        <fieldset class="field" id="platform-field">
-          <legend data-i18n="setup.platform">Sua plataforma</legend>
-          <div class="choice-grid" id="platform-choice"></div>
-          <p class="hint" id="platform-hint"></p>
-        </fieldset>
-        <p class="hint crossplay-note" id="crossplay-note" hidden>🌐 <span data-i18n="setup.crossplayNote">Este jogo tem crossplay: você cai com gente de qualquer plataforma, não precisa escolher.</span></p>
-
-        <p class="error" id="setup-error" hidden></p>
-
-        <button type="submit" class="btn-primary btn-big" id="matchmake-btn">
-          <span class="btn-icon">🔎</span> Matchmake
-        </button>
-      </form>
-    </section>
-
-    <!-- TELA DE BUSCA (modo 2 pessoas) -->
+    <!-- BUSCA (2 pessoas) -->
     <section class="screen" id="screen-searching">
       <div class="searching">
-        <div class="radar"><span></span><span></span><span></span></div>
+        <div class="ring"></div>
         <h2 data-i18n="search.title">Procurando alguém...</h2>
         <p class="muted" id="search-summary"></p>
-        <p class="muted small" data-i18n="search.tip">Deixe esta aba aberta. Assim que alguém com a mesma escolha aparecer, a chamada começa.</p>
+        <p class="hint" data-i18n="search.tip">Deixe o app aberto. Assim que alguém com a mesma escolha aparecer, a chamada começa.</p>
         <button type="button" class="btn-secondary" id="cancel-btn" data-i18n="search.cancel">Cancelar</button>
       </div>
     </section>
 
-    <!-- TELA DA CHAMADA -->
+    <!-- CHAMADA -->
     <section class="screen" id="screen-room">
       <div class="room-head">
-        <div class="game-banner small">
-          <span class="game-emoji" id="room-emoji"></span>
-          <div>
-            <h2 id="room-title"></h2>
-            <p class="muted" id="room-sub"></p>
-          </div>
+        <img class="room-cover" id="room-cover" alt="">
+        <div class="room-title">
+          <h2 id="room-title"></h2>
+          <p class="muted" id="room-sub"></p>
         </div>
-        <div class="room-count"><span id="room-count">1</span>/<span id="room-max">2</span></div>
+        <div class="room-count"><svg class="i"><use href="#i-users"/></svg><span id="room-count">1</span>/<span id="room-max">2</span></div>
       </div>
-
       <p class="status" id="room-status"></p>
-
       <ul class="members" id="members"></ul>
-
-      <div class="chat">
-        <div class="chat-log" id="chat-log"></div>
-        <form class="chat-form" id="chat-form">
-          <input type="text" id="chat-input" maxlength="300" data-i18n-placeholder="room.chatPh" placeholder="Mensagem rápida (opcional)">
-          <button type="submit" class="btn-secondary" aria-label="Enviar">➤</button>
-        </form>
-      </div>
-
+      <div id="room-panel-slot"></div>
       <div class="controls">
         <button type="button" class="ctrl" id="mute-btn">
-          <span class="ctrl-icon">🎙️</span>
+          <svg class="i"><use id="mute-icon" href="#i-mic"/></svg>
           <span class="ctrl-label" data-i18n="room.mute">Mutar</span>
         </button>
         <button type="button" class="ctrl danger" id="leave-btn">
-          <span class="ctrl-icon">📴</span>
+          <svg class="i"><use href="#i-hangup"/></svg>
           <span class="ctrl-label" data-i18n="room.leave">Sair</span>
         </button>
       </div>
     </section>
   </main>
+
+  <!-- PAINEL: chat e pedidos de login (inline na chamada, gaveta no resto) -->
+  <div class="panel-backdrop" id="panel-backdrop" hidden></div>
+  <aside class="panel drawer" id="panel" hidden>
+    <div class="panel-tabs" id="panel-tabs">
+      <button type="button" class="tab active" data-tab="chat"><svg class="i"><use href="#i-chat"/></svg><span data-i18n="panel.chat">Chat</span></button>
+      <button type="button" class="tab" data-tab="logins"><svg class="i"><use href="#i-bell"/></svg><span data-i18n="panel.logins">Logins</span><span class="badge" id="logins-badge" hidden>0</span></button>
+      <button type="button" class="icon-btn small panel-close" id="panel-close" data-i18n-title="panel.close" title="Fechar"><svg class="i"><use href="#i-x"/></svg></button>
+    </div>
+    <div class="panel-body" id="tab-chat">
+      <div class="chat-log" id="chat-log"></div>
+      <p class="chat-empty" id="chat-empty" data-i18n="chat.empty">O chat abre quando você estiver numa chamada.</p>
+      <form class="chat-form" id="chat-form">
+        <input type="text" id="chat-input" maxlength="300" data-i18n-placeholder="room.chatPh" placeholder="Mensagem rápida">
+        <button type="submit" class="icon-btn" aria-label="Enviar"><svg class="i"><use href="#i-send"/></svg></button>
+      </form>
+    </div>
+    <div class="panel-body" id="tab-logins" hidden>
+      <h3 data-i18n="req.title">Pedidos de login</h3>
+      <p class="hint" id="logins-empty" data-i18n="req.empty">Nenhum pedido. Se alguém tentar entrar com o seu nome em outro aparelho, aparece aqui.</p>
+      <ul class="logins" id="logins-list"></ul>
+    </div>
+  </aside>
 
   <div class="toast" id="toast" hidden></div>
   <div class="audio-sink" id="audio-sink" aria-hidden="true"></div>

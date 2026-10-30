@@ -61,9 +61,9 @@ em branco, espere um pouco e recarregue.
 
 ## Como funciona
 
-1. Na primeira vez, crie sua conta: só um nome e uma senha. O nome é único
-   e é como as pessoas vão te ver. Guarde a senha, não dá para recuperar.
-   Nas próximas vezes o app já abre logado.
+1. Na primeira vez, digite só o seu nome. Sem senha, sem e-mail. O nome é
+   único e é como as pessoas vão te ver. Nas próximas vezes o app já abre
+   no seu nome.
 2. Na tela inicial, clique no jogo.
 3. Escolha a quantidade de pessoas, o idioma e, se o jogo não tiver
    crossplay, a sua plataforma. Em jogo com crossplay não precisa escolher:
@@ -86,6 +86,16 @@ quantidade de pessoas e uma plataforma compatível.
 | Terraria | 5 | PC, PlayStation, Xbox, Switch, Celular | Não: cada plataforma só encontra a própria |
 
 Idiomas: Português (BR) e English (US). O idioma escolhido também traduz o site.
+
+### Sua conta fica em um aparelho por vez
+
+A conta é o seu nome, guardada no aparelho em que você entrou. Se alguém
+digitar o seu nome em outro aparelho, esse aparelho fica esperando e você
+recebe um aviso no app: **Permitir** ou **Recusar**. Se não viu o aviso, o
+pedido fica na aba **Logins**, dentro do botão de chat no topo. Ao permitir,
+a conta passa para o outro aparelho e sai deste. Se você tocar em **Sair**,
+o nome fica livre e entra direto no próximo aparelho. Uma conta parada há
+mais de 7 dias também entra direto, para ninguém ficar trancado para fora.
 
 ## Rodar no seu próprio computador (opcional)
 
@@ -111,8 +121,34 @@ microfone, porque o navegador do celular só libera em endereço `https://`.
 
 O áudio vai direto entre os navegadores. O servidor só faz o encontro das
 pessoas; ele não grava nem ouve a chamada. Da conta, o servidor guarda só o
-nome e a senha criptografada (não dá para ler a senha de volta). Nada da
-chamada fica salvo: ao fechar o app a pessoa sai da sala.
+nome e em qual aparelho ela está. Nada da chamada fica salvo: ao fechar o
+app a pessoa sai da sala.
+
+## Atualizações
+
+O site atualiza sozinho: toda mudança aprovada aqui no GitHub vai para o ar
+em poucos minutos. Quem estiver com o app aberto (ou instalado na tela
+inicial) vê uma faixa amarela "Tem uma versão nova" com o botão
+**Atualizar agora**. Quem roda uma cópia própria no computador vê a faixa
+"Esta cópia do app está desatualizada" com o botão para baixar a versão
+nova aqui no GitHub.
+
+## Capas dos jogos
+
+As capas que vêm no site são ilustrações próprias (as oficiais têm direitos
+autorais). Para trocar por outra imagem não precisa mexer em código: é só
+colocar o arquivo na pasta `public/covers/` com o nome do jogo e a extensão
+`.jpg`, `.jpeg`, `.png` ou `.webp`. O app usa a imagem no lugar da
+ilustração. Formato bom: vertical, 600 x 800 pixels ou maior.
+
+| Jogo | Nome do arquivo |
+|---|---|
+| ARK: Survival Evolved | `ark-survival-evolved.jpg` |
+| ARK: Survival Ascended | `ark-survival-ascended.jpg` |
+| Rocket League | `rocket-league.jpg` |
+| Fortnite | `fortnite.jpg` |
+| Roblox | `roblox.jpg` |
+| Terraria | `terraria.jpg` |
 
 ---
 
@@ -177,9 +213,9 @@ blank screen, wait a bit and reload.
 
 ## How it works
 
-1. The first time, create your account: just a name and a password. The
-   name is unique and it is how people will see you. Keep your password, it
-   cannot be recovered. Next time the app opens already signed in.
+1. The first time, just type your name. No password, no email. The name
+   is unique and it is how people will see you. Next time the app opens
+   already in your name.
 2. On the home screen, click the game.
 3. Pick how many people, the language and, if the game has no crossplay,
    your platform. Crossplay games skip that step: you match people on any
@@ -203,6 +239,17 @@ call size and a compatible platform.
 
 Languages: Português (BR) and English (US). The language you pick also
 translates the site.
+
+### Your account lives on one device at a time
+
+The account is your name, kept on the device you entered from. If someone
+types your name on another device, that device waits and you get a notice
+in the app: **Allow** or **Deny**. If you missed the notice, the request
+stays in the **Logins** tab, inside the chat button at the top. When you
+allow it, the account moves to the other device and leaves this one. If
+you tap **Log out**, the name is free and enters directly on the next
+device. An account unused for more than 7 days also enters directly, so
+nobody gets locked out.
 
 ## Run on your own computer (optional)
 
@@ -228,8 +275,34 @@ microphone, because phone browsers only allow it on an `https://` address.
 
 Audio goes directly between browsers. The server only matches people; it
 does not record or listen to the call. For your account it stores only the
-name and an encrypted password (it cannot be read back). Nothing from the
-call is stored: closing the app leaves the room.
+name and which device holds it. Nothing from the call is stored: closing
+the app leaves the room.
+
+## Updates
+
+The site updates by itself: every change approved here on GitHub goes live
+in a few minutes. Anyone with the app open (or installed on the home
+screen) sees a yellow bar "There is a new version" with an **Update now**
+button. Anyone running their own copy on a computer sees "This copy of the
+app is outdated" with a button to download the new version here on GitHub.
+
+## Game covers
+
+The covers that ship with the site are original illustrations (official
+ones are copyrighted). To swap in another image you do not need to touch
+code: just put the file in the `public/covers/` folder named after the game
+with a `.jpg`, `.jpeg`, `.png` or `.webp` extension. The app uses the image
+instead of the illustration. Good format: portrait, 600 x 800 pixels or
+larger.
+
+| Game | File name |
+|---|---|
+| ARK: Survival Evolved | `ark-survival-evolved.jpg` |
+| ARK: Survival Ascended | `ark-survival-ascended.jpg` |
+| Rocket League | `rocket-league.jpg` |
+| Fortnite | `fortnite.jpg` |
+| Roblox | `roblox.jpg` |
+| Terraria | `terraria.jpg` |
 
 ## License
 

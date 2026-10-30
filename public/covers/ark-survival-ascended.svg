@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 800" width="600" height="800">
+<defs><filter id="grain"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/><feComponentTransfer><feFuncA type="table" tableValues="0 0 0.18"/></feComponentTransfer></filter><linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#05242c"/><stop offset="0.55" stop-color="#1e8a8a"/><stop offset="1" stop-color="#041417"/></linearGradient><linearGradient id="shade" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#02100f" stop-opacity="0"/><stop offset="1" stop-color="#02100f" stop-opacity="0.85"/></linearGradient></defs>
+<rect width="600" height="800" fill="url(#sky)"/>
+     <circle cx="300" cy="300" r="170" fill="none" stroke="#9ff3e6" stroke-width="3" opacity="0.5"/>
+     <circle cx="300" cy="300" r="120" fill="#c7fff5" opacity="0.15"/>
+     <path d="M0 560 L110 380 L200 520 L300 330 L400 540 L480 420 L600 580 V800 H0Z" fill="#073a3b"/>
+     <path d="M0 640 L140 520 L260 640 L380 500 L600 660 V800 H0Z" fill="#031f20"/>
+     <path d="M250 470 c40-80 110-90 150-40 c10 20 10 40 0 60 l-20 -10 c5 -20 0 -40 -20 -50 c-40 -20 -80 0 -100 50 c-10 20 -10 40 0 60 l-30 10 c-10 -30 -5 -60 20 -80 z" fill="#021214"/>
+<rect width="600" height="800" filter="url(#grain)" opacity="0.6"/>
+<rect x="0" y="540" width="600" height="260" fill="url(#shade)"/>
+<text x="40" y="680" font-family="Impact, 'Arial Black', 'Helvetica Neue', Arial, sans-serif" font-size="58" font-weight="900" fill="#fff" letter-spacing="-1">ARK</text>
+<text x="40" y="740" font-family="Impact, 'Arial Black', 'Helvetica Neue', Arial, sans-serif" font-size="41" font-weight="900" fill="#fff" letter-spacing="-1">SURVIVAL ASCENDED</text>
+<text x="40" y="780" font-family="Arial, Helvetica, sans-serif" font-size="20" fill="#ffffffaa" letter-spacing="4">SOBREVIVÊNCIA · NOVA GERAÇÃO</text>
+</svg>

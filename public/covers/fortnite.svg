@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 800" width="600" height="800">
+<defs><filter id="grain"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/><feComponentTransfer><feFuncA type="table" tableValues="0 0 0.18"/></feComponentTransfer></filter><linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6a1fd6"/><stop offset="0.6" stop-color="#ff4fa3"/><stop offset="1" stop-color="#2a0b4f"/></linearGradient><linearGradient id="shade" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1a0636" stop-opacity="0"/><stop offset="1" stop-color="#1a0636" stop-opacity="0.85"/></linearGradient></defs>
+<rect width="600" height="800" fill="url(#bg)"/>
+     <circle cx="300" cy="360" r="230" fill="none" stroke="#c9b3ff" stroke-width="14" opacity="0.6"/>
+     <circle cx="300" cy="360" r="190" fill="#b57bff" opacity="0.18"/>
+     <path d="M0 620 L90 560 L160 600 L260 520 L340 580 L430 540 L520 590 L600 550 V800 H0Z" fill="#2b0d55"/>
+     <rect x="200" y="430" width="200" height="70" rx="14" fill="#1b0836"/><path d="M200 460 L400 460" stroke="#ffe066" stroke-width="6"/><circle cx="240" cy="505" r="14" fill="#1b0836"/><circle cx="360" cy="505" r="14" fill="#1b0836"/>
+     <path d="M300 300 l0 -120 M300 180 q-60 20 -60 90 q60 -30 60 -90 q60 20 60 90 q-60 -30 -60 -90" stroke="#ffe066" stroke-width="5" fill="none" stroke-linecap="round"/>
+<rect width="600" height="800" filter="url(#grain)" opacity="0.6"/>
+<rect x="0" y="540" width="600" height="260" fill="url(#shade)"/>
+<text x="40" y="680" font-family="Impact, 'Arial Black', 'Helvetica Neue', Arial, sans-serif" font-size="58" font-weight="900" fill="#fff" letter-spacing="-1">FORTNITE</text>
+
+<text x="40" y="720" font-family="Arial, Helvetica, sans-serif" font-size="20" fill="#ffffffaa" letter-spacing="4">BATTLE ROYALE</text>
+</svg>

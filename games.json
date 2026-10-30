@@ -53,7 +53,8 @@
         "switch",
         "mobile"
       ],
-      "crossplay": false
+      "crossplay": false,
+      "cover": "covers/ark-survival-evolved.svg"
     },
     {
       "id": "ark-survival-ascended",
@@ -67,7 +68,8 @@
         "playstation",
         "xbox"
       ],
-      "crossplay": true
+      "crossplay": true,
+      "cover": "covers/ark-survival-ascended.svg"
     },
     {
       "id": "rocket-league",
@@ -82,7 +84,8 @@
         "xbox",
         "switch"
       ],
-      "crossplay": true
+      "crossplay": true,
+      "cover": "covers/rocket-league.svg"
     },
     {
       "id": "fortnite",
@@ -98,7 +101,8 @@
         "switch",
         "mobile"
       ],
-      "crossplay": true
+      "crossplay": true,
+      "cover": "covers/fortnite.svg"
     },
     {
       "id": "roblox",
@@ -113,7 +117,8 @@
         "xbox",
         "mobile"
       ],
-      "crossplay": true
+      "crossplay": true,
+      "cover": "covers/roblox.svg"
     },
     {
       "id": "terraria",
@@ -129,7 +134,8 @@
         "switch",
         "mobile"
       ],
-      "crossplay": false
+      "crossplay": false,
+      "cover": "covers/terraria.svg"
     }
   ]
 }
