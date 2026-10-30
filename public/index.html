@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0f1117">
+  <title>Game Together</title>
+  <meta name="description" content="Encontre pessoas para jogar junto. Chamada de voz por jogo, idioma, plataforma e quantidade de jogadores.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%237c4dff'/%3E%3Ctext x='32' y='43' font-size='34' text-anchor='middle'%3E%F0%9F%8E%AE%3C/text%3E%3C/svg%3E">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#" id="brand-link">
+      <span class="brand-icon">🎮</span>
+      <span class="brand-name">Game Together</span>
+    </a>
+    <div class="topbar-right">
+      <span class="online" id="online-pill" title="">
+        <span class="dot"></span>
+        <span id="online-count">0</span> <span data-i18n="online">online</span>
+      </span>
+      <div class="lang-switch" id="ui-lang-switch" role="group" aria-label="Idioma">
+        <button type="button" data-lang="pt-BR" class="active">🇧🇷 PT</button>
+        <button type="button" data-lang="en-US">🇺🇸 EN</button>
+      </div>
+    </div>
+  </header>
+
+  <main id="app">
+
+    <!-- TELA INICIAL: escolha do jogo -->
+    <section class="screen active" id="screen-home">
+      <div class="hero">
+        <h1 data-i18n="hero.title">Encontre gente para jogar junto</h1>
+        <p data-i18n="hero.subtitle">Escolha o jogo, quantas pessoas quer na chamada e seu idioma. A gente conecta você por voz com quem escolheu o mesmo.</p>
+      </div>
+      <h2 class="section-title" data-i18n="home.choose">Escolha o jogo</h2>
+      <div class="game-grid" id="game-grid"></div>
+      <p class="hint" data-i18n="home.hint">Sem câmera, só voz. Funciona no PC e no celular, direto no navegador.</p>
+    </section>
+
+    <!-- TELA DE CONFIGURAÇÃO: jogadores, idioma, plataforma -->
+    <section class="screen" id="screen-setup">
+      <button type="button" class="back" id="setup-back">← <span data-i18n="back">Voltar</span></button>
+      <div class="game-banner" id="setup-banner">
+        <span class="game-emoji" id="setup-emoji"></span>
+        <div>
+          <h2 id="setup-title"></h2>
+          <p class="muted" id="setup-sub"></p>
+        </div>
+      </div>
+
+      <form id="setup-form" autocomplete="off">
+        <label class="field">
+          <span data-i18n="setup.nickname">Seu apelido</span>
+          <input type="text" id="nickname" maxlength="24" data-i18n-placeholder="setup.nicknamePh" placeholder="Como quer ser chamado?" required>
+        </label>
+
+        <fieldset class="field">
+          <legend data-i18n="setup.players">Quantidade de pessoas na chamada</legend>
+          <div class="choice-grid two" id="mode-choice">
+            <label class="choice">
+              <input type="radio" name="mode" value="duo" checked>
+              <span class="choice-box">
+                <strong data-i18n="setup.duo">2 pessoas</strong>
+                <small data-i18n="setup.duoDesc">Você e mais 1</small>
+              </span>
+            </label>
+            <label class="choice">
+              <input type="radio" name="mode" value="group">
+              <span class="choice-box">
+                <strong data-i18n="setup.group">3 ou mais</strong>
+                <small id="group-desc"></small>
+              </span>
+            </label>
+          </div>
+        </fieldset>
+
+        <fieldset class="field">
+          <legend data-i18n="setup.language">Idioma da chamada</legend>
+          <div class="choice-grid two" id="lang-choice"></div>
+          <p class="hint" data-i18n="setup.languageHint">Você só vai cair com quem escolheu o mesmo idioma.</p>
+        </fieldset>
+
+        <fieldset class="field">
+          <legend data-i18n="setup.platform">Sua plataforma</legend>
+          <div class="choice-grid" id="platform-choice"></div>
+          <p class="hint" id="platform-hint"></p>
+        </fieldset>
+
+        <p class="error" id="setup-error" hidden></p>
+
+        <button type="submit" class="btn-primary btn-big" id="matchmake-btn">
+          <span class="btn-icon">🔎</span> Matchmake
+        </button>
+      </form>
+    </section>
+
+    <!-- TELA DE BUSCA (modo 2 pessoas) -->
+    <section class="screen" id="screen-searching">
+      <div class="searching">
+        <div class="radar"><span></span><span></span><span></span></div>
+        <h2 data-i18n="search.title">Procurando alguém...</h2>
+        <p class="muted" id="search-summary"></p>
+        <p class="muted small" data-i18n="search.tip">Deixe esta aba aberta. Assim que alguém com a mesma escolha aparecer, a chamada começa.</p>
+        <button type="button" class="btn-secondary" id="cancel-btn" data-i18n="search.cancel">Cancelar</button>
+      </div>
+    </section>
+
+    <!-- TELA DA CHAMADA -->
+    <section class="screen" id="screen-room">
+      <div class="room-head">
+        <div class="game-banner small">
+          <span class="game-emoji" id="room-emoji"></span>
+          <div>
+            <h2 id="room-title"></h2>
+            <p class="muted" id="room-sub"></p>
+          </div>
+        </div>
+        <div class="room-count"><span id="room-count">1</span>/<span id="room-max">2</span></div>
+      </div>
+
+      <p class="status" id="room-status"></p>
+
+      <ul class="members" id="members"></ul>
+
+      <div class="chat">
+        <div class="chat-log" id="chat-log"></div>
+        <form class="chat-form" id="chat-form">
+          <input type="text" id="chat-input" maxlength="300" data-i18n-placeholder="room.chatPh" placeholder="Mensagem rápida (opcional)">
+          <button type="submit" class="btn-secondary" aria-label="Enviar">➤</button>
+        </form>
+      </div>
+
+      <div class="controls">
+        <button type="button" class="ctrl" id="mute-btn">
+          <span class="ctrl-icon">🎙️</span>
+          <span class="ctrl-label" data-i18n="room.mute">Mutar</span>
+        </button>
+        <button type="button" class="ctrl danger" id="leave-btn">
+          <span class="ctrl-icon">📴</span>
+          <span class="ctrl-label" data-i18n="room.leave">Sair</span>
+        </button>
+      </div>
+    </section>
+  </main>
+
+  <div class="toast" id="toast" hidden></div>
+  <div class="audio-sink" id="audio-sink" aria-hidden="true"></div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="js/i18n.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
