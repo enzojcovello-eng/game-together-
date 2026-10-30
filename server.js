@@ -237,6 +237,11 @@ io.on('connection', (socket) => {
     const k = me(); const target = keyOf(to);
     if (!k) return ack && ack({ error: 'not_logged_in' });
     if (!auth.exists(target)) return ack && ack({ error: 'unknown_user' });
+    // só quem está na mesma chamada (ou já pediu sua amizade) pode ser adicionado
+    const room = mm.roomOf(socket.id);
+    const sameCall = room && [...room.members.values()].some((m) => keyOf(m.name) === target);
+    const askedMe = social.requestsFor(k).some((r) => r.from === target);
+    if (!sameCall && !askedMe) return ack && ack({ error: 'not_in_call' });
     const r = social.request(k, target);
     if (r.error) return ack && ack(r);
     if (r.status === 'pending') io.to(acctRoom(target)).emit('friend-request', { from: k, name: myName() });

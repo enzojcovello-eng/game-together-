@@ -106,6 +106,32 @@ botão de chat no topo. Ao permitir, a conta passa para o outro aparelho.
 **Sair** apaga tudo: a conta, os amigos e as conversas. O nickname fica
 livre para qualquer pessoa usar.
 
+### Por que é seguro mesmo sem senha
+
+- **A conta é uma chave, não uma senha.** Quando você entra, o servidor gera
+  um código longo e aleatório, assinado por ele, e guarda só no seu aparelho.
+  É esse código que prova que a conta é sua. Ninguém consegue adivinhar nem
+  fabricar um igual: sem a assinatura do servidor, o código não vale.
+- **Só um aparelho por vez.** Se alguém digitar o seu nickname em outro
+  lugar, não entra: fica esperando e você recebe o pedido para permitir ou
+  recusar. Quem tenta não vê nada da sua conta enquanto espera.
+- **Não tem o que roubar.** O site não pede e-mail, telefone, nome real nem
+  senha. Guarda o nickname (que todo mundo vê na chamada), a lista de amigos
+  e as mensagens entre amigos. O áudio não é gravado. Se alguém invadisse o
+  servidor, não acharia senha nenhuma para reaproveitar em outros sites, e é
+  exatamente isso que senhas vazadas costumam causar.
+- **Senha aqui seria o lado fraco.** A maioria das pessoas repete a mesma
+  senha em vários sites. Pedir uma senha para um site de chamada de voz só
+  criaria um lugar a mais onde ela pode vazar, sem proteger nada a mais.
+- **O limite é o seu aparelho.** Quem pega o seu celular desbloqueado usa a
+  sua conta, como em qualquer app sem bloqueio próprio. E se o aparelho for
+  perdido, a conta fica nele: o novo aparelho pede permissão e o antigo não
+  está lá para responder. Nesse caso, crie outro nickname. Como a conta não
+  tem nada sensível, o prejuízo é só o nome e a lista de amigos.
+- **Contra abuso.** O servidor limita quantos pedidos de login um mesmo
+  endereço pode fazer, limita o tamanho das mensagens e só aceita pedidos de
+  amizade de quem está na mesma chamada ou já é amigo.
+
 ### Amigos
 
 Numa chamada, toque em **+ amigo** ao lado de alguém. A pessoa recebe o
@@ -282,6 +308,34 @@ button at the top. When you allow it, the account moves to the other device.
 
 **Log out** deletes everything: the account, the friends and the
 conversations. The nickname becomes free for anyone to use.
+
+### Why it is safe even without a password
+
+- **The account is a key, not a password.** When you enter, the server
+  generates a long random code, signed by it, and stores it only on your
+  device. That code is what proves the account is yours. Nobody can guess or
+  forge one: without the server's signature, the code is worthless.
+- **One device at a time.** If someone types your nickname somewhere else,
+  they do not get in: they wait, and you get the request to allow or deny.
+  While waiting they see nothing of your account.
+- **There is nothing to steal.** The site does not ask for email, phone,
+  real name or password. It stores the nickname (which everyone sees on the
+  call), the friends list and the messages between friends. Audio is never
+  recorded. If someone broke into the server, they would find no password
+  to reuse on other sites, which is exactly the damage leaked passwords
+  usually cause.
+- **A password here would be the weak spot.** Most people reuse the same
+  password across sites. Asking for one on a voice call site would only add
+  one more place for it to leak, without protecting anything extra.
+- **The limit is your device.** Whoever holds your unlocked phone can use
+  your account, as with any app without its own lock. And if the device is
+  lost, the account stays on it: a new device asks for permission and the
+  old one is not there to answer. In that case, create another nickname.
+  Since the account holds nothing sensitive, the loss is just the name and
+  the friends list.
+- **Against abuse.** The server limits how many login requests one address
+  can make, caps message size, and only takes friend requests from people on
+  the same call or already friends.
 
 ### Friends
 
