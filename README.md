@@ -1,14 +1,11 @@
 # Game Together 🎮
 
-Site de chamadas de voz (sem câmera) para encontrar gente para jogar junto.
-Você escolhe o jogo, a quantidade de pessoas na chamada, o idioma e a sua
+Chamada de voz (sem câmera) para encontrar gente para jogar junto.
+Você escolhe o jogo, quantas pessoas quer na chamada, o idioma e a sua
 plataforma, clica em **Matchmake** e cai numa chamada com quem escolheu a
 mesma coisa. Funciona no PC e no celular, direto no navegador.
 
-*English: voice-only call site to find people to play with. Pick the game,
-how many people you want on the call, your language and platform, hit
-**Matchmake** and you land on a call with people who picked the same.
-Works on PC and phone, in the browser. Setup steps are the same as below.*
+🇺🇸 [English version below](#game-together-english)
 
 ## Como funciona
 
@@ -19,7 +16,8 @@ Works on PC and phone, in the browser. Setup steps are the same as below.*
    - **3 ou mais**: você entra numa sala aberta (ou cria uma) e as pessoas vão entrando até o limite do jogo.
 4. Na chamada: mute, sair, lista de quem está falando e um chat rápido de texto.
 
-O matchmaking só junta pessoas com o mesmo **jogo + idioma + grupo de plataforma + modo**.
+Você só cai com quem escolheu o mesmo jogo, o mesmo idioma, a mesma
+quantidade de pessoas e uma plataforma compatível.
 
 | Jogo | Limite na chamada | Plataformas | Crossplay |
 |---|---|---|---|
@@ -29,102 +27,98 @@ O matchmaking só junta pessoas com o mesmo **jogo + idioma + grupo de plataform
 | Fortnite | 4 | PC, PlayStation, Xbox, Switch, Celular | Sim |
 | Roblox | 5 | PC, PlayStation, Xbox, Celular | Sim |
 
-Idiomas: Português (BR) e English (US). O idioma escolhido também traduz a interface.
+Idiomas: Português (BR) e English (US). O idioma escolhido também traduz o site.
 
-## Baixar e rodar
+## Baixar e rodar no seu computador
 
 Precisa do [Node.js](https://nodejs.org) 18 ou mais novo.
 
+1. Clique no botão verde **Code** aqui no GitHub e depois em **Download ZIP**
+   (ou rode `git clone https://github.com/enzojcovello-eng/game-together-.git`).
+2. Descompacte e abra a pasta no terminal.
+3. Rode:
+
 ```bash
-# 1. baixe o projeto (ou use o botão "Code > Download ZIP" no GitHub e descompacte)
-git clone https://github.com/enzojcovello-eng/game-together-.git
-cd game-together-
-
-# 2. instale as dependências
 npm install
-
-# 3. suba o servidor
 npm start
 ```
 
-Abra `http://localhost:3000` no navegador. Para testar o matchmaking sozinho,
-abra duas abas (ou uma aba normal e uma anônima) e faça a mesma escolha nas duas.
+4. Abra `http://localhost:3000` no navegador.
 
-### Celular na mesma rede
+Para testar sozinho, abra duas abas (ou uma normal e uma anônima) e faça a
+mesma escolha nas duas.
 
-O navegador do celular só libera o microfone em **HTTPS** ou em `localhost`.
-Se abrir pelo IP do PC (`http://192.168.x.x:3000`) o microfone não funciona.
-Opções:
-
-- **Túnel HTTPS** (mais fácil): rode `npx localtunnel --port 3000` ou use o
-  [ngrok](https://ngrok.com) (`ngrok http 3000`) e abra o endereço `https://...`
-  que ele mostrar, no PC e no celular.
-- **Certificado próprio**: gere um certificado (por exemplo com
-  [mkcert](https://github.com/FiloSottile/mkcert)) e suba com
-  `SSL_KEY=caminho/chave.pem SSL_CERT=caminho/cert.pem npm start`.
-
-### Colocar na internet
-
-O site precisa de um servidor Node rodando (o GitHub Pages sozinho não serve,
-porque ele só hospeda arquivos estáticos). Qualquer host de Node funciona, por
-exemplo [Render](https://render.com), [Railway](https://railway.app),
-[Fly.io](https://fly.io) ou [Glitch](https://glitch.com):
-
-- comando de build: `npm install`
-- comando de start: `npm start` (já tem `Procfile`)
-- a porta vem da variável `PORT`, que esses serviços definem sozinhos
-- eles já entregam HTTPS, então o microfone funciona no celular sem configurar nada
-
-Se muita gente estiver atrás de redes restritas (CGNAT, firewall de empresa)
-pode ser preciso um servidor TURN. Troque a lista `ICE_SERVERS` em
-`public/js/app.js` pelo seu (por exemplo um servidor coturn, ou um serviço
-como Metered ou Twilio).
-
-## Adicionar jogos
-
-Edite `games.json`. Cada jogo tem:
-
-```json
-{
-  "id": "minecraft",
-  "name": "Minecraft",
-  "short": "Minecraft",
-  "emoji": "⛏️",
-  "color": "#558b2f",
-  "maxPlayers": 5,
-  "platforms": ["pc", "playstation", "xbox", "switch", "mobile"],
-  "crossplayGroups": [["playstation", "xbox", "switch", "mobile"]]
-}
-```
-
-- `crossplay: true` junta todas as plataformas da lista.
-- `crossplay: false` isola cada plataforma (como no ARK: Survival Evolved).
-- `crossplayGroups` cria grupos parciais: no exemplo acima, console e celular
-  (Bedrock) jogam juntos e o PC (Java) fica sozinho. Plataformas fora de todos
-  os grupos ficam isoladas.
-
-Plataformas e idiomas também ficam em `games.json`. Os textos da interface
-ficam em `public/js/i18n.js`.
-
-## Estrutura
-
-```
-server.js            servidor Express + Socket.IO (matchmaking e sinalização WebRTC)
-lib/matchmaker.js    regras de fila, salas e limites
-games.json           jogos, limites, plataformas e idiomas
-public/index.html    interface (tela inicial, configuração, busca e chamada)
-public/css/style.css visual responsivo (PC e celular)
-public/js/app.js     lógica do cliente e chamada de voz (WebRTC, só áudio)
-public/js/i18n.js    textos em pt-BR e en-US
-test/                testes do matchmaking (npm test)
-```
+Para usar no celular, o site precisa estar em um endereço `https://`
+(o navegador do celular só libera o microfone assim). Pelo IP do computador
+na rede de casa o microfone não funciona.
 
 ## Privacidade
 
-O áudio vai direto entre os navegadores (WebRTC peer-to-peer). O servidor só
-faz o matchmaking e troca as mensagens de conexão; ele não grava nem ouve a
-chamada. Nada fica salvo: ao fechar a aba a pessoa sai da sala.
+O áudio vai direto entre os navegadores. O servidor só faz o encontro das
+pessoas; ele não grava nem ouve a chamada. Nada fica salvo: ao fechar a aba
+a pessoa sai da sala.
 
-## Licença
+---
+
+# Game Together (English)
+
+Voice-only call (no camera) to find people to play with. Pick the game,
+how many people you want on the call, your language and your platform,
+hit **Matchmake** and you land on a call with people who picked the same.
+Works on PC and phone, right in the browser.
+
+## How it works
+
+1. On the home screen, click the game.
+2. Pick a nickname, how many people, the language and your platform.
+3. Click **Matchmake**.
+   - **2 people**: you and 1 more. It keeps searching until someone with the same choice shows up.
+   - **3 or more**: you join an open room (or create one) and people keep joining until the game's limit.
+4. On the call: mute, leave, a list of who is speaking and a quick text chat.
+
+You only match people who picked the same game, the same language, the same
+call size and a compatible platform.
+
+| Game | Call limit | Platforms | Crossplay |
+|---|---|---|---|
+| ARK: Survival Evolved | 5 | PC, PlayStation, Xbox, Switch, Mobile | No: each platform only matches itself |
+| ARK: Survival Ascended | 5 | PC, PlayStation, Xbox | Yes |
+| Rocket League | 4 | PC, PlayStation, Xbox, Switch | Yes |
+| Fortnite | 4 | PC, PlayStation, Xbox, Switch, Mobile | Yes |
+| Roblox | 5 | PC, PlayStation, Xbox, Mobile | Yes |
+
+Languages: Português (BR) and English (US). The language you pick also
+translates the site.
+
+## Download and run on your computer
+
+You need [Node.js](https://nodejs.org) 18 or newer.
+
+1. Click the green **Code** button here on GitHub, then **Download ZIP**
+   (or run `git clone https://github.com/enzojcovello-eng/game-together-.git`).
+2. Unzip it and open the folder in a terminal.
+3. Run:
+
+```bash
+npm install
+npm start
+```
+
+4. Open `http://localhost:3000` in your browser.
+
+To test alone, open two tabs (or a normal one and an incognito one) and make
+the same choice in both.
+
+To use it on a phone, the site must be on an `https://` address (phone
+browsers only allow the microphone that way). Opening it through your
+computer's IP on the home network will not enable the microphone.
+
+## Privacy
+
+Audio goes directly between browsers. The server only matches people; it
+does not record or listen to the call. Nothing is stored: closing the tab
+leaves the room.
+
+## License
 
 MIT
