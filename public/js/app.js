@@ -18,6 +18,9 @@
     pendingId: null,
     pendingName: '',
     requests: [],
+    social: { me: null, friends: [], requests: [], dms: {} },
+    dmWith: null,
+    unread: {},
     panelTab: 'chat',
     panelOpen: false,
     game: null,
@@ -176,13 +179,36 @@
   };
 
   // ---------- conta ----------
+  function sendHello() {
+    if (!state.token) return;
+    let snapshot = null;
+    try { snapshot = JSON.parse(store.get('gt:social') || 'null'); } catch (_) {}
+    socket.emit('hello', { token: state.token, name: state.name, snapshot });
+  }
   function setUser(name, token) {
     state.name = name || '';
     state.token = token || null;
     store.set('gt:token', token || null);
     store.set('gt:name', token ? name : null);
     renderUser();
-    socket.emit('hello', { token: state.token });
+    sendHello();
+  }
+  // O servidor não reconheceu o token (reinício sem SESSION_SECRET, por exemplo):
+  // tenta entrar de novo com o mesmo nickname sem incomodar a pessoa.
+  let recovering = false;
+  async function recoverSession() {
+    if (recovering || !state.name) return;
+    recovering = true;
+    try {
+      const r = await api('/api/claim', { method: 'POST', body: { name: state.name } });
+      if (r.status === 'pending') { setUser('', null); startPending(r.requestId, r.name); return; }
+      setUser(r.name, r.token);
+      if (!$('#screen-home').classList.contains('active') && !state.room && !state.searching) showScreen('screen-home');
+      toast(t('auth.welcomeBack', { name: r.name }));
+    } catch (err) {
+      if (err.message !== 'invalid_name' && err.message !== 'too_many_attempts') return; // rede: tenta de novo depois
+      logout({ reason: 'auth.expired' });
+    } finally { recovering = false; }
   }
   function renderUser() {
     $('#user-pill').hidden = !state.token;
@@ -213,13 +239,23 @@
     }
   }
 
+  function confirmLogout() {
+    toast(t('logout.confirm'), 20000, [
+      { label: t('logout.yes'), primary: true, onClick: () => logout() },
+      { label: t('logout.no'), onClick: () => {} },
+    ]);
+  }
   function logout({ silent, reason } = {}) {
     if (state.room) leaveRoom({ silent: true });
     if (state.searching) { state.searching = false; socket.emit('cancel'); }
     if (state.token && !reason) api('/api/logout', { method: 'POST' }).catch(() => {});
     setUser('', null);
+    store.set('gt:social', null);
     state.game = null;
     state.requests = [];
+    state.dmWith = null;
+    state.unread = {};
+    setSocial({ me: null, friends: [], requests: [], dms: {} });
     renderRequests();
     closePanel();
     if (!silent) toast(reason ? t(reason) : t('auth.loggedOut'), reason ? 6000 : 2800);
@@ -287,15 +323,19 @@
     if (!state.token) return;
     try { setRequests((await api('/api/requests')).requests); } catch (_) {}
   }
+  function unreadTotal() { return Object.values(state.unread).reduce((a, b) => a + b, 0); }
+  function renderBadges() {
+    const logins = state.requests.length;
+    const friends = state.social.requests.length + unreadTotal();
+    const set = (id, n) => { const b = $(id); b.hidden = n === 0; b.textContent = n; };
+    set('#logins-badge', logins);
+    set('#friends-badge', friends);
+    set('#panel-badge', logins + friends);
+  }
   function renderRequests() {
-    const n = state.requests.length;
-    for (const id of ['#panel-badge', '#logins-badge']) {
-      const b = $(id);
-      b.hidden = n === 0;
-      b.textContent = n;
-    }
+    renderBadges();
     const list = $('#logins-list');
-    $('#logins-empty').hidden = n > 0;
+    $('#logins-empty').hidden = state.requests.length > 0;
     list.innerHTML = '';
     for (const r of state.requests) {
       const li = document.createElement('li');
@@ -363,7 +403,134 @@
     state.panelTab = tab;
     $$('#panel-tabs .tab').forEach((b) => b.classList.toggle('active', b.dataset.tab === tab));
     $('#tab-chat').hidden = tab !== 'chat';
+    $('#tab-friends').hidden = tab !== 'friends';
     $('#tab-logins').hidden = tab !== 'logins';
+    if (tab === 'friends' && state.dmWith) markRead(state.dmWith);
+  }
+
+  // ---------- amigos ----------
+  const keyOf = (name) => String(name || '').trim().replace(/\s+/g, ' ').toLowerCase();
+  const friendOf = (key) => state.social.friends.find((f) => f.key === key);
+  const friendName = (key) => { const f = friendOf(key); return f ? f.name : key; };
+  function setSocial(st) {
+    state.social = { me: st.me || null, friends: st.friends || [], requests: st.requests || [], dms: st.dms || {} };
+    for (const k of Object.keys(state.unread)) if (!friendOf(k)) delete state.unread[k];
+    if (state.token) store.set('gt:social', JSON.stringify({ friends: state.social.friends.map((f) => f.key), dms: state.social.dms }));
+    if (state.dmWith && !friendOf(state.dmWith)) closeDm();
+    renderFriends();
+    renderBadges();
+    if (state.room) renderRoom();
+    if (state.dmWith) renderDm();
+  }
+  function renderFriends() {
+    const reqs = state.social.requests;
+    $('#friend-requests-wrap').hidden = reqs.length === 0;
+    const rl = $('#friend-requests');
+    rl.innerHTML = '';
+    for (const r of reqs) {
+      const li = document.createElement('li');
+      li.className = 'friend is-online';
+      li.innerHTML = `<span class="avatar">${escapeHtml(r.name.slice(0, 1).toUpperCase())}</span>
+        <span class="info"><span class="name">${escapeHtml(r.name)}</span><span class="sub">${t('friends.pendingFrom')}</span></span>
+        <span class="acts">
+          <button type="button" class="icon-btn primary" data-act="accept" title="${t('friends.accept')}">${icon('i-check')}</button>
+          <button type="button" class="icon-btn" data-act="decline" title="${t('friends.decline')}">${icon('i-x')}</button>
+        </span>`;
+      li.querySelector('[data-act="accept"]').addEventListener('click', () => socket.emit('friend-accept', { from: r.from }));
+      li.querySelector('[data-act="decline"]').addEventListener('click', () => socket.emit('friend-decline', { from: r.from }));
+      rl.appendChild(li);
+    }
+    const list = $('#friends-list');
+    list.innerHTML = '';
+    $('#friends-empty').hidden = state.social.friends.length > 0;
+    const sorted = [...state.social.friends].sort((a, b) => (b.online - a.online) || a.name.localeCompare(b.name));
+    for (const f of sorted) {
+      const li = document.createElement('li');
+      li.className = 'friend' + (f.online ? ' is-online' : '');
+      const unread = state.unread[f.key] || 0;
+      li.innerHTML = `<span class="avatar">${escapeHtml(f.name.slice(0, 1).toUpperCase())}<span class="st"></span></span>
+        <span class="info"><span class="name">${escapeHtml(f.name)}</span><span class="sub">${f.online ? t('friends.online') : t('friends.offline')}</span></span>
+        ${unread ? `<span class="unread">${unread}</span>` : ''}
+        <span class="acts">
+          <button type="button" class="icon-btn" data-act="dm" title="${t('friends.message')}">${icon('i-chat')}</button>
+          <button type="button" class="icon-btn primary" data-act="call" title="${t('friends.call')}">${icon('i-mic')}</button>
+          <button type="button" class="icon-btn danger" data-act="rm" title="${t('friends.remove')}">${icon('i-trash')}</button>
+        </span>`;
+      li.querySelector('[data-act="dm"]').addEventListener('click', () => openDm(f.key));
+      li.querySelector('[data-act="call"]').addEventListener('click', () => callFriend(f.key));
+      li.querySelector('[data-act="rm"]').addEventListener('click', () => toast(t('friends.removeConfirm', { name: f.name }), 15000, [
+        { label: t('friends.removeYes'), primary: true, onClick: () => socket.emit('unfriend', { name: f.key }) },
+        { label: t('friends.cancel'), onClick: () => {} },
+      ]));
+      list.appendChild(li);
+    }
+  }
+  function addFriend(name) {
+    socket.emit('friend-request', { to: name }, (r) => {
+      if (!r || r.error) return toast(r && r.error ? t(`err.${r.error}`) : t('err.generic'));
+      if (r.status === 'already' || r.status === 'friends') return toast(t('friends.already'));
+      toast(t('friends.sent', { name }));
+    });
+  }
+  function markRead(key) {
+    if (state.unread[key]) { delete state.unread[key]; renderFriends(); renderBadges(); }
+  }
+  function openDm(key) {
+    state.dmWith = key;
+    $('#friends-home').hidden = true;
+    $('#dm-view').hidden = false;
+    $('#dm-name').textContent = friendName(key);
+    markRead(key);
+    renderDm();
+    $('#dm-input').focus();
+  }
+  function closeDm() {
+    state.dmWith = null;
+    $('#friends-home').hidden = false;
+    $('#dm-view').hidden = true;
+  }
+  function renderDm() {
+    const log = $('#dm-log');
+    log.innerHTML = '';
+    const me = state.social.me;
+    for (const m of state.social.dms[state.dmWith] || []) {
+      const div = document.createElement('div');
+      div.className = 'msg' + (m.from === me ? ' mine' : '');
+      const d = new Date(m.at);
+      div.innerHTML = `${escapeHtml(m.text)}<time>${d.toLocaleDateString(state.uiLang, { day: '2-digit', month: '2-digit' })} ${d.toLocaleTimeString(state.uiLang, { hour: '2-digit', minute: '2-digit' })}</time>`;
+      log.appendChild(div);
+    }
+    log.scrollTop = log.scrollHeight;
+  }
+  function onDm({ with: key, msg }) {
+    const list = state.social.dms[key] || (state.social.dms[key] = []);
+    if (!list.some((m) => m.id === msg.id)) list.push(msg);
+    if (state.token) store.set('gt:social', JSON.stringify({ friends: state.social.friends.map((f) => f.key), dms: state.social.dms }));
+    const viewing = state.dmWith === key && !$('#tab-friends').hidden && !$('#panel').hidden;
+    if (msg.from !== state.social.me && !viewing) {
+      state.unread[key] = (state.unread[key] || 0) + 1;
+      toast(`${friendName(key)}: ${msg.text}`, 4000);
+    }
+    renderFriends();
+    renderBadges();
+    if (state.dmWith === key) renderDm();
+  }
+  async function callFriend(key) {
+    const f = friendOf(key);
+    if (!f) return;
+    if (!f.online) return toast(t('friends.offlineCall', { name: f.name }));
+    try { await getMic(); applyMute(); } catch (err) { return toast(t(err && err.message === 'insecure' ? 'setup.insecure' : 'setup.micDenied'), 5000); }
+    socket.emit('invite', { to: key }, (r) => {
+      if (!r || r.error) return toast(r && r.error ? t(`err.${r.error}`) : t('err.generic'));
+      toast(t('invite.sent', { name: f.name }), 5000);
+      closePanel();
+    });
+  }
+  async function acceptInvite(id) {
+    try { await getMic(); applyMute(); } catch (err) { return toast(t(err && err.message === 'insecure' ? 'setup.insecure' : 'setup.micDenied'), 5000); }
+    socket.emit('invite-accept', { id }, (r) => {
+      if (!r || r.error) toast(r && r.error ? t(`err.${r.error}`) : t('err.generic'));
+    });
   }
   function openPanel(tab) {
     state.panelOpen = true;
@@ -540,10 +707,10 @@
   function renderRoom() {
     const room = state.room;
     if (!room) return;
-    const g = gameById(room.gameId) || { name: room.gameName, id: room.gameId };
+    const g = gameById(room.gameId) || { name: room.gameName, id: room.gameId, cover: 'icons/icon-512.png' };
     $('#room-cover').src = coverOf(g);
-    $('#room-title').textContent = g.name;
-    $('#room-sub').textContent = t('room.sub', {
+    $('#room-title').textContent = room.private ? t('room.friends') : g.name;
+    $('#room-sub').textContent = room.private ? t('room.friendsSub') : t('room.sub', {
       lang: langLabel(room.lang),
       mode: room.mode === 'duo' ? t('mode.duo') : t('mode.group', { n: room.max }),
     });
@@ -563,13 +730,16 @@
       const peer = state.peers.get(m.id);
       li.className = 'member' + (isMe ? ' me' : '') + (isMe && state.muted ? ' muted' : '') + (!isMe && !(peer && peer.connected) ? ' connecting' : '');
       li.dataset.id = m.id;
+      const canAdd = !isMe && state.token && !friendOf(keyOf(m.name));
       li.innerHTML = `
         <span class="avatar">${escapeHtml((m.name || '?').slice(0, 1).toUpperCase())}</span>
         <span class="info">
           <span class="name">${escapeHtml(m.name)}${isMe ? ` <span class="muted">(${t('room.you')})</span>` : ''}</span>
-          <span class="plat">${m.platform ? platformHtml(m.platform) : icon('i-globe') + `<span>${t('room.anyPlatform')}</span>`}</span>
+          <span class="plat">${m.platform ? platformHtml(m.platform) : icon('i-globe') + `<span>${room.private ? t('friends.title').toLowerCase() : t('room.anyPlatform')}</span>`}</span>
         </span>
+        ${canAdd ? `<button type="button" class="add">${icon('i-plus')}${t('friends.add')}</button>` : ''}
         <span class="mic">${icon(isMe && state.muted ? 'i-mic-off' : 'i-mic')}</span>`;
+      if (canAdd) li.querySelector('.add').addEventListener('click', () => addFriend(m.name));
       list.appendChild(li);
     }
     $('#mute-btn .ctrl-label').textContent = state.muted ? t('room.unmute') : t('room.mute');
@@ -656,7 +826,7 @@
     state.me = null;
     socket.emit('leave');
     if (!silent) toast(t('toast.leftRoom'));
-    showScreen(state.token ? 'screen-setup' : 'screen-auth');
+    showScreen(!state.token ? 'screen-auth' : state.game ? 'screen-setup' : 'screen-home');
   }
 
   function applyMute() {
@@ -786,6 +956,19 @@
   socket.on('login-request', onLoginRequest);
   socket.on('login-requests', ({ requests }) => setRequests(requests));
   socket.on('login-requests-changed', refreshRequests);
+  socket.on('not-logged-in', () => { if (state.token) recoverSession(); });
+  socket.on('social', setSocial);
+  socket.on('dm', onDm);
+  socket.on('friend-request', ({ from, name }) => toast(t('friends.requestToast', { name }), 20000, [
+    { label: t('friends.accept'), primary: true, onClick: () => socket.emit('friend-accept', { from }) },
+    { label: t('friends.decline'), onClick: () => socket.emit('friend-decline', { from }) },
+  ]));
+  socket.on('friend-accepted', ({ name }) => toast(t('friends.accepted', { name })));
+  socket.on('invite', (inv) => toast(t('invite.toast', { name: inv.name }), 30000, [
+    { label: t('invite.accept'), primary: true, onClick: () => acceptInvite(inv.id) },
+    { label: t('invite.decline'), onClick: () => socket.emit('invite-decline', { id: inv.id }) },
+  ]));
+  socket.on('invite-declined', ({ name }) => toast(t('invite.declined', { name })));
   socket.on('account-transferred', () => { if (state.token) logout({ reason: approving ? 'req.approved' : 'auth.transferred' }); });
   socket.on('claim-update', ({ requestId, status }) => {
     if (requestId !== state.pendingId) return;
@@ -799,7 +982,7 @@
   socket.io.on('reconnect', () => {
     if (state.room) leaveRoom({ silent: true });
     if (state.searching) { state.searching = false; showScreen('screen-setup'); }
-    if (state.token) socket.emit('hello', { token: state.token });
+    sendHello();
     if (state.pendingId) socket.emit('watch-claim', { requestId: state.pendingId });
     toast(t('toast.reconnected'));
   });
@@ -807,7 +990,17 @@
   // ---------- eventos da interface ----------
   $('#auth-form').addEventListener('submit', onAuthSubmit);
   $('#pending-cancel').addEventListener('click', cancelPending);
-  $('#logout-btn').addEventListener('click', () => logout());
+  $('#logout-btn').addEventListener('click', confirmLogout);
+  $('#dm-back').addEventListener('click', closeDm);
+  $('#dm-call').addEventListener('click', () => { if (state.dmWith) callFriend(state.dmWith); });
+  $('#dm-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const input = $('#dm-input');
+    const text = input.value.trim();
+    if (!text || !state.dmWith) return;
+    socket.emit('dm', { to: state.dmWith, text }, (r) => { if (r && r.error) toast(t(`err.${r.error}`)); });
+    input.value = '';
+  });
   $('#setup-form').addEventListener('submit', onMatchmake);
   $('#setup-back').addEventListener('click', () => { state.game = null; showScreen('screen-home'); });
   $('#brand-link').addEventListener('click', (e) => {
@@ -830,7 +1023,7 @@
     input.value = '';
   });
   $('#update-btn').addEventListener('click', reloadApp);
-  $('#panel-btn').addEventListener('click', () => openPanel(state.requests.length ? 'logins' : state.panelTab));
+  $('#panel-btn').addEventListener('click', () => openPanel(state.requests.length ? 'logins' : (state.social.requests.length || unreadTotal()) ? 'friends' : state.panelTab));
   $('#panel-close').addEventListener('click', closePanel);
   $('#panel-backdrop').addEventListener('click', closePanel);
   $$('#panel-tabs .tab').forEach((b) => b.addEventListener('click', () => setPanelTab(b.dataset.tab)));
@@ -864,11 +1057,19 @@
           showScreen('screen-home');
           return;
         } catch (err) {
-          if (err.message === 'not_logged_in') { setUser('', null); }
-          else { renderUser(); showScreen('screen-home'); return; }
+          if (err.message === 'not_logged_in') {
+            // conta não reconhecida (servidor reiniciou sem o segredo?): entra de novo com o mesmo nickname
+            try {
+              const r = await api('/api/claim', { method: 'POST', body: { name } });
+              if (r.status === 'pending') { setUser('', null); startPending(r.requestId, r.name); return; }
+              setUser(r.name, r.token);
+              showScreen('screen-home');
+              return;
+            } catch (_) { setUser('', null); }
+          } else { renderUser(); showScreen('screen-home'); return; }
         }
       }
       showScreen('screen-auth');
     })
-    .catch(() => toast('Config error'));
+    .catch((err) => { console.error('boot', err); toast('Config error'); });
 })();

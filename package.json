@@ -1,11 +1,11 @@
 {
   "name": "game-together",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "description": "Game Together: chamadas de voz para encontrar gente para jogar junto (matchmaking por jogo, idioma, plataforma e quantidade de jogadores).",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "test": "node test/matchmaking.test.js && node test/auth.test.js"
+    "test": "node test/matchmaking.test.js && node test/auth.test.js && node test/social.test.js"
   },
   "engines": {
     "node": ">=18"

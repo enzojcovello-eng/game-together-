@@ -94,15 +94,25 @@ procurando naquele jogo agora. No topo da tela inicial aparece o total.
 
 Idiomas: Português (BR) e English (US). O idioma escolhido também traduz o site.
 
-### Sua conta fica em um aparelho por vez
+### Sua conta fica em um aparelho por vez e não sai sozinha
 
-A conta é o seu nickname, guardada no aparelho em que você entrou. Se alguém
-digitar o seu nickname em outro aparelho, esse aparelho fica esperando e você
-recebe um aviso no app: **Permitir** ou **Recusar**. Se não viu o aviso, o
-pedido fica na aba **Logins**, dentro do botão de chat no topo. Ao permitir,
-a conta passa para o outro aparelho e sai deste. Se você tocar em **Sair**,
-o nickname fica livre e entra direto no próximo aparelho. Uma conta parada há
-mais de 7 dias também entra direto, para ninguém ficar trancado para fora.
+A conta é o seu nickname, guardada no aparelho em que você entrou. Ela não
+sai com atualização do site nem com reinício do servidor: só sai se você
+tocar em **Sair**. Se alguém digitar o seu nickname em outro aparelho, esse
+aparelho fica esperando e você recebe um aviso no app: **Permitir** ou
+**Recusar**. Se não viu o aviso, o pedido fica na aba **Logins**, dentro do
+botão de chat no topo. Ao permitir, a conta passa para o outro aparelho.
+
+**Sair** apaga tudo: a conta, os amigos e as conversas. O nickname fica
+livre para qualquer pessoa usar.
+
+### Amigos
+
+Numa chamada, toque em **+ amigo** ao lado de alguém. A pessoa recebe o
+pedido e aceita ou recusa. Na aba **Amigos** (botão de chat no topo) você
+vê quem está online, manda mensagem privada e toca em **Chamar** para abrir
+uma chamada só de amigos (até 5). Quem é chamado recebe o aviso e entra com
+um toque. Dá para chamar um amigo para a chamada em que você já está.
 
 ## Rodar no seu próprio computador (opcional)
 
@@ -127,9 +137,12 @@ microfone, porque o navegador do celular só libera em endereço `https://`.
 ## Privacidade
 
 O áudio vai direto entre os navegadores. O servidor só faz o encontro das
-pessoas; ele não grava nem ouve a chamada. Da conta, o servidor guarda só o
-nickname e em qual aparelho ela está. Nada da chamada fica salvo: ao fechar o
-app a pessoa sai da sala.
+pessoas; ele não grava nem ouve a chamada. Da conta, o servidor guarda o
+nickname, em qual aparelho ela está, a lista de amigos e as mensagens
+privadas (as últimas 300 por conversa). O seu aparelho guarda uma cópia dos
+seus amigos e conversas; se o servidor reiniciar sem os dados, a cópia volta
+sozinha. Nada da chamada de voz fica salvo: ao fechar o app a pessoa sai da
+sala.
 
 ## Atualizações
 
@@ -258,16 +271,25 @@ searching in that game right now. The home screen shows the total at the top.
 Languages: Português (BR) and English (US). The language you pick also
 translates the site.
 
-### Your account lives on one device at a time
+### Your account lives on one device at a time and never leaves on its own
 
-The account is your nickname, kept on the device you entered from. If
-someone types your nickname on another device, that device waits and you get a notice
-in the app: **Allow** or **Deny**. If you missed the notice, the request
-stays in the **Logins** tab, inside the chat button at the top. When you
-allow it, the account moves to the other device and leaves this one. If
-you tap **Log out**, the nickname is free and enters directly on the next
-device. An account unused for more than 7 days also enters directly, so
-nobody gets locked out.
+The account is your nickname, kept on the device you entered from. It does
+not leave with a site update or a server restart: it only leaves when you
+tap **Log out**. If someone types your nickname on another device, that
+device waits and you get a notice in the app: **Allow** or **Deny**. If you
+missed the notice, the request stays in the **Logins** tab, inside the chat
+button at the top. When you allow it, the account moves to the other device.
+
+**Log out** deletes everything: the account, the friends and the
+conversations. The nickname becomes free for anyone to use.
+
+### Friends
+
+On a call, tap **+ friend** next to someone. They get the request and
+accept or decline. In the **Friends** tab (chat button at the top) you see
+who is online, send private messages and tap **Call** to open a
+friends-only call (up to 5). The friend gets a notice and joins with one
+tap. You can also call a friend into the call you are already on.
 
 ## Run on your own computer (optional)
 
@@ -292,9 +314,12 @@ microphone, because phone browsers only allow it on an `https://` address.
 ## Privacy
 
 Audio goes directly between browsers. The server only matches people; it
-does not record or listen to the call. For your account it stores only the
-nickname and which device holds it. Nothing from the call is stored: closing
-the app leaves the room.
+does not record or listen to the call. For your account it stores the
+nickname, which device holds it, the friends list and the private messages
+(the last 300 per conversation). Your device keeps a copy of your friends
+and conversations; if the server restarts without its data, the copy comes
+back by itself. Nothing from the voice call is stored: closing the app
+leaves the room.
 
 ## Updates
 

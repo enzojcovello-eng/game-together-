@@ -81,6 +81,18 @@ assert.strictEqual(st.games['minecraft'].inCall, 2);
 assert.strictEqual(st.games['minecraft'].searching, 1, 'm2 continua procurando');
 assert.strictEqual(st.games['gta-5'], undefined, 'jogo sem ninguém não aparece');
 
+// sala privada de amigos: anfitrião cria, convidado entra pelo id, lota em 5
+const priv = mm.hostPrivate('p1', 'P1');
+assert.strictEqual(priv.private, true);
+for (const id of ['p2', 'p3', 'p4', 'p5']) assert.strictEqual(mm.joinById(priv.id, id, id).status, 'matched');
+assert.strictEqual(mm.joinById(priv.id, 'p6', 'P6').error, 'room_full');
+assert.strictEqual(mm.joinById('nada', 'p6', 'P6').error, 'unknown_room');
+assert.strictEqual(mm.roomOf('p3').id, priv.id);
+mm.leave('p1');
+assert.strictEqual(mm.roomOf('p3').members.size, 4, 'sala continua sem o anfitrião');
+// convite para uma sala pública (jogo) também funciona, respeitando o limite
+assert.strictEqual(mm.joinById(mm.roomOf('g1').id, 'g9', 'G9').error, 'room_full', 'Fortnite já tem 4');
+
 // validação
 assert.strictEqual(mm.find('z', { name: 'Z', gameId: 'nope', lang: 'pt-BR', platform: 'pc', mode: 'duo' }).error, 'unknown_game');
 assert.strictEqual(mm.find('z', { name: 'Z', gameId: 'terraria', lang: 'pt-BR', mode: 'duo' }).error, 'unknown_platform', 'sem crossplay a plataforma é obrigatória');
@@ -91,5 +103,6 @@ assert.strictEqual(mm.find('z', { name: '', gameId: 'roblox', lang: 'pt-BR', pla
 mm.find('w', { name: 'W', gameId: 'roblox', lang: 'pt-BR', platform: 'pc', mode: 'duo' });
 mm.leave('w');
 assert.strictEqual(mm.stats().searching, 3, 'na fila só sobram "b", "e" e "m2"');
+assert.strictEqual(mm.stats().games.friends.inCall, 4);
 
 console.log('matchmaking: todos os testes passaram');
