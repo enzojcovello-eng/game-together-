@@ -43,9 +43,27 @@ assert.deepStrictEqual(left.remaining.sort(), ['g1', 'g3', 'g4']);
 r = mm.find('g6', { name: 'g6', gameId: 'fortnite', lang: 'en-US', platform: 'mobile', mode: 'group' });
 assert.strictEqual(r.room.id, first.id, 'vaga liberada é preenchida antes de criar sala nova');
 
+// jogo com crossplay total: plataforma não é pedida e não entra na chave
+r = mm.find('t1', { name: 'T1', gameId: 'ark-survival-ascended', lang: 'pt-BR', mode: 'duo' });
+assert.strictEqual(r.status, 'waiting');
+r = mm.find('t2', { name: 'T2', gameId: 'ark-survival-ascended', lang: 'pt-BR', platform: 'xbox', mode: 'duo' });
+assert.strictEqual(r.status, 'matched', 'ARK SA com crossplay casa sem plataforma');
+assert.strictEqual(mm.publicRoom(r.room).members[0].platform, null);
+
+// Terraria não tem crossplay: Switch não casa com celular
+r = mm.find('u1', { name: 'U1', gameId: 'terraria', lang: 'en-US', platform: 'switch', mode: 'duo' });
+assert.strictEqual(r.status, 'waiting');
+r = mm.find('u2', { name: 'U2', gameId: 'terraria', lang: 'en-US', platform: 'mobile', mode: 'duo' });
+assert.strictEqual(r.status, 'waiting');
+r = mm.find('u3', { name: 'U3', gameId: 'terraria', lang: 'en-US', platform: 'switch', mode: 'duo' });
+assert.strictEqual(r.status, 'matched');
+assert.deepStrictEqual(r.joined.sort(), ['u1', 'u3']);
+mm.leave('u2');
+
 // validação
 assert.strictEqual(mm.find('z', { name: 'Z', gameId: 'nope', lang: 'pt-BR', platform: 'pc', mode: 'duo' }).error, 'unknown_game');
-assert.strictEqual(mm.find('z', { name: 'Z', gameId: 'ark-survival-ascended', lang: 'pt-BR', platform: 'switch', mode: 'duo' }).error, 'unknown_platform');
+assert.strictEqual(mm.find('z', { name: 'Z', gameId: 'terraria', lang: 'pt-BR', mode: 'duo' }).error, 'unknown_platform', 'sem crossplay a plataforma é obrigatória');
+assert.strictEqual(mm.find('z', { name: 'Z', gameId: 'ark-survival-evolved', lang: 'pt-BR', platform: 'nintendo', mode: 'duo' }).error, 'unknown_platform');
 assert.strictEqual(mm.find('z', { name: '', gameId: 'roblox', lang: 'pt-BR', platform: 'pc', mode: 'duo' }).error, 'missing_name');
 
 // cancelar busca duo tira da fila

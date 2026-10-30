@@ -61,12 +61,17 @@ em branco, espere um pouco e recarregue.
 
 ## Como funciona
 
-1. Na tela inicial, clique no jogo.
-2. Escolha o apelido, a quantidade de pessoas, o idioma e a plataforma.
-3. Clique em **Matchmake**.
+1. Na primeira vez, crie sua conta: só um nome e uma senha. O nome é único
+   e é como as pessoas vão te ver. Guarde a senha, não dá para recuperar.
+   Nas próximas vezes o app já abre logado.
+2. Na tela inicial, clique no jogo.
+3. Escolha a quantidade de pessoas, o idioma e, se o jogo não tiver
+   crossplay, a sua plataforma. Em jogo com crossplay não precisa escolher:
+   você cai com gente de qualquer plataforma.
+4. Clique em **Matchmake**.
    - **2 pessoas**: você e mais 1. Fica procurando até aparecer alguém com a mesma escolha.
    - **3 ou mais**: você entra numa sala aberta (ou cria uma) e as pessoas vão entrando até o limite do jogo.
-4. Na chamada: mute, sair, lista de quem está falando e um chat rápido de texto.
+5. Na chamada: mute, sair, lista de quem está falando e um chat rápido de texto.
 
 Você só cai com quem escolheu o mesmo jogo, o mesmo idioma, a mesma
 quantidade de pessoas e uma plataforma compatível.
@@ -78,6 +83,7 @@ quantidade de pessoas e uma plataforma compatível.
 | Rocket League | 4 | PC, PlayStation, Xbox, Switch | Sim |
 | Fortnite | 4 | PC, PlayStation, Xbox, Switch, Celular | Sim |
 | Roblox | 5 | PC, PlayStation, Xbox, Celular | Sim |
+| Terraria | 5 | PC, PlayStation, Xbox, Switch, Celular | Não: cada plataforma só encontra a própria |
 
 Idiomas: Português (BR) e English (US). O idioma escolhido também traduz o site.
 
@@ -104,8 +110,9 @@ microfone, porque o navegador do celular só libera em endereço `https://`.
 ## Privacidade
 
 O áudio vai direto entre os navegadores. O servidor só faz o encontro das
-pessoas; ele não grava nem ouve a chamada. Nada fica salvo: ao fechar o app
-a pessoa sai da sala.
+pessoas; ele não grava nem ouve a chamada. Da conta, o servidor guarda só o
+nome e a senha criptografada (não dá para ler a senha de volta). Nada da
+chamada fica salvo: ao fechar o app a pessoa sai da sala.
 
 ---
 
@@ -170,12 +177,17 @@ blank screen, wait a bit and reload.
 
 ## How it works
 
-1. On the home screen, click the game.
-2. Pick a nickname, how many people, the language and your platform.
-3. Click **Matchmake**.
+1. The first time, create your account: just a name and a password. The
+   name is unique and it is how people will see you. Keep your password, it
+   cannot be recovered. Next time the app opens already signed in.
+2. On the home screen, click the game.
+3. Pick how many people, the language and, if the game has no crossplay,
+   your platform. Crossplay games skip that step: you match people on any
+   platform.
+4. Click **Matchmake**.
    - **2 people**: you and 1 more. It keeps searching until someone with the same choice shows up.
    - **3 or more**: you join an open room (or create one) and people keep joining until the game's limit.
-4. On the call: mute, leave, a list of who is speaking and a quick text chat.
+5. On the call: mute, leave, a list of who is speaking and a quick text chat.
 
 You only match people who picked the same game, the same language, the same
 call size and a compatible platform.
@@ -187,6 +199,7 @@ call size and a compatible platform.
 | Rocket League | 4 | PC, PlayStation, Xbox, Switch | Yes |
 | Fortnite | 4 | PC, PlayStation, Xbox, Switch, Mobile | Yes |
 | Roblox | 5 | PC, PlayStation, Xbox, Mobile | Yes |
+| Terraria | 5 | PC, PlayStation, Xbox, Switch, Mobile | No: each platform only matches itself |
 
 Languages: Português (BR) and English (US). The language you pick also
 translates the site.
@@ -214,8 +227,9 @@ microphone, because phone browsers only allow it on an `https://` address.
 ## Privacy
 
 Audio goes directly between browsers. The server only matches people; it
-does not record or listen to the call. Nothing is stored: closing the app
-leaves the room.
+does not record or listen to the call. For your account it stores only the
+name and an encrypted password (it cannot be read back). Nothing from the
+call is stored: closing the app leaves the room.
 
 ## License
 
