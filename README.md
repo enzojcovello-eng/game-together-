@@ -10,6 +10,17 @@ e dá para instalar como app.
 
 🇺🇸 [English version below](#game-together-english)
 
+## Compartilhe e sugira jogos
+
+O site só funciona se tiver gente. Quanto mais pessoas entrarem, mais
+rápido todo mundo encontra alguém. Então manda o link para o máximo de
+pessoas que puder: amigos, grupos, servidores de Discord, quem joga com
+você.
+
+Quer ver outro jogo aqui? Escreva nos comentários qual jogo quer que a gente
+adicione (em português ou em inglês, tanto faz):
+👉 [Sugerir um jogo](https://github.com/enzojcovello-eng/game-together-/issues/new?title=Sugest%C3%A3o%20de%20jogo%3A%20)
+
 ## Como acessar e instalar
 
 Não tem download na loja. O app é o próprio site: você abre o link e, se
@@ -107,6 +118,16 @@ Works on PC, Android and iPhone, right in the browser, and can be installed
 as an app.
 
 🔗 **Site link:** https://game-together.onrender.com
+
+## Share it and suggest games
+
+The site only works if there are people on it. The more people join, the
+faster everyone finds someone. So send the link to as many people as you
+can: friends, group chats, Discord servers, whoever you play with.
+
+Want another game here? Write in the comments which game you want us to
+add (in English or Portuguese, either is fine):
+👉 [Suggest a game](https://github.com/enzojcovello-eng/game-together-/issues/new?title=Game%20suggestion%3A%20)
 
 ## How to access and install
 
