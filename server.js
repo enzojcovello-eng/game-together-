@@ -4,10 +4,12 @@ const fs = require('fs');
 const path = require('path');
 const http = require('http');
 const https = require('https');
+const crypto = require('crypto');
 const express = require('express');
 const { Server } = require('socket.io');
 const { Matchmaker } = require('./lib/matchmaker');
 const { Auth } = require('./lib/auth');
+const { Social } = require('./lib/social');
 
 const config = require('./games.json');
 const pkg = require('./package.json');
@@ -32,7 +34,6 @@ function resolveConfig() {
 
 const app = express();
 // HTTPS opcional: o microfone no celular só funciona em HTTPS ou localhost.
-// Defina SSL_KEY e SSL_CERT (caminhos dos arquivos) para subir em HTTPS.
 const isHttps = Boolean(process.env.SSL_KEY && process.env.SSL_CERT);
 const server = isHttps
   ? https.createServer({ key: fs.readFileSync(process.env.SSL_KEY), cert: fs.readFileSync(process.env.SSL_CERT) }, app)
@@ -40,18 +41,20 @@ const server = isHttps
 const io = new Server(server, { cors: { origin: '*' } });
 
 app.use(express.static(path.join(__dirname, 'public')));
-app.use(express.json({ limit: '10kb' }));
+app.use(express.json({ limit: '200kb' }));
 app.get('/api/config', (_req, res) => res.json(resolveConfig()));
 app.get('/api/version', (_req, res) => res.json(VERSION));
 app.get('/api/stats', (_req, res) => res.json({ ...mm.stats(), online }));
 
 const mm = new Matchmaker(config);
-// DATA_DIR: pasta onde ficam as contas (users.json). Num host com disco
-// persistente, aponte para ele para as contas sobreviverem a reinícios.
+// DATA_DIR: pasta das contas e amigos. SESSION_SECRET: assina os tokens
+// (defina no host para as contas sobreviverem a reinícios e atualizações).
 const auth = new Auth({ dataDir: process.env.DATA_DIR });
+const social = new Social({ dataDir: process.env.DATA_DIR });
+if (!process.env.SESSION_SECRET) console.warn('Aviso: defina SESSION_SECRET para as contas sobreviverem a reinícios do servidor.');
 let online = 0;
 
-// ---- contas (só nome; um aparelho por vez) ----
+// ---- contas (só nickname; um aparelho por vez) ----
 const acctRoom = (key) => `acct:${key}`;
 const claimRoom = (id) => `claim:${id}`;
 
@@ -60,7 +63,6 @@ function tokenFrom(req) {
   return h.startsWith('Bearer ') ? h.slice(7) : null;
 }
 
-// limite simples de pedidos por IP para evitar spam de nomes
 const claimsByIp = new Map();
 function tooManyClaims(ip) {
   const now = Date.now();
@@ -75,16 +77,13 @@ app.post('/api/claim', (req, res) => {
   const r = auth.claim((req.body || {}).name);
   if (r.error) return res.status(400).json({ error: r.error });
   if (r.status === 'pending') {
-    // avisa o aparelho que está com a conta, se estiver aberto
     const key = auth.keyOfRequest(r.requestId);
     io.to(acctRoom(key)).emit('login-request', { id: r.requestId, createdAt: Date.now() });
   }
   res.json(r);
 });
 
-app.get('/api/claim/:id', (req, res) => {
-  res.json(auth.requestStatus(req.params.id));
-});
+app.get('/api/claim/:id', (req, res) => res.json(auth.requestStatus(req.params.id)));
 
 app.delete('/api/claim/:id', (req, res) => {
   const key = auth.keyOfRequest(req.params.id);
@@ -98,7 +97,7 @@ app.get('/api/me', (req, res) => {
   const user = auth.verify(token);
   if (!user) return res.status(401).json({ error: 'not_logged_in' });
   auth.touch(token);
-  res.json({ ...user, pending: auth.pendingFor(token) || [] });
+  res.json({ name: user.name, recovered: user.recovered, pending: auth.pendingFor(token) || [] });
 });
 
 app.get('/api/requests', (req, res) => {
@@ -112,9 +111,7 @@ app.post('/api/requests/:id/approve', (req, res) => {
   const key = auth.ownerKey(token);
   const r = auth.approve(token, req.params.id);
   if (r.error) return res.status(r.error === 'not_logged_in' ? 401 : 404).json({ error: r.error });
-  // quem pediu recebe o token pela rota GET /api/claim/:id; aqui só avisamos
   io.to(claimRoom(req.params.id)).emit('claim-update', { requestId: req.params.id, status: 'approved' });
-  // todo mundo que estava com a conta no aparelho antigo é deslogado
   io.to(acctRoom(key)).emit('account-transferred');
   io.in(acctRoom(key)).socketsLeave(acctRoom(key));
   res.json(r);
@@ -129,16 +126,73 @@ app.post('/api/requests/:id/deny', (req, res) => {
   res.json(r);
 });
 
+// Sair: apaga a conta, as amizades e as conversas; o nickname fica livre.
 app.post('/api/logout', (req, res) => {
   const token = tokenFrom(req);
   const key = auth.ownerKey(token);
-  if (token) auth.logout(token);
-  if (key) io.in(acctRoom(key)).socketsLeave(acctRoom(key));
+  if (key) {
+    const affected = social.erase(key);
+    auth.logout(token);
+    io.in(acctRoom(key)).socketsLeave(acctRoom(key));
+    for (const f of affected) pushSocial(f);
+  }
   res.json({ ok: true });
 });
 
+// ---- amigos ----
+function isOnline(key) {
+  const r = io.sockets.adapter.rooms.get(acctRoom(key));
+  return Boolean(r && r.size > 0);
+}
+
+function socialState(key) {
+  const snap = social.snapshot(key);
+  return {
+    me: key,
+    friends: snap.friends.map((f) => ({ key: f, name: auth.nameOf(f) || f, online: isOnline(f) })),
+    requests: snap.requests.map((r) => ({ from: r.from, name: auth.nameOf(r.from) || r.from, at: r.at })),
+    dms: snap.dms,
+  };
+}
+
+function pushSocial(key) {
+  if (isOnline(key)) io.to(acctRoom(key)).emit('social', socialState(key));
+}
+
+function pushPresence(key) {
+  for (const f of social.friendsOf(key)) pushSocial(f);
+}
+
+const invites = new Map(); // inviteId -> { from, to, roomId, at }
+const lastSnapshot = new Map(); // key -> última cópia enviada pelo aparelho (só memória)
+
 function broadcastStats() {
   io.emit('stats', { ...mm.stats(), online });
+}
+
+/** Avisa a sala de quem entrou e manda "matched" para quem entrou. */
+function announceJoin(result) {
+  const room = result.room;
+  const pub = mm.publicRoom(room);
+  const joinedSet = new Set(result.joined);
+  const existing = [...room.members.keys()].filter((id) => !joinedSet.has(id));
+  result.joined.forEach((id, idx) => {
+    const s = io.sockets.sockets.get(id);
+    if (!s) return;
+    s.join(room.id);
+    const initiateWith = existing.concat(result.joined.slice(0, idx));
+    s.emit('matched', { room: pub, you: id, initiateWith });
+  });
+  for (const member of room.members.keys()) {
+    if (joinedSet.has(member)) continue;
+    const s = io.sockets.sockets.get(member);
+    if (!s) continue;
+    for (const id of result.joined) {
+      const m = room.members.get(id);
+      s.emit('peer-joined', { room: pub, peer: { id, name: m.name, platform: m.platform } });
+    }
+  }
+  broadcastStats();
 }
 
 io.on('connection', (socket) => {
@@ -146,24 +200,124 @@ io.on('connection', (socket) => {
   broadcastStats();
   socket.emit('version', VERSION);
 
-  // o aparelho se identifica para receber avisos da conta (pedidos de login)
-  socket.on('hello', ({ token } = {}) => {
-    const key = auth.ownerKey(token);
+  const me = () => socket.data.key || null;
+  const myName = () => (socket.data.key ? auth.nameOf(socket.data.key) : null);
+
+  // o aparelho se identifica; se o servidor perdeu os dados, devolve a cópia
+  socket.on('hello', ({ token, name, snapshot } = {}) => {
     for (const r of socket.rooms) if (r.startsWith('acct:')) socket.leave(r);
-    if (!key) return;
+    const user = auth.verify(token);
+    socket.data.key = null;
+    if (!user) { socket.emit('not-logged-in'); return; }
+    const key = auth.ownerKey(token);
+    socket.data.key = key;
+    socket.data.token = token;
     auth.touch(token);
+    if (user.recovered) auth.restoreName(token, name);
+    // a cópia do aparelho religa amizades (quando os dois lados confirmam) e mensagens.
+    // Guardamos a cópia em memória: quando o outro lado confirmar, reprocessamos esta.
+    if (snapshot) lastSnapshot.set(key, snapshot);
+    const relinked = snapshot ? social.merge(key, snapshot) : [];
+    for (const f of relinked) if (lastSnapshot.has(f)) social.merge(f, lastSnapshot.get(f));
     socket.join(acctRoom(key));
     socket.emit('login-requests', { requests: auth.pendingFor(token) || [] });
+    pushSocial(key);
+    pushPresence(key);
+    for (const f of relinked) pushSocial(f);
   });
 
-  // quem está esperando aprovação acompanha o pedido ao vivo
   socket.on('watch-claim', ({ requestId } = {}) => {
     if (typeof requestId === 'string' && requestId.length === 64) socket.join(claimRoom(requestId));
   });
 
+  // ---- pedidos de amizade, mensagens e convites ----
+  const keyOf = (name) => String(name || '').trim().replace(/\s+/g, ' ').toLowerCase();
+
+  socket.on('friend-request', ({ to } = {}, ack) => {
+    const k = me(); const target = keyOf(to);
+    if (!k) return ack && ack({ error: 'not_logged_in' });
+    if (!auth.exists(target)) return ack && ack({ error: 'unknown_user' });
+    // só quem está na mesma chamada (ou já pediu sua amizade) pode ser adicionado
+    const room = mm.roomOf(socket.id);
+    const sameCall = room && [...room.members.values()].some((m) => keyOf(m.name) === target);
+    const askedMe = social.requestsFor(k).some((r) => r.from === target);
+    if (!sameCall && !askedMe) return ack && ack({ error: 'not_in_call' });
+    const r = social.request(k, target);
+    if (r.error) return ack && ack(r);
+    if (r.status === 'pending') io.to(acctRoom(target)).emit('friend-request', { from: k, name: myName() });
+    pushSocial(k); pushSocial(target);
+    ack && ack(r);
+  });
+
+  socket.on('friend-accept', ({ from } = {}, ack) => {
+    const k = me(); if (!k) return;
+    const r = social.accept(k, keyOf(from));
+    if (r.ok) { pushSocial(k); pushSocial(keyOf(from)); io.to(acctRoom(keyOf(from))).emit('friend-accepted', { name: myName() }); }
+    ack && ack(r);
+  });
+
+  socket.on('friend-decline', ({ from } = {}) => {
+    const k = me(); if (!k) return;
+    social.decline(k, keyOf(from));
+    pushSocial(k);
+  });
+
+  socket.on('unfriend', ({ name } = {}) => {
+    const k = me(); if (!k) return;
+    social.unfriend(k, keyOf(name));
+    pushSocial(k); pushSocial(keyOf(name));
+  });
+
+  socket.on('dm', ({ to, text } = {}, ack) => {
+    const k = me(); if (!k) return ack && ack({ error: 'not_logged_in' });
+    const target = keyOf(to);
+    const r = social.send(k, target, text);
+    if (r.error) return ack && ack(r);
+    io.to(acctRoom(k)).emit('dm', { with: target, msg: r.msg });
+    io.to(acctRoom(target)).emit('dm', { with: k, msg: r.msg });
+    ack && ack({ ok: true });
+  });
+
+  // Convite para chamada: entra na sala atual do anfitrião ou abre uma sala de amigos.
+  socket.on('invite', ({ to } = {}, ack) => {
+    const k = me(); const target = keyOf(to);
+    if (!k) return ack && ack({ error: 'not_logged_in' });
+    if (!social.areFriends(k, target)) return ack && ack({ error: 'not_friends' });
+    if (!isOnline(target)) return ack && ack({ error: 'offline' });
+    let room = mm.roomOf(socket.id);
+    let created = null;
+    if (!room) {
+      room = mm.hostPrivate(socket.id, myName());
+      created = { room, joined: [socket.id] };
+    }
+    if (room.members.size >= room.max) return ack && ack({ error: 'room_full' });
+    const id = crypto.randomBytes(12).toString('hex');
+    invites.set(id, { id, from: k, to: target, roomId: room.id, at: Date.now() });
+    io.to(acctRoom(target)).emit('invite', { id, from: k, name: myName(), game: room.gameName, private: Boolean(room.private) });
+    if (created) announceJoin(created);
+    ack && ack({ ok: true, roomId: room.id });
+  });
+
+  socket.on('invite-accept', ({ id } = {}, ack) => {
+    const k = me(); const inv = invites.get(id);
+    if (!k || !inv || inv.to !== k) return ack && ack({ error: 'unknown_invite' });
+    invites.delete(id);
+    const r = mm.joinById(inv.roomId, socket.id, myName());
+    if (r.error) return ack && ack(r);
+    announceJoin(r);
+    ack && ack({ ok: true });
+  });
+
+  socket.on('invite-decline', ({ id } = {}) => {
+    const k = me(); const inv = invites.get(id);
+    if (!k || !inv || inv.to !== k) return;
+    invites.delete(id);
+    io.to(acctRoom(inv.from)).emit('invite-declined', { name: myName() });
+  });
+
+  // ---- matchmaking ----
   socket.on('find', (req, ack) => {
     req = req || {};
-    // o nome vem da conta, nunca do que o cliente mandar
     const user = auth.verify(req.token);
     if (!user) {
       if (typeof ack === 'function') ack({ error: 'not_logged_in' });
@@ -180,37 +334,13 @@ io.on('connection', (socket) => {
       broadcastStats();
       return;
     }
-    const room = result.room;
-    const pub = mm.publicRoom(room);
-    // Para evitar colisão de ofertas, cada pessoa que entra inicia a conexão
-    // só com quem já estava na sala e com quem entrou antes dela na mesma leva.
-    const joinedSet = new Set(result.joined);
-    const existing = [...room.members.keys()].filter((id) => !joinedSet.has(id));
-    result.joined.forEach((id, idx) => {
-      const s = io.sockets.sockets.get(id);
-      if (!s) return;
-      s.join(room.id);
-      const initiateWith = existing.concat(result.joined.slice(0, idx));
-      s.emit('matched', { room: pub, you: id, initiateWith });
-    });
-    for (const member of room.members.keys()) {
-      if (joinedSet.has(member)) continue;
-      const s = io.sockets.sockets.get(member);
-      if (s) {
-        for (const id of result.joined) {
-          const m = room.members.get(id);
-          s.emit('peer-joined', { room: pub, peer: { id, name: m.name, platform: m.platform } });
-        }
-      }
-    }
+    announceJoin(result);
     if (typeof ack === 'function') ack({ status: 'matched' });
-    broadcastStats();
   });
 
   socket.on('cancel', () => handleLeave(socket));
   socket.on('leave', () => handleLeave(socket));
 
-  // Sinalização WebRTC: encaminha offer/answer/ice para um peer da mesma sala.
   socket.on('signal', ({ to, data } = {}) => {
     const room = mm.roomOf(socket.id);
     if (!room || !room.members.has(to)) return;
@@ -223,13 +353,15 @@ io.on('connection', (socket) => {
     if (!room) return;
     const msg = String(text || '').trim().slice(0, 300);
     if (!msg) return;
-    const me = room.members.get(socket.id);
-    io.to(room.id).emit('chat', { from: socket.id, name: me ? me.name : '?', text: msg, at: Date.now() });
+    const m = room.members.get(socket.id);
+    io.to(room.id).emit('chat', { from: socket.id, name: m ? m.name : '?', text: msg, at: Date.now() });
   });
 
   socket.on('disconnect', () => {
     online = Math.max(0, online - 1);
     handleLeave(socket);
+    const k = socket.data.key;
+    if (k) setTimeout(() => { if (!isOnline(k)) pushPresence(k); }, 500);
   });
 });
 

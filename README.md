@@ -84,18 +84,61 @@ quantidade de pessoas e uma plataforma compatível.
 | Fortnite | 4 | PC, PlayStation, Xbox, Switch, Celular | Sim |
 | Roblox | 5 | PC, PlayStation, Xbox, Celular | Sim |
 | Terraria | 5 | PC, PlayStation, Xbox, Switch, Celular | Não: cada plataforma só encontra a própria |
+| Minecraft | 5 | PC, PlayStation, Xbox, Switch, Celular | Parcial: console e celular juntos (Bedrock); PC (Java) só com PC |
+| Valorant | 5 | PC, PlayStation, Xbox | Parcial: PlayStation e Xbox juntos; PC só com PC |
+| GTA V | 5 | PC, PlayStation, Xbox | Não: cada plataforma só encontra a própria |
+| Helldivers 2 | 4 | PC, PlayStation, Xbox | Sim |
+
+Cada cartão de jogo mostra quantas pessoas estão em chamada e quantas estão
+procurando naquele jogo agora. No topo da tela inicial aparece o total.
 
 Idiomas: Português (BR) e English (US). O idioma escolhido também traduz o site.
 
-### Sua conta fica em um aparelho por vez
+### Sua conta fica em um aparelho por vez e não sai sozinha
 
-A conta é o seu nickname, guardada no aparelho em que você entrou. Se alguém
-digitar o seu nickname em outro aparelho, esse aparelho fica esperando e você
-recebe um aviso no app: **Permitir** ou **Recusar**. Se não viu o aviso, o
-pedido fica na aba **Logins**, dentro do botão de chat no topo. Ao permitir,
-a conta passa para o outro aparelho e sai deste. Se você tocar em **Sair**,
-o nickname fica livre e entra direto no próximo aparelho. Uma conta parada há
-mais de 7 dias também entra direto, para ninguém ficar trancado para fora.
+A conta é o seu nickname, guardada no aparelho em que você entrou. Ela não
+sai com atualização do site nem com reinício do servidor: só sai se você
+tocar em **Sair**. Se alguém digitar o seu nickname em outro aparelho, esse
+aparelho fica esperando e você recebe um aviso no app: **Permitir** ou
+**Recusar**. Se não viu o aviso, o pedido fica na aba **Logins**, dentro do
+botão de chat no topo. Ao permitir, a conta passa para o outro aparelho.
+
+**Sair** apaga tudo: a conta, os amigos e as conversas. O nickname fica
+livre para qualquer pessoa usar.
+
+### Por que é seguro mesmo sem senha
+
+- **A conta é uma chave, não uma senha.** Quando você entra, o servidor gera
+  um código longo e aleatório, assinado por ele, e guarda só no seu aparelho.
+  É esse código que prova que a conta é sua. Ninguém consegue adivinhar nem
+  fabricar um igual: sem a assinatura do servidor, o código não vale.
+- **Só um aparelho por vez.** Se alguém digitar o seu nickname em outro
+  lugar, não entra: fica esperando e você recebe o pedido para permitir ou
+  recusar. Quem tenta não vê nada da sua conta enquanto espera.
+- **Não tem o que roubar.** O site não pede e-mail, telefone, nome real nem
+  senha. Guarda o nickname (que todo mundo vê na chamada), a lista de amigos
+  e as mensagens entre amigos. O áudio não é gravado. Se alguém invadisse o
+  servidor, não acharia senha nenhuma para reaproveitar em outros sites, e é
+  exatamente isso que senhas vazadas costumam causar.
+- **Senha aqui seria o lado fraco.** A maioria das pessoas repete a mesma
+  senha em vários sites. Pedir uma senha para um site de chamada de voz só
+  criaria um lugar a mais onde ela pode vazar, sem proteger nada a mais.
+- **O limite é o seu aparelho.** Quem pega o seu celular desbloqueado usa a
+  sua conta, como em qualquer app sem bloqueio próprio. E se o aparelho for
+  perdido, a conta fica nele: o novo aparelho pede permissão e o antigo não
+  está lá para responder. Nesse caso, crie outro nickname. Como a conta não
+  tem nada sensível, o prejuízo é só o nome e a lista de amigos.
+- **Contra abuso.** O servidor limita quantos pedidos de login um mesmo
+  endereço pode fazer, limita o tamanho das mensagens e só aceita pedidos de
+  amizade de quem está na mesma chamada ou já é amigo.
+
+### Amigos
+
+Numa chamada, toque em **+ amigo** ao lado de alguém. A pessoa recebe o
+pedido e aceita ou recusa. Na aba **Amigos** (botão de chat no topo) você
+vê quem está online, manda mensagem privada e toca em **Chamar** para abrir
+uma chamada só de amigos (até 5). Quem é chamado recebe o aviso e entra com
+um toque. Dá para chamar um amigo para a chamada em que você já está.
 
 ## Rodar no seu próprio computador (opcional)
 
@@ -120,9 +163,12 @@ microfone, porque o navegador do celular só libera em endereço `https://`.
 ## Privacidade
 
 O áudio vai direto entre os navegadores. O servidor só faz o encontro das
-pessoas; ele não grava nem ouve a chamada. Da conta, o servidor guarda só o
-nickname e em qual aparelho ela está. Nada da chamada fica salvo: ao fechar o
-app a pessoa sai da sala.
+pessoas; ele não grava nem ouve a chamada. Da conta, o servidor guarda o
+nickname, em qual aparelho ela está, a lista de amigos e as mensagens
+privadas (as últimas 300 por conversa). O seu aparelho guarda uma cópia dos
+seus amigos e conversas; se o servidor reiniciar sem os dados, a cópia volta
+sozinha. Nada da chamada de voz fica salvo: ao fechar o app a pessoa sai da
+sala.
 
 ## Atualizações
 
@@ -149,6 +195,10 @@ ilustração. Formato bom: vertical, 600 x 800 pixels ou maior.
 | Fortnite | `fortnite.jpg` |
 | Roblox | `roblox.jpg` |
 | Terraria | `terraria.jpg` |
+| Minecraft | `minecraft.jpg` |
+| Valorant | `valorant.jpg` |
+| GTA V | `gta-5.jpg` |
+| Helldivers 2 | `helldivers-2.jpg` |
 
 ---
 
@@ -236,20 +286,64 @@ call size and a compatible platform.
 | Fortnite | 4 | PC, PlayStation, Xbox, Switch, Mobile | Yes |
 | Roblox | 5 | PC, PlayStation, Xbox, Mobile | Yes |
 | Terraria | 5 | PC, PlayStation, Xbox, Switch, Mobile | No: each platform only matches itself |
+| Minecraft | 5 | PC, PlayStation, Xbox, Switch, Mobile | Partial: console and mobile together (Bedrock); PC (Java) only with PC |
+| Valorant | 5 | PC, PlayStation, Xbox | Partial: PlayStation and Xbox together; PC only with PC |
+| GTA V | 5 | PC, PlayStation, Xbox | No: each platform only matches itself |
+| Helldivers 2 | 4 | PC, PlayStation, Xbox | Yes |
+
+Each game card shows how many people are on a call and how many are
+searching in that game right now. The home screen shows the total at the top.
 
 Languages: Português (BR) and English (US). The language you pick also
 translates the site.
 
-### Your account lives on one device at a time
+### Your account lives on one device at a time and never leaves on its own
 
-The account is your nickname, kept on the device you entered from. If
-someone types your nickname on another device, that device waits and you get a notice
-in the app: **Allow** or **Deny**. If you missed the notice, the request
-stays in the **Logins** tab, inside the chat button at the top. When you
-allow it, the account moves to the other device and leaves this one. If
-you tap **Log out**, the nickname is free and enters directly on the next
-device. An account unused for more than 7 days also enters directly, so
-nobody gets locked out.
+The account is your nickname, kept on the device you entered from. It does
+not leave with a site update or a server restart: it only leaves when you
+tap **Log out**. If someone types your nickname on another device, that
+device waits and you get a notice in the app: **Allow** or **Deny**. If you
+missed the notice, the request stays in the **Logins** tab, inside the chat
+button at the top. When you allow it, the account moves to the other device.
+
+**Log out** deletes everything: the account, the friends and the
+conversations. The nickname becomes free for anyone to use.
+
+### Why it is safe even without a password
+
+- **The account is a key, not a password.** When you enter, the server
+  generates a long random code, signed by it, and stores it only on your
+  device. That code is what proves the account is yours. Nobody can guess or
+  forge one: without the server's signature, the code is worthless.
+- **One device at a time.** If someone types your nickname somewhere else,
+  they do not get in: they wait, and you get the request to allow or deny.
+  While waiting they see nothing of your account.
+- **There is nothing to steal.** The site does not ask for email, phone,
+  real name or password. It stores the nickname (which everyone sees on the
+  call), the friends list and the messages between friends. Audio is never
+  recorded. If someone broke into the server, they would find no password
+  to reuse on other sites, which is exactly the damage leaked passwords
+  usually cause.
+- **A password here would be the weak spot.** Most people reuse the same
+  password across sites. Asking for one on a voice call site would only add
+  one more place for it to leak, without protecting anything extra.
+- **The limit is your device.** Whoever holds your unlocked phone can use
+  your account, as with any app without its own lock. And if the device is
+  lost, the account stays on it: a new device asks for permission and the
+  old one is not there to answer. In that case, create another nickname.
+  Since the account holds nothing sensitive, the loss is just the name and
+  the friends list.
+- **Against abuse.** The server limits how many login requests one address
+  can make, caps message size, and only takes friend requests from people on
+  the same call or already friends.
+
+### Friends
+
+On a call, tap **+ friend** next to someone. They get the request and
+accept or decline. In the **Friends** tab (chat button at the top) you see
+who is online, send private messages and tap **Call** to open a
+friends-only call (up to 5). The friend gets a notice and joins with one
+tap. You can also call a friend into the call you are already on.
 
 ## Run on your own computer (optional)
 
@@ -274,9 +368,12 @@ microphone, because phone browsers only allow it on an `https://` address.
 ## Privacy
 
 Audio goes directly between browsers. The server only matches people; it
-does not record or listen to the call. For your account it stores only the
-nickname and which device holds it. Nothing from the call is stored: closing
-the app leaves the room.
+does not record or listen to the call. For your account it stores the
+nickname, which device holds it, the friends list and the private messages
+(the last 300 per conversation). Your device keeps a copy of your friends
+and conversations; if the server restarts without its data, the copy comes
+back by itself. Nothing from the voice call is stored: closing the app
+leaves the room.
 
 ## Updates
 
@@ -303,6 +400,10 @@ larger.
 | Fortnite | `fortnite.jpg` |
 | Roblox | `roblox.jpg` |
 | Terraria | `terraria.jpg` |
+| Minecraft | `minecraft.jpg` |
+| Valorant | `valorant.jpg` |
+| GTA V | `gta-5.jpg` |
+| Helldivers 2 | `helldivers-2.jpg` |
 
 ## License
 
