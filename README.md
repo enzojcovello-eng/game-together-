@@ -61,9 +61,9 @@ em branco, espere um pouco e recarregue.
 
 ## Como funciona
 
-1. Na primeira vez, digite só o seu nome. Sem senha, sem e-mail. O nome é
-   único e é como as pessoas vão te ver. Nas próximas vezes o app já abre
-   no seu nome.
+1. Na primeira vez, escolha um nickname (apelido de jogo, não o seu nome
+   real). Sem senha, sem e-mail. O nickname é único e é como as pessoas vão
+   te ver. Nas próximas vezes o app já abre nele.
 2. Na tela inicial, clique no jogo.
 3. Escolha a quantidade de pessoas, o idioma e, se o jogo não tiver
    crossplay, a sua plataforma. Em jogo com crossplay não precisa escolher:
@@ -89,12 +89,12 @@ Idiomas: Português (BR) e English (US). O idioma escolhido também traduz o sit
 
 ### Sua conta fica em um aparelho por vez
 
-A conta é o seu nome, guardada no aparelho em que você entrou. Se alguém
-digitar o seu nome em outro aparelho, esse aparelho fica esperando e você
+A conta é o seu nickname, guardada no aparelho em que você entrou. Se alguém
+digitar o seu nickname em outro aparelho, esse aparelho fica esperando e você
 recebe um aviso no app: **Permitir** ou **Recusar**. Se não viu o aviso, o
 pedido fica na aba **Logins**, dentro do botão de chat no topo. Ao permitir,
 a conta passa para o outro aparelho e sai deste. Se você tocar em **Sair**,
-o nome fica livre e entra direto no próximo aparelho. Uma conta parada há
+o nickname fica livre e entra direto no próximo aparelho. Uma conta parada há
 mais de 7 dias também entra direto, para ninguém ficar trancado para fora.
 
 ## Rodar no seu próprio computador (opcional)
@@ -121,7 +121,7 @@ microfone, porque o navegador do celular só libera em endereço `https://`.
 
 O áudio vai direto entre os navegadores. O servidor só faz o encontro das
 pessoas; ele não grava nem ouve a chamada. Da conta, o servidor guarda só o
-nome e em qual aparelho ela está. Nada da chamada fica salvo: ao fechar o
+nickname e em qual aparelho ela está. Nada da chamada fica salvo: ao fechar o
 app a pessoa sai da sala.
 
 ## Atualizações
@@ -213,9 +213,9 @@ blank screen, wait a bit and reload.
 
 ## How it works
 
-1. The first time, just type your name. No password, no email. The name
-   is unique and it is how people will see you. Next time the app opens
-   already in your name.
+1. The first time, pick a nickname (a gamer tag, not your real name). No
+   password, no email. The nickname is unique and it is how people will see
+   you. Next time the app opens already with it.
 2. On the home screen, click the game.
 3. Pick how many people, the language and, if the game has no crossplay,
    your platform. Crossplay games skip that step: you match people on any
@@ -242,12 +242,12 @@ translates the site.
 
 ### Your account lives on one device at a time
 
-The account is your name, kept on the device you entered from. If someone
-types your name on another device, that device waits and you get a notice
+The account is your nickname, kept on the device you entered from. If
+someone types your nickname on another device, that device waits and you get a notice
 in the app: **Allow** or **Deny**. If you missed the notice, the request
 stays in the **Logins** tab, inside the chat button at the top. When you
 allow it, the account moves to the other device and leaves this one. If
-you tap **Log out**, the name is free and enters directly on the next
+you tap **Log out**, the nickname is free and enters directly on the next
 device. An account unused for more than 7 days also enters directly, so
 nobody gets locked out.
 
@@ -275,7 +275,7 @@ microphone, because phone browsers only allow it on an `https://` address.
 
 Audio goes directly between browsers. The server only matches people; it
 does not record or listen to the call. For your account it stores only the
-name and which device holds it. Nothing from the call is stored: closing
+nickname and which device holds it. Nothing from the call is stored: closing
 the app leaves the room.
 
 ## Updates
