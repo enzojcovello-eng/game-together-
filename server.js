@@ -10,7 +10,25 @@ const { Matchmaker } = require('./lib/matchmaker');
 const { Auth } = require('./lib/auth');
 
 const config = require('./games.json');
+const pkg = require('./package.json');
 const PORT = process.env.PORT || 3000;
+
+// Versão do app: muda a cada publicação. O cliente compara com a que carregou
+// e avisa para atualizar. BUILD vem do Render (commit) ou da hora de início.
+const VERSION = { version: pkg.version, build: process.env.RENDER_GIT_COMMIT || process.env.BUILD_ID || String(Date.now()) };
+
+// Capas: se existir public/covers/<id>.jpg|jpeg|png|webp, ela vence a ilustração SVG.
+const COVER_EXT = ['jpg', 'jpeg', 'png', 'webp'];
+function resolveConfig() {
+  const games = config.games.map((g) => {
+    for (const ext of COVER_EXT) {
+      const file = path.join(__dirname, 'public', 'covers', `${g.id}.${ext}`);
+      if (fs.existsSync(file)) return { ...g, cover: `covers/${g.id}.${ext}` };
+    }
+    return g;
+  });
+  return { ...config, games, ...VERSION };
+}
 
 const app = express();
 // HTTPS opcional: o microfone no celular só funciona em HTTPS ou localhost.
@@ -23,7 +41,8 @@ const io = new Server(server, { cors: { origin: '*' } });
 
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json({ limit: '10kb' }));
-app.get('/api/config', (_req, res) => res.json(config));
+app.get('/api/config', (_req, res) => res.json(resolveConfig()));
+app.get('/api/version', (_req, res) => res.json(VERSION));
 app.get('/api/stats', (_req, res) => res.json({ ...mm.stats(), online }));
 
 const mm = new Matchmaker(config);
@@ -125,6 +144,7 @@ function broadcastStats() {
 io.on('connection', (socket) => {
   online += 1;
   broadcastStats();
+  socket.emit('version', VERSION);
 
   // o aparelho se identifica para receber avisos da conta (pedidos de login)
   socket.on('hello', ({ token } = {}) => {

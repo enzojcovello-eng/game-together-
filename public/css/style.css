@@ -80,6 +80,12 @@ h1, h2, h3 { font-family: var(--font-display); letter-spacing: -0.02em; line-hei
 .lang-switch button { background: transparent; color: var(--muted); border: 0; padding: 6px 11px; font-size: 0.8rem; font-weight: 600; }
 .lang-switch button.active { background: var(--text); color: var(--bg); }
 
+/* ---------- aviso de atualização ---------- */
+.update-banner { position: sticky; top: 59px; z-index: 19; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 10px 20px; background: var(--warn); color: var(--accent-ink); font-weight: 600; font-size: 0.92rem; }
+.update-banner .i { stroke: none; fill: currentColor; }
+.update-banner span { flex: 1; min-width: 200px; }
+.update-banner .btn-primary.small { padding: 7px 14px; font-size: 0.9rem; background: var(--accent-ink); color: var(--warn); }
+
 /* ---------- telas ---------- */
 main { max-width: 1040px; margin: 0 auto; padding: 24px 20px 48px; padding-bottom: calc(48px + env(safe-area-inset-bottom)); }
 .screen { display: none; animation: rise 0.22s ease; }

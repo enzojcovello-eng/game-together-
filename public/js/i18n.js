@@ -3,6 +3,10 @@ window.I18N = {
   'pt-BR': {
     online: 'online',
     back: 'Voltar',
+    'update.new': 'Tem uma versão nova do Game Together. Atualize para continuar com tudo funcionando.',
+    'update.btn': 'Atualizar agora',
+    'update.github': 'Esta cópia do app está desatualizada (você tem a {local}, a mais nova é a {remote}). Baixe a versão nova no GitHub.',
+    'update.githubBtn': 'Baixar no GitHub',
     'auth.title': 'Qual é o seu nome?',
     'auth.subtitle': 'É assim que as pessoas vão te ver na chamada. Sem senha, sem e-mail. Da próxima vez o app já abre no seu nome.',
     'auth.name': 'Nome',
@@ -93,6 +97,10 @@ window.I18N = {
   'en-US': {
     online: 'online',
     back: 'Back',
+    'update.new': 'There is a new version of Game Together. Update to keep everything working.',
+    'update.btn': 'Update now',
+    'update.github': 'This copy of the app is outdated (you have {local}, the newest is {remote}). Download the new version on GitHub.',
+    'update.githubBtn': 'Download on GitHub',
     'auth.title': "What's your name?",
     'auth.subtitle': "That's how people will see you on the call. No password, no email. Next time the app opens already in your name.",
     'auth.name': 'Name',

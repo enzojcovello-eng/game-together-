@@ -675,8 +675,48 @@
     log.scrollTop = log.scrollHeight;
   }
 
+  // ---------- atualização ----------
+  const GITHUB_RAW = 'https://raw.githubusercontent.com/enzojcovello-eng/game-together-/main/package.json';
+  let loadedVersion = null; // { version, build } da versão que esta página carregou
+  function showUpdate(kind, vars) {
+    const banner = $('#update-banner');
+    $('#update-text').textContent = kind === 'reload' ? t('update.new') : t('update.github', vars);
+    $('#update-btn').hidden = kind !== 'reload';
+    $('#update-btn').textContent = t('update.btn');
+    $('#update-link').hidden = kind !== 'github';
+    $('#update-link').textContent = t('update.githubBtn');
+    banner.hidden = false;
+  }
+  function onServerVersion(v) {
+    if (!v || !loadedVersion) return;
+    if (v.version !== loadedVersion.version || v.build !== loadedVersion.build) showUpdate('reload');
+  }
+  async function reloadApp() {
+    try {
+      const regs = await navigator.serviceWorker.getRegistrations();
+      for (const r of regs) await r.update();
+      const keys = await caches.keys();
+      for (const k of keys) await caches.delete(k);
+    } catch (_) {}
+    location.reload();
+  }
+  const newer = (a, b) => { // a > b em "x.y.z"
+    const pa = String(a).split('.').map(Number); const pb = String(b).split('.').map(Number);
+    for (let i = 0; i < 3; i++) { if ((pa[i] || 0) > (pb[i] || 0)) return true; if ((pa[i] || 0) < (pb[i] || 0)) return false; }
+    return false;
+  };
+  async function checkGithub() {
+    if (!loadedVersion || !loadedVersion.version) return;
+    try {
+      const r = await fetch(GITHUB_RAW, { cache: 'no-store' });
+      const remote = (await r.json()).version;
+      if (remote && newer(remote, loadedVersion.version)) showUpdate('github', { local: loadedVersion.version, remote });
+    } catch (_) { /* sem internet ou GitHub bloqueado: ignora */ }
+  }
+
   // ---------- socket ----------
   const socket = io({ transports: ['websocket', 'polling'] });
+  socket.on('version', onServerVersion);
 
   socket.on('stats', (s) => { $('#online-count').textContent = s.online; });
   socket.on('matched', ({ room, you, initiateWith }) => enterRoom(room, you, initiateWith));
@@ -748,6 +788,7 @@
     socket.emit('chat', text);
     input.value = '';
   });
+  $('#update-btn').addEventListener('click', reloadApp);
   $('#panel-btn').addEventListener('click', () => openPanel(state.requests.length ? 'logins' : state.panelTab));
   $('#panel-close').addEventListener('click', closePanel);
   $('#panel-backdrop').addEventListener('click', closePanel);
@@ -760,8 +801,12 @@
     .then((r) => r.json())
     .then(async (cfg) => {
       state.config = cfg;
+      loadedVersion = { version: cfg.version, build: cfg.build };
       setUiLang(detectLang());
       setPanelTab('chat');
+      checkGithub();
+      // se o socket já conectou antes de sabermos a versão, confere agora
+      api('/api/version').then(onServerVersion).catch(() => {});
 
       let pending = null;
       try { pending = JSON.parse(store.get('gt:pending') || 'null'); } catch (_) {}

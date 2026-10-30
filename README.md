@@ -124,9 +124,31 @@ pessoas; ele não grava nem ouve a chamada. Da conta, o servidor guarda só o
 nome e em qual aparelho ela está. Nada da chamada fica salvo: ao fechar o
 app a pessoa sai da sala.
 
-As capas dos jogos são ilustrações próprias, feitas para este site (as
-capas oficiais têm direitos autorais). Para usar outra imagem, coloque o
-arquivo em `public/covers/` e aponte o campo `cover` do jogo em `games.json`.
+## Atualizações
+
+O site atualiza sozinho: toda mudança aprovada aqui no GitHub vai para o ar
+em poucos minutos. Quem estiver com o app aberto (ou instalado na tela
+inicial) vê uma faixa amarela "Tem uma versão nova" com o botão
+**Atualizar agora**. Quem roda uma cópia própria no computador vê a faixa
+"Esta cópia do app está desatualizada" com o botão para baixar a versão
+nova aqui no GitHub.
+
+## Capas dos jogos
+
+As capas que vêm no site são ilustrações próprias (as oficiais têm direitos
+autorais). Para trocar por outra imagem não precisa mexer em código: é só
+colocar o arquivo na pasta `public/covers/` com o nome do jogo e a extensão
+`.jpg`, `.jpeg`, `.png` ou `.webp`. O app usa a imagem no lugar da
+ilustração. Formato bom: vertical, 600 x 800 pixels ou maior.
+
+| Jogo | Nome do arquivo |
+|---|---|
+| ARK: Survival Evolved | `ark-survival-evolved.jpg` |
+| ARK: Survival Ascended | `ark-survival-ascended.jpg` |
+| Rocket League | `rocket-league.jpg` |
+| Fortnite | `fortnite.jpg` |
+| Roblox | `roblox.jpg` |
+| Terraria | `terraria.jpg` |
 
 ---
 
@@ -256,9 +278,31 @@ does not record or listen to the call. For your account it stores only the
 name and which device holds it. Nothing from the call is stored: closing
 the app leaves the room.
 
-Game covers are original illustrations made for this site (official covers
-are copyrighted). To use another image, put the file in `public/covers/`
-and point the game's `cover` field in `games.json` to it.
+## Updates
+
+The site updates by itself: every change approved here on GitHub goes live
+in a few minutes. Anyone with the app open (or installed on the home
+screen) sees a yellow bar "There is a new version" with an **Update now**
+button. Anyone running their own copy on a computer sees "This copy of the
+app is outdated" with a button to download the new version here on GitHub.
+
+## Game covers
+
+The covers that ship with the site are original illustrations (official
+ones are copyrighted). To swap in another image you do not need to touch
+code: just put the file in the `public/covers/` folder named after the game
+with a `.jpg`, `.jpeg`, `.png` or `.webp` extension. The app uses the image
+instead of the illustration. Good format: portrait, 600 x 800 pixels or
+larger.
+
+| Game | File name |
+|---|---|
+| ARK: Survival Evolved | `ark-survival-evolved.jpg` |
+| ARK: Survival Ascended | `ark-survival-ascended.jpg` |
+| Rocket League | `rocket-league.jpg` |
+| Fortnite | `fortnite.jpg` |
+| Roblox | `roblox.jpg` |
+| Terraria | `terraria.jpg` |
 
 ## License
 
