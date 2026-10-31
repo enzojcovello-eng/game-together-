@@ -183,7 +183,7 @@ app.get('/api/me', (req, res) => {
   if (!user) return res.status(401).json({ error: 'not_logged_in' });
   auth.touch(token);
   const key = auth.ownerKey(token);
-  res.json({ name: user.name, recovered: user.recovered, devices: auth.devicesOf(token), pending: auth.pendingFor(token) || [], avatar: avatarUrl(key), avatarKind: (auth.avatarOf(key) || {}).type || null });
+  res.json({ name: user.name, recovered: user.recovered, devices: auth.devicesOf(token), pending: auth.pendingFor(token) || [], avatar: avatarUrl(key), avatarKind: (auth.avatarOf(key) || {}).type || null, owner: auth.isOwner(key) });
 });
 
 app.get('/api/requests', (req, res) => {
@@ -234,7 +234,7 @@ function avatarUrl(key) {
   return null;
 }
 function profileOf(key) {
-  return { key, name: auth.nameOf(key) || key, avatar: avatarUrl(key) };
+  return { key, name: auth.nameOf(key) || key, avatar: avatarUrl(key), owner: auth.isOwner(key) };
 }
 function removeUploadedAvatar(key) {
   try { fs.unlinkSync(path.join(AVATAR_DIR, `${key}.jpg`)); } catch (_) { /* já não existia */ }
@@ -337,6 +337,22 @@ app.get('/api/admin/reports', (req, res) => {
   const list = reports.open().map((r) => ({ ...r, byName: auth.nameOf(r.by) || r.by, target: r.target, targetName: auth.nameOf(r.target) || r.target, targetAvatar: avatarUrl(r.target), targetExists: auth.exists(r.target) }));
   res.json({ reports: list, stats: { accounts: auth.users.size, banned: auth.banned.size } });
 });
+// a conta logada neste aparelho vira "dono" (título visível para todos)
+app.post('/api/admin/owner', (req, res) => {
+  if (!isAdmin(req)) return res.status(401).json({ error: 'admin_key' });
+  const token = (req.body || {}).token;
+  const before = auth.owner;
+  const r = auth.setOwner(token);
+  if (r.error) return res.status(401).json(r);
+  if (before && before !== r.key) { pushProfile(before); }
+  pushProfile(r.key);
+  res.json({ ok: true, name: auth.nameOf(r.key) });
+});
+app.get('/api/admin/owner', (req, res) => {
+  if (!isAdmin(req)) return res.status(401).json({ error: 'admin_key' });
+  res.json({ owner: auth.owner ? auth.nameOf(auth.owner) : null });
+});
+
 app.post('/api/admin/action', (req, res) => {
   if (!isAdmin(req)) return res.status(401).json({ error: 'admin_key' });
   const { target, action } = req.body || {};
@@ -364,7 +380,7 @@ function socialState(key) {
   const snap = social.snapshot(key);
   return {
     me: key,
-    friends: snap.friends.map((f) => ({ key: f, name: auth.nameOf(f) || f, online: isOnline(f), avatar: avatarUrl(f) })),
+    friends: snap.friends.map((f) => ({ key: f, name: auth.nameOf(f) || f, online: isOnline(f), avatar: avatarUrl(f), owner: auth.isOwner(f) })),
     requests: snap.requests.map((r) => ({ from: r.from, name: auth.nameOf(r.from) || r.from, at: r.at, avatar: avatarUrl(r.from) })),
     dms: snap.dms,
   };
@@ -388,7 +404,7 @@ function broadcastStats() {
 /** Sala pública com a foto de cada membro. */
 function publicRoom(room) {
   const pub = mm.publicRoom(room);
-  pub.members = pub.members.map((m) => ({ ...m, avatar: avatarUrl(String(m.name).toLowerCase()) }));
+  pub.members = pub.members.map((m) => ({ ...m, avatar: avatarUrl(String(m.name).toLowerCase()), owner: auth.isOwner(String(m.name).toLowerCase()) }));
   return pub;
 }
 

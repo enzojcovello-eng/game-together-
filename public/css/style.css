@@ -334,6 +334,10 @@ main { max-width: 1040px; margin: 0 auto; padding: 24px 20px 48px; padding-botto
 .member .report { margin-left: auto; }
 .member .report + .add, .member .report + .mic { margin-left: 0; }
 
+.owner { display: inline-flex; align-items: center; gap: 3px; margin-left: 6px; padding: 1px 7px; border-radius: 999px; background: var(--warn); color: var(--accent-ink); font-size: 0.68rem; font-weight: 800; font-family: var(--font-display); letter-spacing: 0.04em; text-transform: uppercase; vertical-align: middle; }
+.owner .i { width: 11px; height: 11px; stroke: none; }
+.user-name .owner { margin-left: 4px; }
+
 /* ---------- toast ---------- */
 .toast {
   position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom)); transform: translateX(-50%);

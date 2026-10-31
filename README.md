@@ -226,6 +226,11 @@ Ela só abre com a chave definida na variável de ambiente `ADMIN_KEY` do
 servidor (um texto longo e aleatório). Banir apaga a conta e bloqueia o
 nickname para sempre.
 
+Na mesma página, o botão "Marcar minha conta como dono" dá o título
+**Dono** à conta logada naquele navegador. O selo aparece ao lado do
+nickname para todo mundo (topo, chamada, amigos e perfil), acompanha a
+troca de nickname e só pode ser dado por quem tem a chave.
+
 ## Quantas pessoas visitaram
 
 O endereço [gametogether.com.br/api/stats](https://gametogether.com.br/api/stats) mostra, em texto
@@ -493,6 +498,11 @@ reported it and the buttons "Remover foto" (remove photo), "Banir nickname"
 (ban) and "Ignorar" (dismiss). It only opens with the key set in the
 server's `ADMIN_KEY` environment variable (a long random text). Banning
 deletes the account and blocks the nickname for good.
+
+On the same page, the "Marcar minha conta como dono" button gives the
+**Owner** title to the account signed in on that browser. The badge shows
+next to the nickname for everyone (top bar, call, friends and profile),
+follows a nickname change and can only be granted with the key.
 
 ## How many people visited
 
