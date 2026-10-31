@@ -255,6 +255,38 @@
       ],
       "crossplay": true,
       "cover": "covers/fifa-26.jpg"
+    },
+    {
+      "id": "minecraft-dungeons",
+      "name": "Minecraft Dungeons",
+      "short": "MC Dungeons",
+      "emoji": "🗡️",
+      "color": "#c62828",
+      "maxPlayers": 4,
+      "platforms": [
+        "pc",
+        "playstation",
+        "xbox",
+        "switch"
+      ],
+      "crossplay": true,
+      "cover": "covers/minecraft-dungeons.jpg"
+    },
+    {
+      "id": "minecraft-dungeons-2",
+      "name": "Minecraft Dungeons II",
+      "short": "MC Dungeons II",
+      "emoji": "🗡️",
+      "color": "#1565c0",
+      "maxPlayers": 4,
+      "platforms": [
+        "pc",
+        "playstation",
+        "xbox",
+        "switch"
+      ],
+      "crossplay": true,
+      "cover": "covers/minecraft-dungeons-2.jpg"
     }
   ]
 }
