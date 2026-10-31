@@ -125,6 +125,7 @@
         <div class="auth-art" aria-hidden="true">
           <svg class="i big"><use href="#i-logo"/></svg>
         </div>
+        <p class="auth-why" id="auth-why" hidden data-i18n="auth.why">Para entrar na chamada, crie seu nickname.</p>
         <h1 data-i18n="auth.title">Escolha seu nickname</h1>
         <p class="lead" data-i18n="auth.subtitle">O nome pelo qual você quer ser chamado aqui no site. Não precisa ser o seu nome real. Sem senha, sem e-mail. Da próxima vez o app já abre no seu nickname.</p>
         <form id="auth-form" autocomplete="off">
@@ -136,22 +137,8 @@
           <button type="submit" class="btn-primary btn-big" id="auth-submit"><span data-i18n="auth.submit">Entrar</span></button>
         </form>
         <p class="hint" data-i18n="auth.hint">Você pode usar a conta em vários aparelhos. Cada aparelho novo só entra depois que você aprova pelo aparelho que já está na conta.</p>
+        <button type="button" class="btn-ghost" id="auth-back"><svg class="i"><use href="#i-back"/></svg><span data-i18n="back">Voltar</span></button>
       </div>
-      <section class="about">
-        <h2 data-i18n="about.title">O que é o Game Together</h2>
-        <p data-i18n="about.p1">Um site grátis de chamada de voz para quem quer jogar acompanhado. Você escolhe o jogo, quantas pessoas quer na chamada, o idioma e a sua plataforma, clica em Matchmake e cai numa chamada com quem escolheu a mesma coisa.</p>
-        <p data-i18n="about.p2">Sem cadastro, sem senha, sem câmera: só o seu nickname e o microfone. Funciona no PC, no Android e no iPhone, direto no navegador, e dá para instalar como app.</p>
-        <h3 data-i18n="about.games">Jogos disponíveis</h3>
-        <p id="about-games">ARK: Survival Evolved, ARK: Survival Ascended, Rocket League, Fortnite, Roblox, Terraria, Minecraft, Valorant, GTA V, Helldivers 2, Brawl Stars, FIFA 27 e FIFA 26.</p>
-        <h3 data-i18n="about.how">Como funciona</h3>
-        <ol>
-          <li data-i18n="about.s1">Escolha um nickname (não precisa ser seu nome real).</li>
-          <li data-i18n="about.s2">Toque no jogo e escolha 2 pessoas ou 3 ou mais, o idioma (Português ou English) e a plataforma.</li>
-          <li data-i18n="about.s3">Clique em Matchmake. A chamada começa assim que alguém com a mesma escolha aparecer.</li>
-          <li data-i18n="about.s4">Gostou de alguém? Adicione como amigo, mande mensagem e chame para jogar de novo.</li>
-        </ol>
-        <p class="hint"><span data-i18n="about.source">O site é aberto: o código fica no GitHub, e você pode sugerir jogos por lá.</span> <a href="https://github.com/enzojcovello-eng/game-together-" rel="noopener">github.com/enzojcovello-eng/game-together-</a></p>
-      </section>
     </section>
 
     <!-- ESPERANDO PERMISSÃO -->
@@ -167,6 +154,11 @@
 
     <!-- INÍCIO: escolha do jogo -->
     <section class="screen" id="screen-home">
+      <div class="welcome" id="welcome">
+        <h2 id="welcome-title" data-i18n="welcome.title">Bem-vindo ao Game Together! 👋</h2>
+        <p id="welcome-text" data-i18n="welcome.text">Escolha um jogo abaixo, diga quantas pessoas, o idioma e a sua plataforma. Na hora de entrar na chamada você cria um nickname: sem senha, sem e-mail, leva 5 segundos.</p>
+        <button type="button" class="btn-primary small" id="welcome-cta" data-i18n="welcome.cta">Criar meu nickname</button>
+      </div>
       <div class="hero-banner" id="hero-banner">
         <div class="hero-text">
           <div class="hero-brand">game<em>together</em></div>
@@ -187,6 +179,21 @@
       <div class="game-grid" id="game-grid"></div>
       <p class="hint center" id="game-empty" hidden data-i18n="home.noResults">Nenhum jogo com esse nome. Sugira ele no GitHub!</p>
       <p class="hint center" data-i18n="home.hint">Sem câmera, só voz. Funciona no PC e no celular, direto no navegador.</p>
+      <section class="about">
+        <h2 data-i18n="about.title">O que é o Game Together</h2>
+        <p data-i18n="about.p1">Um site grátis de chamada de voz para quem quer jogar acompanhado. Você escolhe o jogo, quantas pessoas quer na chamada, o idioma e a sua plataforma, clica em Matchmake e cai numa chamada com quem escolheu a mesma coisa.</p>
+        <p data-i18n="about.p2">Sem cadastro, sem senha, sem câmera: só o seu nickname e o microfone. Funciona no PC, no Android e no iPhone, direto no navegador, e dá para instalar como app.</p>
+        <h3 data-i18n="about.games">Jogos disponíveis</h3>
+        <p id="about-games">ARK: Survival Evolved, ARK: Survival Ascended, Rocket League, Fortnite, Roblox, Terraria, Minecraft, Valorant, GTA V, Helldivers 2, Brawl Stars, FIFA 27 e FIFA 26.</p>
+        <h3 data-i18n="about.how">Como funciona</h3>
+        <ol>
+          <li data-i18n="about.s1">Escolha um nickname (não precisa ser seu nome real).</li>
+          <li data-i18n="about.s2">Toque no jogo e escolha 2 pessoas ou 3 ou mais, o idioma (Português ou English) e a plataforma.</li>
+          <li data-i18n="about.s3">Clique em Matchmake. A chamada começa assim que alguém com a mesma escolha aparecer.</li>
+          <li data-i18n="about.s4">Gostou de alguém? Adicione como amigo, mande mensagem e chame para jogar de novo.</li>
+        </ol>
+        <p class="hint"><span data-i18n="about.source">O site é aberto: o código fica no GitHub, e você pode sugerir jogos por lá.</span> <a href="https://github.com/enzojcovello-eng/game-together-" rel="noopener">github.com/enzojcovello-eng/game-together-</a></p>
+      </section>
     </section>
 
     <!-- CONFIGURAÇÃO -->
