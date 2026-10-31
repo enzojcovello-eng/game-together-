@@ -195,6 +195,15 @@ inicial) vê uma faixa amarela "Tem uma versão nova" com o botão
 nova aqui no GitHub.
 
 
+## Quantas pessoas visitaram
+
+O endereço https://game-together.onrender.com/api/stats mostra, em texto
+simples, quantas pessoas estão online agora, quantas estão em chamada,
+quantas contas existem e as visitas: de hoje (`visitsToday`, com
+`visitorsToday` sendo pessoas diferentes), dos últimos 7 dias e desde o
+início (`visitsTotal`), além de um resumo por dia. O site não usa cookies
+nem rastreadores: conta só a abertura da página.
+
 ## Capas dos jogos
 
 As capas que vêm no site são ilustrações próprias (as oficiais têm direitos
@@ -416,6 +425,15 @@ in a few minutes. Anyone with the app open (or installed on the home
 screen) sees a yellow bar "There is a new version" with an **Update now**
 button. Anyone running their own copy on a computer sees "This copy of the
 app is outdated" with a button to download the new version here on GitHub.
+
+## How many people visited
+
+The address https://game-together.onrender.com/api/stats shows, in plain
+text, how many people are online right now, how many are on a call, how
+many accounts exist and the visits: today (`visitsToday`, with
+`visitorsToday` being distinct people), the last 7 days and since the start
+(`visitsTotal`), plus a per-day summary. The site uses no cookies or
+trackers: it only counts page opens.
 
 ## Game covers
 
