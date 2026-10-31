@@ -93,6 +93,9 @@ quantidade de pessoas e uma plataforma compatível.
 | FIFA 26 (EA FC 26) | 3 | PC, PlayStation, Xbox, Switch | Sim |
 | Minecraft Dungeons | 4 | PC, PlayStation, Xbox, Switch | Sim |
 | Minecraft Dungeons II | 4 | PC, PlayStation, Xbox, Switch | Sim |
+| No Man's Sky | 7 | PC, PlayStation, Xbox, Switch | Sim |
+| Subnautica 2 | 4 | PC, PlayStation, Xbox | Sim |
+| Overcooked! All You Can Eat (2) | 4 | PC, PlayStation, Xbox, Switch | Sim |
 
 Cada cartão de jogo mostra quantas pessoas estão em chamada e quantas estão
 procurando naquele jogo agora. No topo da tela inicial aparece o total.
@@ -231,6 +234,9 @@ ilustração. Formato bom: vertical, 600 x 800 pixels ou maior.
 | FIFA 26 | `fifa-26.jpg` |
 | Minecraft Dungeons | `minecraft-dungeons.jpg` |
 | Minecraft Dungeons II | `minecraft-dungeons-2.jpg` |
+| No Man's Sky | `no-mans-sky.jpg` |
+| Subnautica 2 | `subnautica-2.jpg` |
+| Overcooked | `overcooked.jpg` |
 
 ---
 
@@ -327,6 +333,9 @@ call size and a compatible platform.
 | FIFA 26 (EA FC 26) | 3 | PC, PlayStation, Xbox, Switch | Yes |
 | Minecraft Dungeons | 4 | PC, PlayStation, Xbox, Switch | Yes |
 | Minecraft Dungeons II | 4 | PC, PlayStation, Xbox, Switch | Yes |
+| No Man's Sky | 7 | PC, PlayStation, Xbox, Switch | Yes |
+| Subnautica 2 | 4 | PC, PlayStation, Xbox | Yes |
+| Overcooked! All You Can Eat (2) | 4 | PC, PlayStation, Xbox, Switch | Yes |
 
 Each game card shows how many people are on a call and how many are
 searching in that game right now. The home screen shows the total at the top.
@@ -467,6 +476,9 @@ larger.
 | FIFA 26 | `fifa-26.jpg` |
 | Minecraft Dungeons | `minecraft-dungeons.jpg` |
 | Minecraft Dungeons II | `minecraft-dungeons-2.jpg` |
+| No Man's Sky | `no-mans-sky.jpg` |
+| Subnautica 2 | `subnautica-2.jpg` |
+| Overcooked | `overcooked.jpg` |
 
 ## License
 
