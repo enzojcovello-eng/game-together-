@@ -47,6 +47,8 @@ const server = isHttps
 const io = new Server(server, { cors: { origin: '*' }, pingInterval: 25000, pingTimeout: 60000 });
 // quem caiu no meio da chamada tem esse tempo para reconectar e voltar à mesma sala
 const REJOIN_GRACE = Number(process.env.REJOIN_GRACE_MS) || 60 * 1000;
+// quem procura 2 pessoas e não acha par nesse tempo entra numa chamada sozinho para esperar lá
+const SOLO_WAIT = Number(process.env.SOLO_WAIT_MS) || 5000;
 const parked = new Map(); // `${conta}|${sala}` -> { id (socket antigo), timer }
 
 // ---- visitas: conta aberturas da página inicial e visitantes diferentes por dia ----
@@ -725,6 +727,8 @@ io.on('connection', (socket) => {
     if (result.status === 'waiting') {
       if (typeof ack === 'function') ack({ status: 'waiting' });
       broadcastStats();
+      // sem par em SOLO_WAIT: abre a chamada só com essa pessoa, e quem vier depois entra nela
+      setTimeout(() => { const solo = mm.openSolo(socket.id); if (solo) announceJoin(solo); }, SOLO_WAIT);
       return;
     }
     announceJoin(result);

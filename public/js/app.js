@@ -1047,6 +1047,7 @@
   // ---------- sala / chamada ----------
   function enterRoom(room, me, initiateWith) {
     const rejoin = Boolean(state.room && state.room.id === room.id);
+    const solo = !rejoin && !room.private && room.members.length === 1;
     state.searching = false;
     state.room = room;
     state.me = me;
@@ -1064,6 +1065,7 @@
     keepAliveStart();
     mediaSessionStart(room);
     wakeLockOn();
+    if (solo) toast(t('room.solo'), 7000);
   }
 
   function renderRoom() {
