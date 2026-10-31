@@ -20,6 +20,8 @@
     requests: [],
     social: { me: null, friends: [], requests: [], dms: {} },
     profile: { avatar: null, avatarKind: null, title: null },
+    ban: null, // { until, reason } enquanto a conta estiver congelada
+    clip: null, // { blob, seconds, mime } últimos segundos da chamada, guardados pela pessoa para uma denúncia
     dmWith: null,
     unread: {},
     panelTab: 'chat',
@@ -184,7 +186,7 @@
     if (!state.token) return;
     let snapshot = null;
     try { snapshot = JSON.parse(store.get('gt:social') || 'null'); } catch (_) {}
-    socket.emit('hello', { token: state.token, name: state.name, snapshot });
+    socket.emit('hello', { token: state.token, name: state.name, snapshot, titleCert: store.get('gt:titleCert') });
   }
   function setUser(name, token) {
     state.name = name || '';
@@ -231,7 +233,9 @@
     const raw = p.name && p.name === p.name.toLowerCase() && state.name && state.name.toLowerCase() === p.name && state.name !== p.name;
     if (p.name && state.token && !raw) { state.name = p.name; store.set('gt:name', p.name); }
     state.profile = { avatar: p.avatar || null, avatarKind: p.avatarKind || (p.avatar ? (p.avatar.startsWith('/avatars/') ? 'upload' : 'cover') : null), title: p.title || null };
-    if (p.removed) { store.set('gt:avatar', null); toast(t('profile.photoRemoved'), 6000); }
+    if (p.removed) { store.set('gt:avatar', null); store.set('gt:avatarCover', null); toast(t('profile.photoRemoved'), 6000); }
+    if (p.titleCert) store.set('gt:titleCert', p.titleCert);
+    else if (p.title === null && Object.prototype.hasOwnProperty.call(p, 'titleCert')) store.set('gt:titleCert', null);
     renderUser();
     if (state.room) renderRoom();
   }
@@ -250,17 +254,17 @@
     try {
       const p = await api('/api/profile/avatar/cover', { method: 'POST', body: { id } });
       store.set('gt:avatar', null);
+      store.set('gt:avatarCover', id || null);
       setProfile({ ...p, avatarKind: id ? 'cover' : null });
       toast(t('profile.photoSaved'));
       $('#avatar-picker').hidden = true;
     } catch (err) { setError('#avatar-error', errText(err)); }
   }
-  function readImage(file) {
+  function readImage(file, max = 512) {
     return new Promise((resolve, reject) => {
       const img = new Image();
       const url = URL.createObjectURL(file);
       img.onload = () => {
-        const max = 512;
         const scale = Math.min(1, max / Math.max(img.width, img.height));
         const c = document.createElement('canvas');
         c.width = Math.round(img.width * scale); c.height = Math.round(img.height * scale);
@@ -282,37 +286,132 @@
     try {
       const p = await api('/api/profile/avatar', { method: 'POST', body: { image: data } });
       store.set('gt:avatar', data); // cópia local: volta sozinha se o servidor perder a foto
+      store.set('gt:avatarCover', null);
       setProfile({ ...p, avatarKind: 'upload' });
       toast(t('profile.photoSaved'));
       $('#avatar-picker').hidden = true;
     } catch (err) { $('#toast').hidden = true; setError('#avatar-error', errText(err)); }
   }
-  // o servidor perdeu a foto enviada (reinício sem dados): reenvia a cópia local
+  // o servidor perdeu a foto (reinício sem dados): devolve a cópia local (foto enviada ou capa escolhida)
   let reuploaded = false;
   async function maybeReupload() {
+    if (reuploaded || state.profile.avatar) return;
     const data = store.get('gt:avatar');
-    if (!data || reuploaded || state.profile.avatar) return;
+    const cover = store.get('gt:avatarCover');
+    if (!data && !cover) return;
     reuploaded = true;
     try {
-      const p = await api('/api/profile/avatar', { method: 'POST', body: { image: data } });
-      setProfile({ ...p, avatarKind: 'upload' });
+      if (data) {
+        const p = await api('/api/profile/avatar', { method: 'POST', body: { image: data } });
+        setProfile({ ...p, avatarKind: 'upload' });
+      } else {
+        const p = await api('/api/profile/avatar/cover', { method: 'POST', body: { id: cover } });
+        setProfile({ ...p, avatarKind: 'cover' });
+      }
     } catch (_) { /* fica sem foto até a pessoa escolher outra */ }
   }
   async function renameAccount(newName) {
     setError('#rename-error', '');
     try {
       const p = await api('/api/profile/name', { method: 'POST', body: { name: newName } });
+      if (p.token) { state.token = p.token; store.set('gt:token', p.token); }
       setProfile(p);
+      sendHello();
       toast(t('profile.renamed', { name: p.name }), 5000);
       $('#rename-form').hidden = true;
       if (state.room) renderRoom();
     } catch (err) { setError('#rename-error', errText(err)); }
   }
+  let reportTarget = null;
+  let reportImage = null;
+  let reportAudio = null; // áudio escolhido do aparelho (dataURL)
   function reportUser(name) {
-    toast(t('report.confirm', { name }), 15000, [
-      { label: t('report.yes'), primary: true, onClick: () => api('/api/report', { method: 'POST', body: { target: name, reason: 'other' } }).then(() => toast(t('report.sent'), 4000)).catch((err) => toast(errText(err))) },
-      { label: t('friends.cancel'), onClick: () => {} },
-    ]);
+    reportTarget = name;
+    reportImage = null;
+    reportAudio = null;
+    $('#report-who').textContent = name;
+    $('#report-note').value = '';
+    $('#report-file-name').textContent = '';
+    $('#report-audio-name').textContent = '';
+    setError('#report-error', '');
+    $('#report-clip').hidden = !state.clip;
+    if (state.clip) $('#report-clip-text').textContent = t('clip.attached', { s: state.clip.seconds });
+    $('#report-backdrop').hidden = false;
+    $('#report-note').focus();
+  }
+  function closeReport() { $('#report-backdrop').hidden = true; reportTarget = null; reportImage = null; reportAudio = null; }
+  async function pickReportAudio(file) {
+    if (!file) return;
+    setError('#report-error', '');
+    if (file.size > 6 * 1024 * 1024) return setError('#report-error', t('report.audioBig'));
+    const type = file.type || '';
+    const okType = /^audio\/(webm|mp4|ogg|mpeg|aac|x-m4a)$/i.test(type) || /^video\/webm$/i.test(type) || /\.(m4a|mp3|ogg|webm)$/i.test(file.name);
+    if (!okType) return setError('#report-error', t('report.audioType'));
+    let data = await blobToDataUrl(file);
+    // alguns celulares não informam o tipo: deduz pela extensão
+    if (!type) data = data.replace(/^data:[^;]*;/, `data:audio/${/\.mp3$/i.test(file.name) ? 'mpeg' : /\.ogg$/i.test(file.name) ? 'ogg' : /\.webm$/i.test(file.name) ? 'webm' : 'mp4'};`);
+    reportAudio = data;
+    $('#report-audio-name').textContent = file.name;
+    $('#report-clip').hidden = true; // o áudio escolhido vale no lugar do trecho
+  }
+  async function sendReport(e) {
+    e.preventDefault();
+    const note = $('#report-note').value.trim();
+    if (note.length < 10) return setError('#report-error', t('report.short'));
+    const btn = $('#report-send');
+    btn.disabled = true;
+    try {
+      const audio = reportAudio || (state.clip && !$('#report-clip').hidden ? await blobToDataUrl(state.clip.blob) : undefined);
+      await api('/api/report', { method: 'POST', body: { target: reportTarget, reason: 'other', note, image: reportImage || undefined, audio } });
+      if (audio && !reportAudio) { state.clip = null; $('#clip-btn').classList.remove('rec-on'); }
+      closeReport();
+      toast(t('report.sent'), 4000);
+    } catch (err) { setError('#report-error', errText(err)); }
+    btn.disabled = false;
+  }
+  async function pickReportImage(file) {
+    if (!file) return;
+    try {
+      reportImage = await readImage(file, 1280);
+      $('#report-file-name').textContent = file.name;
+    } catch (_) { setError('#report-error', t('err.bad_image')); }
+  }
+
+  // ---------- conta congelada (banimento) ----------
+  let banTimer = null;
+  function fmtLeft(ms) {
+    const s = Math.max(0, Math.round(ms / 1000));
+    const d = Math.floor(s / 86400), h = Math.floor((s % 86400) / 3600), m = Math.floor((s % 3600) / 60), sec = s % 60;
+    if (d) return `${d}d ${h}h ${m}min`;
+    if (h) return `${h}h ${m}min ${sec}s`;
+    return `${m}min ${sec}s`;
+  }
+  function setBan(ban) {
+    state.ban = ban || null;
+    clearInterval(banTimer);
+    const ov = $('#ban-overlay');
+    if (!state.ban) { ov.hidden = true; document.body.classList.remove('banned'); return; }
+    if (state.room) leaveRoom({ silent: true });
+    if (state.searching) { state.searching = false; socket.emit('cancel'); }
+    closePanel(); closeReport();
+    $('#ban-reason').textContent = state.ban.reason ? t('ban.reason', { reason: state.ban.reason }) : t('ban.noReason');
+    ov.hidden = false;
+    document.body.classList.add('banned');
+    const tick = () => {
+      if (!state.ban.until) { $('#ban-left').textContent = t('ban.forever'); return; }
+      const left = state.ban.until - Date.now();
+      $('#ban-left').textContent = fmtLeft(left);
+      if (left <= 0) { clearInterval(banTimer); checkBanOver(); }
+    };
+    tick();
+    banTimer = setInterval(tick, 1000);
+  }
+  async function checkBanOver() {
+    try {
+      const me = await api('/api/me');
+      if (!me.ban) { setBan(null); toast(t('ban.over'), 5000); showScreen('screen-home'); }
+      else setBan(me.ban);
+    } catch (_) { setTimeout(checkBanOver, 5000); }
   }
 
   async function onAuthSubmit(e) {
@@ -336,8 +435,11 @@
       btn.disabled = false;
     }
   }
+  // o api() devolve só o código; para 'banned' o servidor manda também o prazo
+  
 
   function confirmLogout() {
+    if (state.ban) return;
     toast(t('logout.confirm'), 20000, [
       { label: t('logout.yes'), primary: true, onClick: () => logout() },
       { label: t('logout.no'), onClick: () => {} },
@@ -350,7 +452,9 @@
     setUser('', null);
     store.set('gt:social', null);
     store.set('gt:avatar', null);
-    state.profile = { avatar: null, avatarKind: null };
+    store.set('gt:avatarCover', null);
+    store.set('gt:titleCert', null);
+    state.profile = { avatar: null, avatarKind: null, title: null };
     state.game = null;
     state.requests = [];
     state.dmWith = null;
@@ -774,6 +878,7 @@
   async function onMatchmake(e) {
     e.preventDefault();
     setError('#setup-error', '');
+    if (state.ban) return setBan(state.ban);
     state.mode = $('input[name="mode"]:checked').value;
     if (!state.token) return logout({ reason: 'auth.expired' });
     const needsPlatform = !$('#platform-field').hidden;
@@ -801,6 +906,7 @@
     }, (res) => {
       btn.disabled = false;
       if (res && res.error === 'not_logged_in') return logout({ reason: 'auth.expired' });
+      if (res && res.error === 'banned') return setBan(res.ban || { until: null, reason: '' });
       if (!res || res.error) return setError('#setup-error', t(res && res.error ? `err.${res.error}` : 'err.generic'));
       if (res.status === 'waiting') {
         state.searching = true;
@@ -833,6 +939,8 @@
       if (m.id !== me) connectPeer(m, initiators.has(m.id));
     }
     monitorLocalLevel();
+    state.clip = null; $('#clip-btn').classList.remove('rec-on');
+    recStart();
   }
 
   function renderRoom() {
@@ -899,6 +1007,7 @@
       audio.srcObject = e.streams[0];
       audio.play().catch(() => {});
       monitorRemoteLevel(member.id, e.streams[0]);
+      recAdd(member.id, e.streams[0]);
     };
     pc.onconnectionstatechange = () => {
       peer.connected = pc.connectionState === 'connected';
@@ -955,6 +1064,7 @@
   function leaveRoom({ silent } = {}) {
     for (const id of [...state.peers.keys()]) removePeer(id);
     if (localMeter) { localMeter.stop(); localMeter = null; }
+    recStop();
     state.room = null;
     state.me = null;
     socket.emit('leave');
@@ -971,6 +1081,73 @@
     applyMute();
     renderRoom();
   }
+
+  // ---------- últimos 30 s da chamada (só em memória, no aparelho) ----------
+  // Três gravadores se revezam: um novo a cada 10 s, cada um vive 30 s. Ao pedir o
+  // trecho, o mais antigo em andamento é fechado: ele tem entre 20 e 30 s.
+  const rec = { ctx: null, dest: null, sources: new Map(), recorders: [], timer: null, mime: null };
+  function recMime() {
+    if (typeof MediaRecorder === 'undefined') return null;
+    for (const m of ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4', 'audio/ogg']) if (MediaRecorder.isTypeSupported(m)) return m;
+    return '';
+  }
+  function recStart() {
+    if (rec.ctx || !state.localStream) return;
+    try {
+      rec.mime = recMime();
+      if (rec.mime === null) return;
+      rec.ctx = audioCtx || (audioCtx = new (window.AudioContext || window.webkitAudioContext)());
+      rec.dest = rec.ctx.createMediaStreamDestination();
+      recAdd('me', state.localStream);
+      for (const [id, p] of state.peers) if (p.audio && p.audio.srcObject) recAdd(id, p.audio.srcObject);
+      recSpawn();
+      rec.timer = setInterval(recSpawn, 10000);
+    } catch (_) { recStop(); }
+  }
+  function recAdd(id, stream) {
+    if (!rec.ctx || rec.sources.has(id) || !stream.getAudioTracks().length) return;
+    try { const src = rec.ctx.createMediaStreamSource(stream); src.connect(rec.dest); rec.sources.set(id, src); } catch (_) {}
+  }
+  function recSpawn() {
+    if (!rec.dest) return;
+    try {
+      const r = new MediaRecorder(rec.dest.stream, rec.mime ? { mimeType: rec.mime } : undefined);
+      r.chunks = []; r.startedAt = Date.now();
+      r.ondataavailable = (e) => { if (e.data && e.data.size) r.chunks.push(e.data); };
+      r.start(1000);
+      rec.recorders.push(r);
+      while (rec.recorders.length > 3) { const old = rec.recorders.shift(); try { old.ondataavailable = null; old.stop(); } catch (_) {} }
+    } catch (_) {}
+  }
+  function recStop() {
+    clearInterval(rec.timer);
+    for (const r of rec.recorders) { try { r.ondataavailable = null; r.stop(); } catch (_) {} }
+    for (const srcNode of rec.sources.values()) { try { srcNode.disconnect(); } catch (_) {} }
+    rec.recorders = []; rec.sources.clear(); rec.ctx = null; rec.dest = null; rec.timer = null;
+  }
+  function captureClip() {
+    return new Promise((resolve) => {
+      const r = rec.recorders[0];
+      if (!r || r.state !== 'recording') return resolve(null);
+      const seconds = Math.min(30, Math.round((Date.now() - r.startedAt) / 1000));
+      r.onstop = () => {
+        const blob = new Blob(r.chunks, { type: r.mimeType || rec.mime || 'audio/webm' });
+        rec.recorders = rec.recorders.filter((x) => x !== r);
+        recSpawn();
+        resolve(blob.size ? { blob, seconds, mime: blob.type } : null);
+      };
+      try { r.stop(); } catch (_) { resolve(null); }
+    });
+  }
+  async function saveClip() {
+    if (typeof MediaRecorder === 'undefined') return toast(t('clip.unsupported'), 4000);
+    const clip = await captureClip();
+    if (!clip || clip.seconds < 2) return toast(t('clip.none'), 4000);
+    state.clip = clip;
+    $('#clip-btn').classList.add('rec-on');
+    toast(t('clip.saved', { s: clip.seconds }), 6000);
+  }
+  const blobToDataUrl = (blob) => new Promise((res, rej) => { const fr = new FileReader(); fr.onload = () => res(fr.result); fr.onerror = rej; fr.readAsDataURL(blob); });
 
   // ---------- medidor de voz ----------
   let audioCtx = null;
@@ -1086,6 +1263,9 @@
   socket.on('chat', addChat);
   socket.on('room-update', ({ room }) => { if (state.room && room && room.id === state.room.id) { state.room = room; renderRoom(); } });
   socket.on('profile', (p) => { setProfile(p); maybeReupload(); });
+  socket.on('token', ({ token }) => { if (token && state.token) { state.token = token; store.set('gt:token', token); } });
+  socket.on('banned', (ban) => setBan(ban || { until: null, reason: '' }));
+  socket.on('unbanned', () => { setBan(null); toast(t('ban.over'), 5000); showScreen('screen-home'); });
 
   // conta
   socket.on('login-request', onLoginRequest);
@@ -1132,6 +1312,12 @@
   $('#rename-cancel').addEventListener('click', () => { $('#rename-form').hidden = true; });
   $('#rename-form').addEventListener('submit', (e) => { e.preventDefault(); renameAccount($('#rename-input').value.trim()); });
   $('#avatar-none').addEventListener('click', () => chooseCover(null));
+  $('#report-form').addEventListener('submit', sendReport);
+  $('#report-cancel').addEventListener('click', closeReport);
+  $('#report-clip-rm').addEventListener('click', () => { $('#report-clip').hidden = true; });
+  $('#report-audio').addEventListener('change', (e) => { pickReportAudio(e.target.files[0]); e.target.value = ''; });
+  $('#clip-btn').addEventListener('click', saveClip);
+  $('#report-file').addEventListener('change', (e) => { pickReportImage(e.target.files[0]); e.target.value = ''; });
   $('#avatar-file').addEventListener('change', (e) => { uploadAvatar(e.target.files[0]); e.target.value = ''; });
   $('#dm-call').addEventListener('click', () => { if (state.dmWith) callFriend(state.dmWith); });
   $('#dm-form').addEventListener('submit', (e) => {
@@ -1203,6 +1389,7 @@
           setProfile({ name: me.name, avatar: me.avatar, avatarKind: me.avatarKind, title: me.title });
           setRequests(me.pending);
           showScreen('screen-home');
+          if (me.ban) setBan(me.ban);
           return;
         } catch (err) {
           if (err.message === 'not_logged_in') {

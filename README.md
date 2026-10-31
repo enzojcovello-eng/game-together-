@@ -162,13 +162,24 @@ automática no servidor antes de aparecer: fotos com nudez ou conteúdo
 sexual são recusadas na hora. Trocar o nickname mantém amigos, conversas e
 foto; o nickname antigo fica livre.
 
-### Denúncias
+### Denúncias e suspensão
 
 Em qualquer cartão de pessoa (na chamada ou na lista de amigos) tem uma
-bandeirinha para denunciar foto ou nickname impróprio. Com três denúncias
-de pessoas diferentes, a foto enviada sai do ar sozinha. Tudo fica
-registrado para quem administra o site decidir (remover a foto, ignorar ou
-banir o nickname).
+bandeirinha para denunciar. Abre um formulário: você conta o que aconteceu
+(obrigatório) e pode anexar um print ou um áudio gravado no seu aparelho
+(m4a, mp3, ogg ou webm, até 6 MB). Na chamada tem também o botão
+**Últimos 30s**: ele guarda o trecho mais recente do áudio da chamada, e
+esse trecho vai junto com a denúncia (durante a chamada o app guarda só os
+últimos 30 segundos, em memória, no seu aparelho; nada é enviado a menos
+que você anexe numa denúncia). A denúncia vai para a administração junto
+com o nickname e a foto de perfil da pessoa. Com três denúncias de
+pessoas diferentes, a foto enviada sai do ar sozinha.
+
+Quem administra julga cada caso e pode suspender a conta por um tempo (de
+1 hora a 30 dias) ou para sempre, com um motivo. Durante a suspensão a tela
+da pessoa fica travada com o motivo e a contagem regressiva: ela não entra
+em chamada, não fala no chat, não manda mensagem e não consegue sair da
+conta. Quando o tempo acaba, o site volta ao normal sozinho.
 
 ### Amigos
 
@@ -220,17 +231,21 @@ nova aqui no GitHub.
 
 ## Administração das denúncias
 
-A página `/admin.html` lista as denúncias abertas, com a foto denunciada,
-quem denunciou e os botões "Remover foto", "Banir nickname" e "Ignorar".
-Ela só abre com a chave definida na variável de ambiente `ADMIN_KEY` do
-servidor (um texto longo e aleatório). Banir apaga a conta e bloqueia o
-nickname para sempre.
+A página `/admin.html` lista as denúncias abertas agrupadas por pessoa:
+foto de perfil, nickname, cada relato com o print anexado (toque para
+ampliar), o áudio da chamada com um tocador, e quem denunciou. Para cada caso: escolha o tempo (1 hora a 30
+dias ou para sempre), escreva o motivo e toque em "Banir"; ou "Só remover a
+foto"; ou "Ignorar". Embaixo fica a lista de banidos com "desbanir". Ela só
+abre com a chave definida na variável de ambiente `ADMIN_KEY` do servidor
+(um texto longo e aleatório).
 
 Na mesma página dá para dar um **título** a qualquer pessoa: digite o
 nickname e o texto (por exemplo "Dono", "Mod" ou "VIP", até 16 letras).
 O selo aparece ao lado do nickname para todo mundo (topo, chamada, amigos e
-perfil), acompanha a troca de nickname e só pode ser dado ou tirado por
-quem tem a chave.
+perfil) e acompanha a troca de nickname. Ele só sai de duas formas: a
+pessoa tocar em **Sair** da conta, ou quem tem a chave tirar na página de
+administração. Reinício do servidor, atualização do site ou banimento não
+mexem nele (o aparelho guarda um comprovante assinado e devolve sozinho).
 
 ## Quantas pessoas visitaram
 
@@ -242,6 +257,10 @@ início (`visitsTotal`), além de um resumo por dia. O site não usa cookies
 nem rastreadores: conta só a abertura da página.
 
 ## Capas dos jogos
+
+A foto de perfil (enviada ou capa escolhida) também fica: o aparelho guarda
+uma cópia e devolve sozinho se o servidor reiniciar sem os dados. Ela só sai
+se a pessoa tocar em **Sair**, ou por denúncias e administração.
 
 As capas que vêm no site são ilustrações próprias (as oficiais têm direitos
 autorais). Para trocar por outra imagem não precisa mexer em código: é só
@@ -438,13 +457,24 @@ through an automatic check on the server before it shows up: photos with
 nudity or sexual content are refused on the spot. Changing the nickname
 keeps friends, conversations and photo; the old nickname becomes free.
 
-### Reports
+### Reports and suspensions
 
 Every person card (on a call or in the friends list) has a small flag to
-report an inappropriate photo or nickname. With three reports from
-different people, the uploaded photo goes offline by itself. Everything is
-logged for whoever runs the site to decide (remove the photo, dismiss or
-ban the nickname).
+report. It opens a form: you tell what happened (required) and can attach
+a screenshot or an audio file recorded on your device (m4a, mp3, ogg or
+webm, up to 6 MB). On a call there is also the **Last 30s** button: it keeps the
+most recent stretch of the call audio, and that clip goes along with the
+report (during a call the app only keeps the last 30 seconds, in memory, on
+your device; nothing is sent unless you attach it to a report). The report
+reaches the administration together with the person's nickname and
+profile photo. With three reports from different
+people, the uploaded photo goes offline by itself.
+
+Whoever runs the site judges each case and can suspend the account for a
+while (from 1 hour to 30 days) or forever, with a reason. During the
+suspension the person's screen is frozen with the reason and a countdown:
+no calls, no chat, no messages and no logging out. When the time is up,
+the site goes back to normal by itself.
 
 ### Friends
 
@@ -494,17 +524,21 @@ app is outdated" with a button to download the new version here on GitHub.
 
 ## Managing reports
 
-The `/admin.html` page lists open reports with the reported photo, who
-reported it and the buttons "Remover foto" (remove photo), "Banir nickname"
-(ban) and "Ignorar" (dismiss). It only opens with the key set in the
-server's `ADMIN_KEY` environment variable (a long random text). Banning
-deletes the account and blocks the nickname for good.
+The `/admin.html` page lists open reports grouped by person: profile
+photo, nickname, each report with its attached screenshot (tap to zoom),
+the call audio with a player, and who reported. For each case: pick the time (1 hour to 30 days or forever),
+write the reason and tap "Banir" (suspend); or "Só remover a foto" (remove
+the photo only); or "Ignorar" (dismiss). Below is the list of suspended
+accounts with "desbanir" (lift). It only opens with the key set in the
+server's `ADMIN_KEY` environment variable (a long random text).
 
 On the same page you can give anyone a **title**: type the nickname and
 the text (for example "Dono", "Mod" or "VIP", up to 16 letters). The badge
 shows next to the nickname for everyone (top bar, call, friends and
-profile), follows a nickname change and can only be given or removed with
-the key.
+profile) and follows a nickname change. It only goes away in two cases:
+the person taps **Log out**, or whoever has the key removes it on the admin
+page. Server restarts, site updates or bans do not touch it (the device
+keeps a signed receipt and sends it back by itself).
 
 ## How many people visited
 
@@ -516,6 +550,11 @@ many accounts exist and the visits: today (`visitsToday`, with
 trackers: it only counts page opens.
 
 ## Game covers
+
+The profile photo (uploaded or chosen cover) also stays: the device keeps a
+copy and sends it back by itself if the server restarts without its data.
+It only goes away if the person taps **Log out**, or through reports and
+administration.
 
 The covers that ship with the site are original illustrations (official
 ones are copyrighted). To swap in another image you do not need to touch

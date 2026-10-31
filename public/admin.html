@@ -8,99 +8,162 @@
   <link rel="stylesheet" href="css/style.css">
   <style>
     main { max-width: 760px; }
+    h2 { font-size: 1.1rem; margin: 22px 0 10px; }
     .key { display: flex; gap: 8px; margin: 20px 0; }
     .key input { flex: 1; padding: 11px 12px; border-radius: 10px; border: 1px solid var(--border-strong); background: var(--bg-2); color: var(--text); }
-    .rep { display: flex; gap: 12px; align-items: flex-start; padding: 12px; border: 1px solid var(--border); border-radius: 12px; background: var(--card); margin-bottom: 10px; }
-    .rep img, .rep .noimg { width: 64px; height: 64px; border-radius: 50%; object-fit: cover; background: var(--card-2); display: grid; place-items: center; flex: none; }
-    .rep .body { flex: 1; min-width: 0; }
-    .rep .acts { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
-    .rep .acts button { padding: 7px 10px; font-size: 0.85rem; }
-    .rep .danger { border-color: var(--danger); color: var(--danger); }
+    .rep { padding: 12px; border: 1px solid var(--border); border-radius: 12px; background: var(--card); margin-bottom: 10px; }
+    .who { display: flex; gap: 12px; align-items: center; }
+    .who img, .who .noimg { width: 64px; height: 64px; border-radius: 50%; object-fit: cover; background: var(--card-2); display: grid; place-items: center; flex: none; }
+    .who .names { flex: 1; min-width: 0; }
+    .who strong { font-size: 1.05rem; }
     .muted { font-size: 0.85rem; }
+    .item { margin-top: 10px; padding: 10px; border-radius: 10px; background: var(--bg-2); border: 1px solid var(--border); }
+    .item .meta { font-size: 0.8rem; color: var(--muted); }
+    .item .note { margin: 6px 0; white-space: pre-wrap; }
+    .item img { max-width: 100%; max-height: 260px; border-radius: 8px; border: 1px solid var(--border); display: block; margin-top: 6px; cursor: zoom-in; }
+    .judge { display: grid; grid-template-columns: 1fr; gap: 8px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); }
+    .judge select, .judge input[type="text"] { padding: 10px 12px; border-radius: 10px; border: 1px solid var(--border-strong); background: var(--bg-2); color: var(--text); width: 100%; }
+    .judge label.chk { display: flex; align-items: center; gap: 8px; font-size: 0.9rem; color: var(--muted); }
+    .acts { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+    .acts button { padding: 9px 12px; font-size: 0.9rem; }
+    .danger-btn { background: var(--danger) !important; color: #fff !important; border-color: var(--danger) !important; }
+    .banned-tag { display: inline-block; padding: 2px 8px; border-radius: 999px; background: var(--danger); color: #fff; font-size: 0.72rem; font-weight: 800; text-transform: uppercase; margin-left: 6px; }
+    .title-tag { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 999px; background: var(--warn); color: var(--accent-ink); font-weight: 800; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.04em; margin-left: 6px; }
     .title-form { display: flex; flex-direction: column; gap: 8px; margin: 10px 0; }
     .title-form input { padding: 11px 12px; border-radius: 10px; border: 1px solid var(--border-strong); background: var(--bg-2); color: var(--text); width: 100%; }
     .title-form .btn-primary { width: 100%; }
     .titled { list-style: none; margin: 10px 0 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
     .titled li { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 10px; background: var(--bg-2); border: 1px solid var(--border); }
-    .titled .who { flex: 1; min-width: 0; }
-    .titled .who strong { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .titled .badge-title { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 999px; background: var(--warn); color: var(--accent-ink); font-weight: 800; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.04em; }
+    .titled .w { flex: 1; min-width: 0; }
+    .titled .w strong { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .rm { border: 0; border-radius: 999px; padding: 7px 14px; background: var(--danger); color: #fff; font-weight: 700; font-size: 0.85rem; cursor: pointer; }
-    .rm:hover { filter: brightness(1.1); }
+    .ok { border: 0; border-radius: 999px; padding: 7px 14px; background: var(--ok); color: #0b1f14; font-weight: 700; font-size: 0.85rem; cursor: pointer; }
+    #zoom { position: fixed; inset: 0; background: rgba(0,0,0,.9); display: grid; place-items: center; z-index: 99; cursor: zoom-out; }
+    #zoom img { max-width: 96vw; max-height: 96vh; }
   </style>
 </head>
 <body>
   <header class="topbar"><a class="brand" href="/"><span class="brand-name">game<em>together</em></span></a><span class="online">administração</span></header>
   <main>
-    <h1>Denúncias</h1>
+    <h1>Administração</h1>
     <p class="lead">Página só para quem tem a chave de administração (variável <code>ADMIN_KEY</code> no servidor).</p>
     <div class="key"><input type="password" id="key" placeholder="Chave de administração"><button type="button" class="btn-primary" id="load">Entrar</button></div>
     <p class="hint" id="stats"></p>
+
     <div class="rep" id="title-box" hidden>
-      <div class="body">
-        <strong>Títulos ao lado do nickname</strong>
-        <div class="muted">Digite o nickname da pessoa e o título (até 16 letras). Para tirar, envie com o título vazio.</div>
-        <div class="title-form">
-          <input type="text" id="title-name" placeholder="Nickname da pessoa" maxlength="20">
-          <input type="text" id="title-text" placeholder="Título (ex.: Dono, Mod, VIP)" maxlength="16" value="Dono">
-          <button type="button" class="btn-primary" id="title-btn">Dar título</button>
-        </div>
-        <div class="muted" id="title-msg"></div>
-        <ul class="titled" id="title-list"></ul>
+      <strong>Títulos ao lado do nickname</strong>
+      <div class="muted">Digite o nickname da pessoa e o título (até 16 letras). Para tirar, use o botão ao lado da pessoa.</div>
+      <div class="title-form">
+        <input type="text" id="title-name" placeholder="Nickname da pessoa" maxlength="20">
+        <input type="text" id="title-text" placeholder="Título (ex.: Dono, Mod, VIP)" maxlength="16" value="Dono">
+        <button type="button" class="btn-primary" id="title-btn">Dar título</button>
       </div>
+      <div class="muted" id="title-msg"></div>
+      <ul class="titled" id="title-list"></ul>
     </div>
-    <h2 style="font-size:1.1rem;margin:18px 0 10px">Denúncias abertas</h2>
+
+    <h2 id="h-reports" hidden>Denúncias para julgar</h2>
     <div id="list"></div>
+
+    <h2 id="h-bans" hidden>Banidos</h2>
+    <ul class="titled" id="ban-list"></ul>
   </main>
+  <div id="zoom" hidden><img id="zoom-img" alt=""></div>
   <script>
     const $ = (s) => document.querySelector(s);
     const key = () => $('#key').value.trim();
+    const hdr = () => ({ 'x-admin-key': key() });
     try { $('#key').value = sessionStorage.getItem('gt:admin') || ''; } catch (_) {}
+    const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    const when = (ms) => new Date(ms).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+    const left = (until) => {
+      if (!until) return 'para sempre';
+      const s = Math.max(0, Math.round((until - Date.now()) / 1000));
+      const d = Math.floor(s / 86400), h = Math.floor((s % 86400) / 3600), m = Math.floor((s % 3600) / 60);
+      return d ? `${d}d ${h}h` : h ? `${h}h ${m}min` : `${m}min`;
+    };
+    const DURATIONS = [[1, '1 hora'], [6, '6 horas'], [24, '1 dia'], [72, '3 dias'], [168, '7 dias'], [720, '30 dias'], ['forever', 'Para sempre']];
+
     async function load() {
-      const r = await fetch('/api/admin/reports', { headers: { 'x-admin-key': key() } });
+      const r = await fetch('/api/admin/reports', { headers: hdr() });
       if (!r.ok) { $('#list').innerHTML = '<p class="error">Chave inválida ou não configurada.</p>'; return; }
       try { sessionStorage.setItem('gt:admin', key()); } catch (_) {}
       const data = await r.json();
-      const tt = await fetch('/api/admin/titles', { headers: { 'x-admin-key': key() } }).then((x) => x.json()).catch(() => ({ titles: [] }));
+      $('#stats').textContent = `${data.stats.accounts} contas · ${data.bans.length} banidas agora · ${data.reports.length} denúncias abertas`;
+      await loadTitles();
+      renderReports(data.reports);
+      renderBans(data.bans);
+    }
+
+    async function loadTitles() {
+      const tt = await fetch('/api/admin/titles', { headers: hdr() }).then((x) => x.json()).catch(() => ({ titles: [] }));
       $('#title-box').hidden = false;
-      $('#title-list').innerHTML = (tt.titles || []).length ? tt.titles.map((x) => `<li><span class="who"><strong>${esc(x.name)}</strong><span class="badge-title">${esc(x.title)}</span></span><button type="button" class="rm" data-rm="${esc(x.name)}">tirar</button></li>`).join('') : '<li class="muted">Ninguém tem título ainda.</li>';
+      $('#title-list').innerHTML = (tt.titles || []).length ? tt.titles.map((x) => `<li><span class="w"><strong>${esc(x.name)}</strong><span class="title-tag">${esc(x.title)}</span></span><button type="button" class="rm" data-rm="${esc(x.name)}">tirar</button></li>`).join('') : '<li class="muted">Ninguém tem título ainda.</li>';
       $('#title-list').querySelectorAll('[data-rm]').forEach((b) => b.addEventListener('click', () => setTitle(b.dataset.rm, '')));
-      $('#stats').textContent = `${data.stats.accounts} contas · ${data.stats.banned} banidas · ${data.reports.length} denúncias abertas`;
+    }
+
+    function renderReports(reports) {
+      $('#h-reports').hidden = false;
       const byTarget = new Map();
-      for (const rep of data.reports) { if (!byTarget.has(rep.target)) byTarget.set(rep.target, []); byTarget.get(rep.target).push(rep); }
+      for (const rep of reports) { if (!byTarget.has(rep.target)) byTarget.set(rep.target, []); byTarget.get(rep.target).push(rep); }
       $('#list').innerHTML = byTarget.size ? '' : '<p class="hint">Nenhuma denúncia aberta.</p>';
       for (const [target, reps] of byTarget) {
-        const first = reps[0];
+        const f = reps[0];
         const div = document.createElement('div');
         div.className = 'rep';
-        div.innerHTML = `${first.targetAvatar ? `<img src="${first.targetAvatar}" alt="">` : '<span class="noimg">—</span>'}
-          <div class="body">
-            <strong>${esc(first.targetName)}</strong> <span class="muted">${first.targetExists ? '' : '(conta já não existe)'}</span>
-            <div class="muted">${reps.length} denúncia(s): ${reps.map((r) => `${esc(r.byName)} · ${r.reason}${r.note ? ' · ' + esc(r.note) : ''}`).join(' | ')}</div>
+        div.innerHTML = `
+          <div class="who">
+            ${f.targetAvatar ? `<img src="${f.targetAvatar}" alt="">` : '<span class="noimg">—</span>'}
+            <div class="names"><strong>${esc(f.targetName)}</strong>${f.targetTitle ? `<span class="title-tag">${esc(f.targetTitle)}</span>` : ''}${f.targetBan ? `<span class="banned-tag">banido · ${left(f.targetBan.until)}</span>` : ''}
+              <div class="muted">${reps.length} denúncia(s)${f.targetExists ? '' : ' · conta já não existe'}</div></div>
+          </div>
+          ${reps.map((r) => `<div class="item"><div class="meta">${esc(r.byName)} · ${r.reason === 'photo' ? 'foto' : r.reason === 'name' ? 'nickname' : 'outro'} · ${when(r.at)}</div><div class="note">${esc(r.note || '(sem relato)')}</div>${r.evidenceUrl ? `<img src="${r.evidenceUrl}?key=${encodeURIComponent(key())}" alt="print" data-zoom>` : '<div class="muted">sem print</div>'}${r.audioUrl ? `<div class="muted" style="margin-top:8px">Áudio dos últimos segundos da chamada:</div><audio controls preload="none" src="${r.audioUrl}?key=${encodeURIComponent(key())}" style="width:100%;margin-top:4px"></audio>` : ''}</div>`).join('')}
+          <div class="judge">
+            <select data-f="hours">${DURATIONS.map(([v, l]) => `<option value="${v}">${l}</option>`).join('')}</select>
+            <input type="text" data-f="reason" placeholder="Motivo que a pessoa vai ver" maxlength="300">
+            <label class="chk"><input type="checkbox" data-f="rm"> remover a foto de perfil junto</label>
             <div class="acts">
-              <button type="button" class="btn-secondary" data-a="remove_photo">Remover foto</button>
-              <button type="button" class="btn-secondary danger" data-a="ban">Banir nickname</button>
+              <button type="button" class="btn-primary danger-btn" data-a="ban">Banir</button>
+              <button type="button" class="btn-secondary" data-a="remove_photo">Só remover a foto</button>
               <button type="button" class="btn-secondary" data-a="dismiss">Ignorar</button>
             </div>
           </div>`;
+        div.querySelectorAll('[data-zoom]').forEach((img) => img.addEventListener('click', () => { $('#zoom-img').src = img.src; $('#zoom').hidden = false; }));
         div.querySelectorAll('[data-a]').forEach((b) => b.addEventListener('click', async () => {
-          if (b.dataset.a === 'ban' && !confirm(`Banir ${first.targetName}? A conta é apagada e o nickname fica bloqueado.`)) return;
-          await fetch('/api/admin/action', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-admin-key': key() }, body: JSON.stringify({ target, action: b.dataset.a }) });
-          load();
+          const body = { target, action: b.dataset.a };
+          if (b.dataset.a === 'ban') {
+            const hours = div.querySelector('[data-f="hours"]').value;
+            body.hours = hours === 'forever' ? 'forever' : Number(hours);
+            body.reason = div.querySelector('[data-f="reason"]').value.trim();
+            body.removePhoto = div.querySelector('[data-f="rm"]').checked;
+            if (!confirm(`Banir ${f.targetName} por ${DURATIONS.find(([v]) => String(v) === hours)[1]}?`)) return;
+          }
+          await act(body);
         }));
         $('#list').appendChild(div);
       }
     }
-    function esc(s) { return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
-    $('#load').addEventListener('click', load);
-    async function setTitle(name, title) {
-      const r = await fetch('/api/admin/title', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-admin-key': key() }, body: JSON.stringify({ name, title }) });
-      const d = await r.json().catch(() => ({}));
-      $('#title-msg').textContent = r.ok ? (d.title ? `Pronto: ${d.name} agora tem o título "${d.title}".` : `Título de ${d.name} removido.`) : (d.error === 'unknown_user' ? 'Não achei ninguém com esse nickname.' : d.error === 'invalid_title' ? 'Título inválido: use só letras, números e espaços.' : 'Não deu: ' + (d.error || r.status));
+
+    function renderBans(bans) {
+      $('#h-bans').hidden = false;
+      $('#ban-list').innerHTML = bans.length ? bans.map((b) => `<li><span class="w"><strong>${esc(b.name)}</strong><span class="muted">${b.until ? 'até ' + when(b.until) + ' (' + left(b.until) + ')' : 'para sempre'}${b.reason ? ' · ' + esc(b.reason) : ''}</span></span><button type="button" class="ok" data-unban="${esc(b.key)}">desbanir</button></li>`).join('') : '<li class="muted">Ninguém banido agora.</li>';
+      $('#ban-list').querySelectorAll('[data-unban]').forEach((b) => b.addEventListener('click', () => act({ target: b.dataset.unban, action: 'unban' })));
+    }
+
+    async function act(body) {
+      await fetch('/api/admin/action', { method: 'POST', headers: { 'Content-Type': 'application/json', ...hdr() }, body: JSON.stringify(body) });
       load();
     }
+    async function setTitle(name, title) {
+      const r = await fetch('/api/admin/title', { method: 'POST', headers: { 'Content-Type': 'application/json', ...hdr() }, body: JSON.stringify({ name, title }) });
+      const d = await r.json().catch(() => ({}));
+      $('#title-msg').textContent = r.ok ? (d.title ? `Pronto: ${d.name} agora tem o título "${d.title}".` : `Título de ${d.name} removido.`) : (d.error === 'unknown_user' ? 'Não achei ninguém com esse nickname.' : d.error === 'invalid_title' ? 'Título inválido: use só letras, números e espaços.' : 'Não deu: ' + (d.error || r.status));
+      loadTitles();
+    }
     $('#title-btn').addEventListener('click', () => setTitle($('#title-name').value.trim(), $('#title-text').value.trim()));
+    $('#load').addEventListener('click', load);
     $('#key').addEventListener('keydown', (e) => { if (e.key === 'Enter') load(); });
+    $('#zoom').addEventListener('click', () => { $('#zoom').hidden = true; });
     if (key()) load();
   </script>
 </body>

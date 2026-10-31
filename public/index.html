@@ -75,6 +75,7 @@
     <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
     <symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></symbol>
     <symbol id="i-crown" viewBox="0 0 24 24"><path d="M3 18h18M4 17l-1-10 5 4 4-7 4 7 5-4-1 10z" fill="currentColor" stroke="none"/></symbol>
+    <symbol id="i-rec" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3.5" fill="currentColor" stroke="none"/></symbol>
     <symbol id="i-flag" viewBox="0 0 24 24"><path d="M5 21V4M5 4h12l-2 4 2 4H5"/></symbol>
     <symbol id="i-camera" viewBox="0 0 24 24"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></symbol>
     <symbol id="i-edit" viewBox="0 0 24 24"><path d="M4 20h4l10-10-4-4L4 16zM13 7l4 4"/></symbol>
@@ -256,6 +257,10 @@
           <svg class="i"><use id="mute-icon" href="#i-mic"/></svg>
           <span class="ctrl-label" data-i18n="room.mute">Mutar</span>
         </button>
+        <button type="button" class="ctrl" id="clip-btn" data-i18n-title="clip.title" title="Guardar os últimos 30 segundos da chamada para uma denúncia">
+          <svg class="i"><use href="#i-rec"/></svg>
+          <span class="ctrl-label" data-i18n="clip.btn">Últimos 30s</span>
+        </button>
         <button type="button" class="ctrl danger" id="leave-btn">
           <svg class="i"><use href="#i-hangup"/></svg>
           <span class="ctrl-label" data-i18n="room.leave">Sair</span>
@@ -340,6 +345,37 @@
       <ul class="logins" id="logins-list"></ul>
     </div>
   </aside>
+
+  <!-- denúncia com relato e print -->
+  <div class="modal-backdrop" id="report-backdrop" hidden>
+    <form class="modal" id="report-form">
+      <h3><svg class="i"><use href="#i-flag"/></svg> <span data-i18n="report.title">Denunciar</span> <span id="report-who"></span></h3>
+      <p class="hint" data-i18n="report.intro">Conte o que aconteceu. Se puder, anexe um print: é o que a equipe vai olhar para decidir.</p>
+      <label class="field"><span data-i18n="report.what">O que aconteceu?</span><textarea id="report-note" rows="4" maxlength="1000" required data-i18n-placeholder="report.ph" placeholder="Descreva com detalhes (mínimo 10 letras)"></textarea></label>
+      <div class="report-row">
+        <label class="btn-secondary small"><svg class="i"><use href="#i-camera"/></svg><span data-i18n="report.attach">Anexar print</span><input type="file" id="report-file" accept="image/jpeg,image/png" hidden></label>
+        <span class="hint" id="report-file-name"></span>
+      </div>
+      <div class="report-row">
+        <label class="btn-secondary small"><svg class="i"><use href="#i-mic"/></svg><span data-i18n="report.attachAudio">Anexar áudio</span><input type="file" id="report-audio" accept="audio/*,.m4a,.mp3,.ogg,.webm" hidden></label>
+        <span class="hint" id="report-audio-name"></span>
+      </div>
+      <div class="report-row" id="report-clip" hidden><svg class="i"><use href="#i-rec"/></svg><span id="report-clip-text"></span><button type="button" class="btn-ghost" id="report-clip-rm" data-i18n="clip.remove">tirar</button></div>
+      <p class="error" id="report-error" hidden></p>
+      <div class="picker-actions"><button type="submit" class="btn-primary small" id="report-send" data-i18n="report.send">Enviar denúncia</button><button type="button" class="btn-secondary" id="report-cancel" data-i18n="friends.cancel">Cancelar</button></div>
+    </form>
+  </div>
+
+  <!-- conta congelada por banimento -->
+  <div class="ban-overlay" id="ban-overlay" hidden>
+    <div class="ban-card">
+      <svg class="i big"><use href="#i-flag"/></svg>
+      <h2 data-i18n="ban.title">Sua conta foi suspensa</h2>
+      <p id="ban-reason"></p>
+      <p class="ban-time"><span data-i18n="ban.left">Tempo restante:</span> <strong id="ban-left"></strong></p>
+      <p class="hint" data-i18n="ban.note">Enquanto durar, você não entra em chamadas, não fala no chat e não sai da conta. O site volta ao normal sozinho quando o tempo acabar.</p>
+    </div>
+  </div>
 
   <div class="toast" id="toast" hidden></div>
   <div class="audio-sink" id="audio-sink" aria-hidden="true"></div>

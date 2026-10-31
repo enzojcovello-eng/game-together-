@@ -339,6 +339,31 @@ main { max-width: 1040px; margin: 0 auto; padding: 24px 20px 48px; padding-botto
 .user-name .owner { margin-left: 4px; }
 .plat .owner, .sub .owner { margin: 0 6px 0 0; }
 
+/* ---------- denúncia (formulário) ---------- */
+.modal-backdrop { position: fixed; inset: 0; z-index: 60; background: rgba(0, 0, 0, 0.55); display: grid; place-items: center; padding: 16px; }
+.modal { width: min(460px, 100%); background: var(--bg-2); border: 1px solid var(--border-strong); border-radius: var(--radius); padding: 18px; box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6); }
+.modal h3 { display: flex; align-items: center; gap: 6px; font-size: 1.1rem; margin-bottom: 4px; }
+.modal h3 .i { color: var(--danger); }
+.modal .field { margin: 12px 0 8px; }
+.modal textarea { width: 100%; padding: 11px 12px; border-radius: var(--radius-sm); border: 1px solid var(--border-strong); background: var(--bg); color: var(--text); font: inherit; resize: vertical; outline: none; }
+.modal textarea:focus { border-color: var(--accent); }
+.report-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.report-row .btn-secondary.small { padding: 8px 12px; font-size: 0.88rem; gap: 6px; cursor: pointer; }
+.report-row .hint { margin: 0; }
+
+#report-clip { padding: 8px 10px; border-radius: 10px; background: rgba(229, 72, 77, 0.1); border: 1px solid rgba(229, 72, 77, 0.3); margin-top: 8px; font-size: 0.9rem; }
+#report-clip .i { color: var(--danger); }
+.ctrl.rec-on .i { color: var(--danger); }
+
+/* ---------- conta congelada ---------- */
+.ban-overlay { position: fixed; inset: 0; z-index: 100; background: rgba(21, 19, 15, 0.96); display: grid; place-items: center; padding: 20px; }
+.ban-card { max-width: 440px; text-align: center; padding: 28px 22px; border-radius: var(--radius); background: var(--card); border: 1px solid var(--danger); }
+.ban-card .i.big { color: var(--danger); margin-bottom: 10px; }
+.ban-card h2 { font-size: 1.6rem; margin-bottom: 8px; }
+.ban-card p { margin: 6px 0; }
+.ban-time strong { font-family: var(--font-display); font-size: 1.3rem; color: var(--warn); }
+body.banned { overflow: hidden; }
+
 /* ---------- toast ---------- */
 .toast {
   position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom)); transform: translateX(-50%);
