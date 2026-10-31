@@ -108,12 +108,15 @@
       alone: joinNames(game.platforms.filter((p) => !grouped.has(p))) || '—',
     };
   }
+  const singlePlatform = (game) => Array.isArray(game.platforms) && game.platforms.length === 1;
   function crossplayTag(game) {
+    if (singlePlatform(game)) return { cls: 'single', text: t('game.onlyOn', { p: platformName(game.platforms[0]) }) };
     if (fullCrossplay(game)) return { cls: '', text: t('game.crossplay') };
     if (partialCrossplay(game)) return { cls: 'partial', text: t('game.partial') };
     return { cls: 'nocross', text: t('game.noCrossplay') };
   }
   function crossplayLong(game) {
+    if (singlePlatform(game)) return t('game.onlyOnLong', { p: platformName(game.platforms[0]) });
     if (fullCrossplay(game)) return t('game.crossplayLong');
     if (partialCrossplay(game)) return t('game.partialLong', crossplayVars(game));
     return t('game.noCrossplayLong');

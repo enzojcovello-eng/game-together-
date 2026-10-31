@@ -430,6 +430,36 @@
       ],
       "crossplay": false,
       "cover": "covers/dont-starve-together.svg"
+    },
+    {
+      "id": "counter-strike-2",
+      "name": "Counter-Strike 2",
+      "short": "CS2",
+      "emoji": "🔫",
+      "color": "#f28c28",
+      "maxPlayers": 5,
+      "platforms": [
+        "pc"
+      ],
+      "crossplay": true,
+      "cover": "covers/counter-strike-2.jpg"
+    },
+    {
+      "id": "stardew-valley",
+      "name": "Stardew Valley",
+      "short": "Stardew",
+      "emoji": "🌾",
+      "color": "#5aa64a",
+      "maxPlayers": 3,
+      "platforms": [
+        "pc",
+        "playstation",
+        "xbox",
+        "switch",
+        "mobile"
+      ],
+      "crossplay": false,
+      "cover": "covers/stardew-valley.jpg"
     }
   ]
 }

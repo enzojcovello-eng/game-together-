@@ -119,6 +119,8 @@ quantidade de pessoas e uma plataforma compatível.
 | Riders Republic | 4 | PC, PlayStation, Xbox | Sim |
 | Brawlhalla | 2 | PC, PlayStation, Xbox, Switch, Celular | Sim |
 | Don't Starve Together | 4 | PC, PlayStation, Xbox, Switch | Não: cada plataforma só encontra a própria |
+| Counter-Strike 2 | 5 | PC | Só PC |
+| Stardew Valley | 3 | PC, PlayStation, Xbox, Switch, Celular | Não: cada plataforma só encontra a própria |
 
 Cada cartão de jogo mostra quantas pessoas estão em chamada e quantas estão
 procurando naquele jogo agora. No topo da tela inicial aparece o total.
@@ -413,6 +415,8 @@ ilustração. Formato bom: vertical, 600 x 800 pixels ou maior.
 | Riders Republic | `riders-republic.jpg` |
 | Brawlhalla | `brawlhalla.jpg` (ainda sem capa enviada: usa um desenho) |
 | Don't Starve Together | `dont-starve-together.jpg` (ainda sem capa enviada: usa um desenho) |
+| Counter-Strike 2 | `counter-strike-2.jpg` |
+| Stardew Valley | `stardew-valley.jpg` |
 
 ---
 
@@ -534,6 +538,8 @@ call size and a compatible platform.
 | Riders Republic | 4 | PC, PlayStation, Xbox | Yes |
 | Brawlhalla | 2 | PC, PlayStation, Xbox, Switch, Mobile | Yes |
 | Don't Starve Together | 4 | PC, PlayStation, Xbox, Switch | No: each platform only finds its own |
+| Counter-Strike 2 | 5 | PC | PC only |
+| Stardew Valley | 3 | PC, PlayStation, Xbox, Switch, Mobile | No: each platform only finds its own |
 
 Each game card shows how many people are on a call and how many are
 searching in that game right now. The home screen shows the total at the top.
@@ -832,6 +838,8 @@ larger.
 | Riders Republic | `riders-republic.jpg` |
 | Brawlhalla | `brawlhalla.jpg` (no cover sent yet: uses a drawing) |
 | Don't Starve Together | `dont-starve-together.jpg` (no cover sent yet: uses a drawing) |
+| Counter-Strike 2 | `counter-strike-2.jpg` |
+| Stardew Valley | `stardew-valley.jpg` |
 
 ## License
 

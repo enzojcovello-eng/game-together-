@@ -1,7 +1,7 @@
 /* Service worker do Game Together.
    Guarda os arquivos da interface para o app abrir rápido e ser instalável.
    O matchmaking e a chamada sempre passam pela rede (Socket.IO e WebRTC). */
-const CACHE = 'game-together-v3';
+const CACHE = 'game-together-v4';
 // o script do Socket.IO também fica guardado: sem ele a página não abre nem para mostrar "acordando o servidor"
 const SHELL = ['/', '/index.html', '/css/style.css', '/js/app.js', '/js/i18n.js', '/socket.io/socket.io.js', '/manifest.webmanifest', '/icons/icon-192.png', '/icons/icon-512.png'];
 
@@ -25,7 +25,11 @@ self.addEventListener('fetch', (event) => {
   event.respondWith(
     fetch(req)
       .then((res) => {
-        if (res.ok) caches.open(CACHE).then((c) => c.put(req, res.clone()));
+        // a cópia é feita antes de devolver: depois disso o corpo já foi consumido pela página
+        if (res.ok && res.type === 'basic' && res.status === 200) {
+          const copy = res.clone();
+          caches.open(CACHE).then((c) => c.put(req, copy)).catch(() => {});
+        }
         return res;
       })
       .catch(() => caches.match(req).then((hit) => hit || caches.match('/')))
