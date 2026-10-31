@@ -1,0 +1,41 @@
+{
+  "name": "game-together-desktop",
+  "productName": "Game Together",
+  "version": "1.0.0",
+  "description": "Game Together para o computador: chamadas de voz para jogar acompanhado.",
+  "main": "main.js",
+  "private": true,
+  "license": "MIT",
+  "author": "Game Together",
+  "homepage": "https://gametogether.com.br",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder --win --publish never"
+  },
+  "devDependencies": {
+    "electron": "33.2.1",
+    "electron-builder": "25.1.8"
+  },
+  "build": {
+    "appId": "br.com.gametogether.desktop",
+    "productName": "Game Together",
+    "directories": { "output": "dist" },
+    "files": ["main.js", "loading.html", "icon.png"],
+    "win": {
+      "target": ["nsis", "portable"],
+      "icon": "icon.png"
+    },
+    "nsis": {
+      "oneClick": true,
+      "perMachine": false,
+      "artifactName": "GameTogether-Setup.${ext}",
+      "shortcutName": "Game Together",
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "deleteAppDataOnUninstall": false
+    },
+    "portable": {
+      "artifactName": "GameTogether-Portable.${ext}"
+    }
+  }
+}

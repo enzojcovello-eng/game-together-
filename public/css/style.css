@@ -431,3 +431,9 @@ body.banned { overflow: hidden; }
 .auth-why { margin: 0 0 10px; padding: 10px 14px; border-radius: var(--radius-sm); background: rgba(255, 196, 0, 0.12); border: 1px solid rgba(255, 196, 0, 0.4); font-weight: 600; }
 #auth-back { margin-top: 10px; display: inline-flex; align-items: center; gap: 6px; }
 
+
+/* servidor dormindo: aviso por cima da página guardada */
+.waking { position: fixed; inset: 0; z-index: 55; background: rgba(21, 19, 15, 0.96); display: grid; place-items: center; text-align: center; padding: 24px; }
+.waking p { margin: 6px 0; color: var(--muted); max-width: 420px; line-height: 1.5; }
+.waking strong { color: var(--text); font-size: 1.1rem; }
+.waking .ring { width: 44px; height: 44px; margin-bottom: 12px; border-radius: 50%; border: 4px solid var(--border); border-top-color: var(--accent); animation: spin 1s linear infinite; }

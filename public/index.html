@@ -107,6 +107,12 @@
   </header>
 
   <!-- BOAS-VINDAS: bonequinho com a placa; ao tocar, a placa amassa como papel e cai -->
+  <!-- servidor dormindo (página guardada pelo PWA): espera e tenta de novo sozinho -->
+  <div class="waking" id="waking" hidden>
+    <div class="ring"></div>
+    <p><strong data-i18n="waking.title">Acordando o servidor...</strong></p>
+    <p data-i18n="waking.text">Quando ninguém usa o site por um tempo, ele dorme e leva de 30 segundos a 1 minuto para voltar. Tentamos de novo sozinhos.</p>
+  </div>
   <div class="update-banner announce" id="announce-banner" hidden>
     <svg class="i"><use href="#i-crown"/></svg>
     <span><strong data-i18n="announce.title">Aviso da administração:</strong> <span id="announce-text"></span></span>

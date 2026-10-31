@@ -46,7 +46,23 @@ permissão do microfone; toque em **Permitir**.
 
 ### PC (Windows, Mac ou Linux)
 
-Abra o link no navegador e pronto. Para ter como app com ícone próprio:
+**Windows, do jeito mais fácil: um .exe.** Baixe e abra:
+
+- Instalador: <https://github.com/enzojcovello-eng/game-together-/releases/latest/download/GameTogether-Setup.exe>
+  (cria atalho na área de trabalho e no menu Iniciar)
+- Versão portátil, sem instalar nada: <https://github.com/enzojcovello-eng/game-together-/releases/latest/download/GameTogether-Portable.exe>
+
+O app é o site numa janela própria, com ícone na barra de tarefas e o
+microfone já liberado; como o conteúdo vem do site, ele se atualiza
+sozinho, sem baixar de novo. Se o servidor estiver dormindo, o app mostra
+"Acordando o servidor" e entra sozinho quando ele responde.
+
+> ⚠️ Na primeira vez o Windows pode mostrar um aviso azul (SmartScreen),
+> porque o app não tem assinatura paga. Clique em **Mais informações** e
+> depois em **Executar assim mesmo**. O código do app está nesta mesma
+> página, na pasta `desktop`.
+
+Ou abra o link no navegador e pronto. Para ter como app com ícone próprio:
 
 - **Chrome ou Edge**: clique no ícone de instalar na barra de endereço
   (um monitor com uma seta) ou vá no menu ⋮ e em **Instalar Game Together**.
@@ -329,6 +345,17 @@ nenhuma atualização, reinício ou perda de dados tira; na página de
 administração ele aparece marcado como fixo, sem botão "tirar". Para mudar
 ou tirar, edite a variável e reinicie.
 
+## App para Windows: como o .exe é gerado
+
+A pasta `desktop` tem o app (Electron): `main.js` abre o site numa janela,
+libera o microfone e mostra a tela de espera quando o servidor não
+responde. O GitHub compila o instalador e a versão portátil sozinho (ação
+"App para Windows", em Actions) toda vez que algo nessa pasta muda na
+`main`, e publica os dois arquivos na página de Releases, na release
+"Game Together para Windows". Para gerar de novo à mão: Actions → App para
+Windows → Run workflow. Para mudar o endereço que o app abre, edite `SITE`
+no `main.js`.
+
 ## Quantas pessoas visitaram
 
 O endereço [gametogether.com.br/api/stats](https://gametogether.com.br/api/stats) mostra, em texto
@@ -422,8 +449,23 @@ microphone permission; tap **Allow**.
 
 ### PC (Windows, Mac or Linux)
 
-Open the link in your browser and you are done. To have it as an app with
-its own icon:
+**Windows, the easy way: an .exe.** Download and open:
+
+- Installer: <https://github.com/enzojcovello-eng/game-together-/releases/latest/download/GameTogether-Setup.exe>
+  (creates a desktop and Start menu shortcut)
+- Portable version, nothing to install: <https://github.com/enzojcovello-eng/game-together-/releases/latest/download/GameTogether-Portable.exe>
+
+The app is the site in its own window, with a taskbar icon and the
+microphone already allowed; since the content comes from the site, it
+updates by itself, no new download. If the server is asleep the app shows
+"Waking up the server" and gets in by itself once it answers.
+
+> ⚠️ The first time, Windows may show a blue warning (SmartScreen) because
+> the app has no paid signature. Click **More info** and then **Run
+> anyway**. The app's code is on this same page, in the `desktop` folder.
+
+Or open the link in your browser and you are done. To have it as an app
+with its own icon:
 
 - **Chrome or Edge**: click the install icon in the address bar (a monitor
   with an arrow) or open the ⋮ menu and choose **Install Game Together**.
@@ -706,6 +748,17 @@ commas: `yournick=Dono,friend=Mod`). That title comes from the
 configuration, so no update, restart or data loss removes it; on the admin
 page it shows as fixed, without a "tirar" button. To change or remove it,
 edit the variable and restart.
+
+## Windows app: how the .exe is made
+
+The `desktop` folder holds the app (Electron): `main.js` opens the site in
+a window, allows the microphone and shows the waiting screen when the
+server does not answer. GitHub builds the installer and the portable
+version by itself (the "App para Windows" action, under Actions) whenever
+something in that folder changes on `main`, and publishes both files on
+the Releases page, in the "Game Together para Windows" release. To build
+again by hand: Actions → App para Windows → Run workflow. To change the
+address the app opens, edit `SITE` in `main.js`.
 
 ## How many people visited
 

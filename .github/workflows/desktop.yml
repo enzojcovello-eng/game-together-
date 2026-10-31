@@ -1,0 +1,51 @@
+# Compila o app do Windows (instalador e versão portátil) e publica na página de Releases.
+# Roda sozinho quando algo em desktop/ muda na main, ou à mão em Actions → "App para Windows" → Run workflow.
+name: App para Windows
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'desktop/**'
+      - '.github/workflows/desktop.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: desktop/package-lock.json
+
+      - name: Instalar dependências
+        working-directory: desktop
+        run: npm ci
+
+      - name: Compilar instalador e versão portátil
+        working-directory: desktop
+        run: npx electron-builder --win --publish never
+
+      - name: Publicar na página de Releases
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: windows
+          name: Game Together para Windows
+          body: |
+            **GameTogether-Setup.exe**: instala o app (atalho na área de trabalho e no menu Iniciar).
+            **GameTogether-Portable.exe**: não instala nada; é só abrir.
+
+            O Windows pode mostrar um aviso azul (SmartScreen) porque o app não tem assinatura paga.
+            Clique em "Mais informações" e depois em "Executar assim mesmo".
+
+            O app abre o site gametogether.com.br numa janela própria e se atualiza sozinho junto com ele.
+          files: |
+            desktop/dist/GameTogether-Setup.exe
+            desktop/dist/GameTogether-Portable.exe

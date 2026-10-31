@@ -1556,6 +1556,13 @@
   }
 
   // ---------- socket ----------
+  if (typeof io === 'undefined') {
+    // o script do Socket.IO não veio (servidor dormindo, página guardada de antes): avisa e recarrega quando ele responder
+    const el = document.getElementById('waking'); if (el) el.hidden = false;
+    const tryAgain = () => fetch('/api/version', { cache: 'no-store' }).then((r) => { if (r.ok) location.reload(); else setTimeout(tryAgain, 5000); }).catch(() => setTimeout(tryAgain, 5000));
+    setTimeout(tryAgain, 3000);
+    return;
+  }
   const socket = io({ transports: ['websocket', 'polling'] });
   if (/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) { window.__gtSocket = socket; window.__gtState = state; } // só para testes locais
   socket.on('version', onServerVersion);
@@ -1709,9 +1716,18 @@
   window.addEventListener('beforeunload', () => { if (state.room) socket.emit('leave'); });
 
   // ---------- boot ----------
-  fetch('/api/config')
-    .then((r) => r.json())
+  // Depois da primeira visita o navegador guarda a página (PWA) e a mostra mesmo com o
+  // servidor dormindo. Se a configuração não vier, mostra "acordando" e tenta de novo.
+  function showWaking(on) {
+    const el = $('#waking');
+    if (el) el.hidden = !on;
+  }
+  let bootTries = 0;
+  function boot() {
+  fetch('/api/config', { cache: 'no-store' })
+    .then((r) => { if (!r.ok) throw new Error('config ' + r.status); return r.json(); })
     .then(async (cfg) => {
+      showWaking(false);
       state.config = cfg;
       loadedVersion = { version: cfg.version, build: cfg.build };
       $('#about-games').textContent = cfg.games.map((g) => g.name).join(', ') + '.';
@@ -1756,5 +1772,12 @@
       renderUser();
       showScreen('screen-home');
     })
-    .catch((err) => { console.error('boot', err); toast('Config error'); });
+    .catch((err) => {
+      console.error('boot', err);
+      bootTries += 1;
+      showWaking(true);
+      setTimeout(boot, bootTries < 12 ? 5000 : 15000);
+    });
+  }
+  boot();
 })();
