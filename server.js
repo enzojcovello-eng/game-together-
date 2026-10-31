@@ -73,13 +73,20 @@ function visitSummary() {
 }
 // Endereço oficial: com SITE_URL definido (ex.: https://gametogether.com.br), qualquer outro
 // endereço (como o onrender.com) redireciona para ele, para o Google contar um site só.
-let SITE_URL = (process.env.SITE_URL || '').trim().replace(/\/$/, '');
+// Aceita deslizes comuns na variável: espaços, falta de https://, barra ou ponto sobrando no fim.
+let SITE_URL = (process.env.SITE_URL || '').trim().replace(/[\/.\s]+$/, '');
 if (SITE_URL && !/^https?:\/\//i.test(SITE_URL)) SITE_URL = `https://${SITE_URL}`;
 let siteHost = null;
-try { if (SITE_URL) siteHost = new URL(SITE_URL).host.toLowerCase(); } catch (_) { console.warn('SITE_URL inválida, ignorando:', SITE_URL); SITE_URL = ''; }
+try {
+  if (SITE_URL) {
+    const u = new URL(SITE_URL);
+    siteHost = u.host.toLowerCase().replace(/\.+$/, '');
+    SITE_URL = `${u.protocol}//${siteHost}`;
+  }
+} catch (_) { console.warn('SITE_URL inválida, ignorando:', SITE_URL); SITE_URL = ''; }
 if (siteHost) {
   app.use((req, res, next) => {
-    const host = (req.headers.host || '').toLowerCase();
+    const host = (req.headers.host || '').toLowerCase().replace(/\.+(?=:|$)/, '');
     if (host && host !== siteHost && !host.startsWith('localhost') && !host.startsWith('127.')) {
       return res.redirect(301, SITE_URL + req.originalUrl);
     }
