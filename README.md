@@ -6,7 +6,7 @@ plataforma, clica em **Matchmake** e cai numa chamada com quem escolheu a
 mesma coisa. Funciona no PC, no Android e no iPhone, direto no navegador,
 e dá para instalar como app.
 
-🔗 **Link do site:** https://gametogether.com.br
+🔗 **Link do site:** [gametogether.com.br](https://gametogether.com.br/)
 
 🇺🇸 [English version below](#game-together-english)
 
@@ -197,7 +197,7 @@ nova aqui no GitHub.
 
 ## Quantas pessoas visitaram
 
-O endereço https://gametogether.com.br/api/stats mostra, em texto
+O endereço [gametogether.com.br/api/stats](https://gametogether.com.br/api/stats) mostra, em texto
 simples, quantas pessoas estão online agora, quantas estão em chamada,
 quantas contas existem e as visitas: de hoje (`visitsToday`, com
 `visitorsToday` sendo pessoas diferentes), dos últimos 7 dias e desde o
@@ -238,7 +238,7 @@ hit **Matchmake** and you land on a call with people who picked the same.
 Works on PC, Android and iPhone, right in the browser, and can be installed
 as an app.
 
-🔗 **Site link:** https://gametogether.com.br
+🔗 **Site link:** [gametogether.com.br](https://gametogether.com.br/)
 
 ## Share it and suggest games
 
@@ -428,7 +428,7 @@ app is outdated" with a button to download the new version here on GitHub.
 
 ## How many people visited
 
-The address https://gametogether.com.br/api/stats shows, in plain
+The address [gametogether.com.br/api/stats](https://gametogether.com.br/api/stats) shows, in plain
 text, how many people are online right now, how many are on a call, how
 many accounts exist and the visits: today (`visitsToday`, with
 `visitorsToday` being distinct people), the last 7 days and since the start
