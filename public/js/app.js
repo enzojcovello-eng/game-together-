@@ -1708,23 +1708,6 @@
   $$('#ui-lang-switch button').forEach((b) => b.addEventListener('click', () => setUiLang(b.dataset.lang)));
   window.addEventListener('beforeunload', () => { if (state.room) socket.emit('leave'); });
 
-  // ---------- boas-vindas ----------
-  function showSplash() {
-    const el = $('#splash'); // toda vez que o app abre, inclusive ao recarregar
-    el.hidden = false;
-    document.body.classList.add('splash-open');
-    let leaving = false;
-    const dismiss = () => {
-      if (leaving) return;
-      leaving = true;
-      el.classList.add('leaving');
-      playTone('join');
-      setTimeout(() => { el.hidden = true; el.classList.remove('leaving'); document.body.classList.remove('splash-open'); }, 2100);
-    };
-    el.addEventListener('pointerdown', dismiss);
-    window.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ' || e.key === 'Escape') dismiss(); }, { once: true });
-  }
-
   // ---------- boot ----------
   fetch('/api/config')
     .then((r) => r.json())
@@ -1735,7 +1718,6 @@
       renderHeroCovers();
       $('#share-host').textContent = location.host;
       setUiLang(detectLang());
-      showSplash();
       setPanelTab('reports');
       checkGithub();
       // se o socket já conectou antes de sabermos a versão, confere agora
