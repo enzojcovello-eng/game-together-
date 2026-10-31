@@ -69,7 +69,7 @@ em branco, espere um pouco e recarregue.
    crossplay, a sua plataforma. Em jogo com crossplay não precisa escolher:
    você cai com gente de qualquer plataforma.
 4. Clique em **Matchmake**.
-   - (O site abre com uma animação de boas-vindas: um toque na tela e a placa amassa como papel e cai, mostrando o menu de jogos. O nickname só é pedido na hora de entrar na chamada, ou pelo botão "Criar nickname" no topo.)
+   - (O site abre sempre com uma animação de boas-vindas: um toque na tela e a placa amassa como papel e cai, mostrando o menu de jogos. O nickname só é pedido na hora de entrar na chamada, ou pelo botão "Criar nickname" no topo.)
    - **2 pessoas**: você e mais 1. Se ninguém com a mesma escolha aparecer em 5 segundos, você entra numa chamada sozinho e espera lá; quem procurar a mesma coisa cai direto com você.
    - **3 ou mais**: você entra numa sala aberta (ou cria uma) e as pessoas vão entrando até o limite do jogo.
 5. Na chamada: mute, sair, lista de quem está falando, o chat de texto da chamada (numa caixa na tela e também na aba Chat do painel) e o painel com Denúncias, Chat, Amigos, Perfil e Logins.
@@ -442,7 +442,7 @@ blank screen, wait a bit and reload.
    your platform. Crossplay games skip that step: you match people on any
    platform.
 4. Click **Matchmake**.
-   - (The site opens with a welcome animation: one tap on the screen and the sign crumples like paper and falls, revealing the game menu. The nickname is only asked when you join a call, or through the "Create nickname" button at the top.)
+   - (The site always opens with a welcome animation: one tap on the screen and the sign crumples like paper and falls, revealing the game menu. The nickname is only asked when you join a call, or through the "Create nickname" button at the top.)
    - **2 people**: you and 1 more. If nobody with the same choice shows up in 5 seconds, you enter a call alone and wait there; whoever searches for the same thing lands with you.
    - **3 or more**: you join an open room (or create one) and people keep joining until the game's limit.
 5. On the call: mute, leave, a list of who is speaking, the call text chat (in a box on the screen and also in the panel's Chat tab) and the panel with Reports, Chat, Friends, Profile and Logins.

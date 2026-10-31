@@ -1710,10 +1710,7 @@
 
   // ---------- boas-vindas ----------
   function showSplash() {
-    let seen = false;
-    try { seen = sessionStorage.getItem('gt:splash') === '1'; } catch (_) {}
-    if (seen) return;
-    const el = $('#splash');
+    const el = $('#splash'); // toda vez que o app abre, inclusive ao recarregar
     const text = $('#splash-text');
     const msg = t('splash.text');
     text.innerHTML = [...msg].map((c, i) => `<span class="ch" style="animation-delay:${0.45 + i * 0.045}s">${c === ' ' ? '&nbsp;' : escapeHtml(c)}</span>`).join('');
@@ -1723,7 +1720,6 @@
     const dismiss = () => {
       if (leaving) return;
       leaving = true;
-      try { sessionStorage.setItem('gt:splash', '1'); } catch (_) {}
       el.classList.add('leaving');
       playTone('join');
       setTimeout(() => { el.hidden = true; el.classList.remove('leaving'); document.body.classList.remove('splash-open'); }, 1300);
