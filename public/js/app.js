@@ -548,7 +548,7 @@
       li.className = 'friend' + (f.online ? ' is-online' : '');
       const unread = state.unread[f.key] || 0;
       li.innerHTML = `<span class="avatar">${avatarInner(f.name, f.avatar)}<span class="st"></span></span>
-        <span class="info"><span class="name">${escapeHtml(f.name)}${ownerBadge(f.owner)}</span><span class="sub">${f.online ? t('friends.online') : t('friends.offline')}</span></span>
+        <span class="info"><span class="name">${escapeHtml(f.name)}</span><span class="sub">${ownerBadge(f.owner)}${f.online ? t('friends.online') : t('friends.offline')}</span></span>
         ${unread ? `<span class="unread">${unread}</span>` : ''}
         <span class="acts">
           <button type="button" class="icon-btn" data-act="dm" title="${t('friends.message')}">${icon('i-chat')}</button>
@@ -865,8 +865,8 @@
       li.innerHTML = `
         <span class="avatar">${avatarInner(m.name, isMe ? state.profile.avatar : m.avatar)}</span>
         <span class="info">
-          <span class="name">${escapeHtml(m.name)}${ownerBadge(isMe ? state.profile.owner : m.owner)}${isMe ? ` <span class="muted">(${t('room.you')})</span>` : ''}</span>
-          <span class="plat">${m.platform ? platformHtml(m.platform) : icon('i-globe') + `<span>${room.private ? t('friends.title').toLowerCase() : t('room.anyPlatform')}</span>`}</span>
+          <span class="name">${escapeHtml(m.name)}${isMe ? ` <span class="muted">(${t('room.you')})</span>` : ''}</span>
+          <span class="plat">${ownerBadge(isMe ? state.profile.owner : m.owner)}${m.platform ? platformHtml(m.platform) : icon('i-globe') + `<span>${room.private ? t('friends.title').toLowerCase() : t('room.anyPlatform')}</span>`}</span>
         </span>
         ${isMe ? '' : `<button type="button" class="report" title="${t('report.btn')}">${icon('i-flag')}</button>`}
         ${canAdd ? `<button type="button" class="add">${icon('i-plus')}${t('friends.add')}</button>` : ''}
