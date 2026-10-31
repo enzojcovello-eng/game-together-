@@ -351,6 +351,10 @@ main { max-width: 1040px; margin: 0 auto; padding: 24px 20px 48px; padding-botto
 .report-row .btn-secondary.small { padding: 8px 12px; font-size: 0.88rem; gap: 6px; cursor: pointer; }
 .report-row .hint { margin: 0; }
 
+#report-clip { padding: 8px 10px; border-radius: 10px; background: rgba(229, 72, 77, 0.1); border: 1px solid rgba(229, 72, 77, 0.3); margin-top: 8px; font-size: 0.9rem; }
+#report-clip .i { color: var(--danger); }
+.ctrl.rec-on .i { color: var(--danger); }
+
 /* ---------- conta congelada ---------- */
 .ban-overlay { position: fixed; inset: 0; z-index: 100; background: rgba(21, 19, 15, 0.96); display: grid; place-items: center; padding: 20px; }
 .ban-card { max-width: 440px; text-align: center; padding: 28px 22px; border-radius: var(--radius); background: var(--card); border: 1px solid var(--danger); }

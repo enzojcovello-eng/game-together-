@@ -21,6 +21,7 @@
     social: { me: null, friends: [], requests: [], dms: {} },
     profile: { avatar: null, avatarKind: null, title: null },
     ban: null, // { until, reason } enquanto a conta estiver congelada
+    clip: null, // { blob, seconds, mime } últimos segundos da chamada, guardados pela pessoa para uma denúncia
     dmWith: null,
     unread: {},
     panelTab: 'chat',
@@ -330,6 +331,8 @@
     $('#report-note').value = '';
     $('#report-file-name').textContent = '';
     setError('#report-error', '');
+    $('#report-clip').hidden = !state.clip;
+    if (state.clip) $('#report-clip-text').textContent = t('clip.attached', { s: state.clip.seconds });
     $('#report-backdrop').hidden = false;
     $('#report-note').focus();
   }
@@ -341,7 +344,9 @@
     const btn = $('#report-send');
     btn.disabled = true;
     try {
-      await api('/api/report', { method: 'POST', body: { target: reportTarget, reason: 'other', note, image: reportImage || undefined } });
+      const audio = state.clip && !$('#report-clip').hidden ? await blobToDataUrl(state.clip.blob) : undefined;
+      await api('/api/report', { method: 'POST', body: { target: reportTarget, reason: 'other', note, image: reportImage || undefined, audio } });
+      if (audio) { state.clip = null; $('#clip-btn').classList.remove('rec-on'); }
       closeReport();
       toast(t('report.sent'), 4000);
     } catch (err) { setError('#report-error', errText(err)); }
@@ -917,6 +922,8 @@
       if (m.id !== me) connectPeer(m, initiators.has(m.id));
     }
     monitorLocalLevel();
+    state.clip = null; $('#clip-btn').classList.remove('rec-on');
+    recStart();
   }
 
   function renderRoom() {
@@ -983,6 +990,7 @@
       audio.srcObject = e.streams[0];
       audio.play().catch(() => {});
       monitorRemoteLevel(member.id, e.streams[0]);
+      recAdd(member.id, e.streams[0]);
     };
     pc.onconnectionstatechange = () => {
       peer.connected = pc.connectionState === 'connected';
@@ -1039,6 +1047,7 @@
   function leaveRoom({ silent } = {}) {
     for (const id of [...state.peers.keys()]) removePeer(id);
     if (localMeter) { localMeter.stop(); localMeter = null; }
+    recStop();
     state.room = null;
     state.me = null;
     socket.emit('leave');
@@ -1055,6 +1064,73 @@
     applyMute();
     renderRoom();
   }
+
+  // ---------- últimos 30 s da chamada (só em memória, no aparelho) ----------
+  // Três gravadores se revezam: um novo a cada 10 s, cada um vive 30 s. Ao pedir o
+  // trecho, o mais antigo em andamento é fechado: ele tem entre 20 e 30 s.
+  const rec = { ctx: null, dest: null, sources: new Map(), recorders: [], timer: null, mime: null };
+  function recMime() {
+    if (typeof MediaRecorder === 'undefined') return null;
+    for (const m of ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4', 'audio/ogg']) if (MediaRecorder.isTypeSupported(m)) return m;
+    return '';
+  }
+  function recStart() {
+    if (rec.ctx || !state.localStream) return;
+    try {
+      rec.mime = recMime();
+      if (rec.mime === null) return;
+      rec.ctx = audioCtx || (audioCtx = new (window.AudioContext || window.webkitAudioContext)());
+      rec.dest = rec.ctx.createMediaStreamDestination();
+      recAdd('me', state.localStream);
+      for (const [id, p] of state.peers) if (p.audio && p.audio.srcObject) recAdd(id, p.audio.srcObject);
+      recSpawn();
+      rec.timer = setInterval(recSpawn, 10000);
+    } catch (_) { recStop(); }
+  }
+  function recAdd(id, stream) {
+    if (!rec.ctx || rec.sources.has(id) || !stream.getAudioTracks().length) return;
+    try { const src = rec.ctx.createMediaStreamSource(stream); src.connect(rec.dest); rec.sources.set(id, src); } catch (_) {}
+  }
+  function recSpawn() {
+    if (!rec.dest) return;
+    try {
+      const r = new MediaRecorder(rec.dest.stream, rec.mime ? { mimeType: rec.mime } : undefined);
+      r.chunks = []; r.startedAt = Date.now();
+      r.ondataavailable = (e) => { if (e.data && e.data.size) r.chunks.push(e.data); };
+      r.start(1000);
+      rec.recorders.push(r);
+      while (rec.recorders.length > 3) { const old = rec.recorders.shift(); try { old.ondataavailable = null; old.stop(); } catch (_) {} }
+    } catch (_) {}
+  }
+  function recStop() {
+    clearInterval(rec.timer);
+    for (const r of rec.recorders) { try { r.ondataavailable = null; r.stop(); } catch (_) {} }
+    for (const srcNode of rec.sources.values()) { try { srcNode.disconnect(); } catch (_) {} }
+    rec.recorders = []; rec.sources.clear(); rec.ctx = null; rec.dest = null; rec.timer = null;
+  }
+  function captureClip() {
+    return new Promise((resolve) => {
+      const r = rec.recorders[0];
+      if (!r || r.state !== 'recording') return resolve(null);
+      const seconds = Math.min(30, Math.round((Date.now() - r.startedAt) / 1000));
+      r.onstop = () => {
+        const blob = new Blob(r.chunks, { type: r.mimeType || rec.mime || 'audio/webm' });
+        rec.recorders = rec.recorders.filter((x) => x !== r);
+        recSpawn();
+        resolve(blob.size ? { blob, seconds, mime: blob.type } : null);
+      };
+      try { r.stop(); } catch (_) { resolve(null); }
+    });
+  }
+  async function saveClip() {
+    if (typeof MediaRecorder === 'undefined') return toast(t('clip.unsupported'), 4000);
+    const clip = await captureClip();
+    if (!clip || clip.seconds < 2) return toast(t('clip.none'), 4000);
+    state.clip = clip;
+    $('#clip-btn').classList.add('rec-on');
+    toast(t('clip.saved', { s: clip.seconds }), 6000);
+  }
+  const blobToDataUrl = (blob) => new Promise((res, rej) => { const fr = new FileReader(); fr.onload = () => res(fr.result); fr.onerror = rej; fr.readAsDataURL(blob); });
 
   // ---------- medidor de voz ----------
   let audioCtx = null;
@@ -1221,6 +1297,8 @@
   $('#avatar-none').addEventListener('click', () => chooseCover(null));
   $('#report-form').addEventListener('submit', sendReport);
   $('#report-cancel').addEventListener('click', closeReport);
+  $('#report-clip-rm').addEventListener('click', () => { $('#report-clip').hidden = true; });
+  $('#clip-btn').addEventListener('click', saveClip);
   $('#report-file').addEventListener('change', (e) => { pickReportImage(e.target.files[0]); e.target.value = ''; });
   $('#avatar-file').addEventListener('change', (e) => { uploadAvatar(e.target.files[0]); e.target.value = ''; });
   $('#dm-call').addEventListener('click', () => { if (state.dmWith) callFriend(state.dmWith); });

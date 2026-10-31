@@ -123,7 +123,7 @@ app.get(['/', '/index.html'], (req, _res, next) => {
 app.use('/avatars', express.static(AVATAR_DIR, { maxAge: '7d', immutable: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/api/profile/avatar', express.json({ limit: '6mb' }));
-app.use('/api/report', express.json({ limit: '6mb' }));
+app.use('/api/report', express.json({ limit: '12mb' }));
 app.use(express.json({ limit: '200kb' }));
 app.get('/api/config', (_req, res) => res.json(resolveConfig()));
 app.get('/api/version', (_req, res) => res.json(VERSION));
@@ -343,7 +343,7 @@ app.post('/api/report', async (req, res) => {
   const by = auth.ownerKey(tokenFrom(req));
   if (!by) return res.status(401).json({ error: 'not_logged_in' });
   if (denyIfBanned(by, res)) return;
-  const { target, reason, note, image } = req.body || {};
+  const { target, reason, note, image, audio } = req.body || {};
   const key = String(target || '').trim().toLowerCase();
   if (!auth.exists(key)) return res.status(404).json({ error: 'unknown_user' });
   let evidence = null;
@@ -361,7 +361,18 @@ app.post('/api/report', async (req, res) => {
       fs.writeFileSync(path.join(EVIDENCE_DIR, evidence), await img.quality(80).getBufferAsync(Jimp.MIME_JPEG));
     } catch (_) { return res.status(400).json({ error: 'bad_image' }); }
   }
-  const r = reports.report(by, key, reason, note, evidence);
+  let audioFile = null;
+  if (audio) {
+    const m = /^data:(audio\/(webm|mp4|ogg|mpeg|aac|x-m4a)|video\/webm)(?:;[^;,]+)*;base64,(.+)$/i.exec(String(audio));
+    if (!m) return res.status(400).json({ error: 'bad_audio' });
+    const buf = Buffer.from(m[3], 'base64');
+    if (buf.length > 6 * 1024 * 1024) return res.status(400).json({ error: 'too_large' });
+    const ext = /webm/i.test(m[1]) ? 'webm' : /ogg/i.test(m[1]) ? 'ogg' : /mpeg/i.test(m[1]) ? 'mp3' : 'm4a';
+    audioFile = `${crypto.randomBytes(8).toString('hex')}.${ext}`;
+    fs.mkdirSync(EVIDENCE_DIR, { recursive: true });
+    fs.writeFileSync(path.join(EVIDENCE_DIR, audioFile), buf);
+  }
+  const r = reports.report(by, key, reason, note, evidence, audioFile);
   if (r.error) return res.status(400).json(r);
   if (r.autoHide && (auth.avatarOf(key) || {}).type === 'upload') { removeUploadedAvatar(key); pushProfile(key, { removed: true }); }
   res.json({ ok: true });
@@ -378,13 +389,14 @@ app.get('/api/admin/reports', (req, res) => {
     ...r, byName: auth.nameOf(r.by) || r.by, targetName: auth.nameOf(r.target) || r.target, targetAvatar: avatarUrl(r.target),
     targetTitle: auth.titleOf(r.target), targetExists: auth.exists(r.target), targetBan: banInfo(r.target),
     evidenceUrl: r.evidence ? `/api/admin/evidence/${r.evidence}` : null,
+    audioUrl: r.audio ? `/api/admin/evidence/${r.audio}` : null,
   }));
   res.json({ reports: list, bans: auth.allBans(), stats: { accounts: auth.users.size, banned: auth.allBans().length } });
 });
 app.get('/api/admin/evidence/:file', (req, res) => {
   if (!isAdmin(req)) return res.status(401).json({ error: 'admin_key' });
   const file = String(req.params.file || '');
-  if (!/^[a-f0-9]{16}\.jpg$/.test(file)) return res.status(404).end();
+  if (!/^[a-f0-9]{16}\.(jpg|webm|ogg|mp3|m4a)$/.test(file)) return res.status(404).end();
   res.sendFile(path.join(EVIDENCE_DIR, file), (err) => { if (err) res.status(404).end(); });
 });
 /** Congela a conta: avisa todos os aparelhos e tira a pessoa da chamada. */

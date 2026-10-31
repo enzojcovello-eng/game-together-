@@ -117,7 +117,7 @@
             <div class="names"><strong>${esc(f.targetName)}</strong>${f.targetTitle ? `<span class="title-tag">${esc(f.targetTitle)}</span>` : ''}${f.targetBan ? `<span class="banned-tag">banido · ${left(f.targetBan.until)}</span>` : ''}
               <div class="muted">${reps.length} denúncia(s)${f.targetExists ? '' : ' · conta já não existe'}</div></div>
           </div>
-          ${reps.map((r) => `<div class="item"><div class="meta">${esc(r.byName)} · ${r.reason === 'photo' ? 'foto' : r.reason === 'name' ? 'nickname' : 'outro'} · ${when(r.at)}</div><div class="note">${esc(r.note || '(sem relato)')}</div>${r.evidenceUrl ? `<img src="${r.evidenceUrl}?key=${encodeURIComponent(key())}" alt="print" data-zoom>` : '<div class="muted">sem print</div>'}</div>`).join('')}
+          ${reps.map((r) => `<div class="item"><div class="meta">${esc(r.byName)} · ${r.reason === 'photo' ? 'foto' : r.reason === 'name' ? 'nickname' : 'outro'} · ${when(r.at)}</div><div class="note">${esc(r.note || '(sem relato)')}</div>${r.evidenceUrl ? `<img src="${r.evidenceUrl}?key=${encodeURIComponent(key())}" alt="print" data-zoom>` : '<div class="muted">sem print</div>'}${r.audioUrl ? `<div class="muted" style="margin-top:8px">Áudio dos últimos segundos da chamada:</div><audio controls preload="none" src="${r.audioUrl}?key=${encodeURIComponent(key())}" style="width:100%;margin-top:4px"></audio>` : ''}</div>`).join('')}
           <div class="judge">
             <select data-f="hours">${DURATIONS.map(([v, l]) => `<option value="${v}">${l}</option>`).join('')}</select>
             <input type="text" data-f="reason" placeholder="Motivo que a pessoa vai ver" maxlength="300">

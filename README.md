@@ -166,8 +166,12 @@ foto; o nickname antigo fica livre.
 
 Em qualquer cartão de pessoa (na chamada ou na lista de amigos) tem uma
 bandeirinha para denunciar. Abre um formulário: você conta o que aconteceu
-(obrigatório) e pode anexar um print. A denúncia vai para a administração
-junto com o nickname e a foto de perfil da pessoa. Com três denúncias de
+(obrigatório) e pode anexar um print. Na chamada tem também o botão
+**Últimos 30s**: ele guarda o trecho mais recente do áudio da chamada, e
+esse trecho vai junto com a denúncia (durante a chamada o app guarda só os
+últimos 30 segundos, em memória, no seu aparelho; nada é enviado a menos
+que você anexe numa denúncia). A denúncia vai para a administração junto
+com o nickname e a foto de perfil da pessoa. Com três denúncias de
 pessoas diferentes, a foto enviada sai do ar sozinha.
 
 Quem administra julga cada caso e pode suspender a conta por um tempo (de
@@ -228,7 +232,7 @@ nova aqui no GitHub.
 
 A página `/admin.html` lista as denúncias abertas agrupadas por pessoa:
 foto de perfil, nickname, cada relato com o print anexado (toque para
-ampliar) e quem denunciou. Para cada caso: escolha o tempo (1 hora a 30
+ampliar), o áudio da chamada com um tocador, e quem denunciou. Para cada caso: escolha o tempo (1 hora a 30
 dias ou para sempre), escreva o motivo e toque em "Banir"; ou "Só remover a
 foto"; ou "Ignorar". Embaixo fica a lista de banidos com "desbanir". Ela só
 abre com a chave definida na variável de ambiente `ADMIN_KEY` do servidor
@@ -456,8 +460,12 @@ keeps friends, conversations and photo; the old nickname becomes free.
 
 Every person card (on a call or in the friends list) has a small flag to
 report. It opens a form: you tell what happened (required) and can attach
-a screenshot. The report reaches the administration together with the
-person's nickname and profile photo. With three reports from different
+a screenshot. On a call there is also the **Last 30s** button: it keeps the
+most recent stretch of the call audio, and that clip goes along with the
+report (during a call the app only keeps the last 30 seconds, in memory, on
+your device; nothing is sent unless you attach it to a report). The report
+reaches the administration together with the person's nickname and
+profile photo. With three reports from different
 people, the uploaded photo goes offline by itself.
 
 Whoever runs the site judges each case and can suspend the account for a
@@ -515,8 +523,8 @@ app is outdated" with a button to download the new version here on GitHub.
 ## Managing reports
 
 The `/admin.html` page lists open reports grouped by person: profile
-photo, nickname, each report with its attached screenshot (tap to zoom) and
-who reported. For each case: pick the time (1 hour to 30 days or forever),
+photo, nickname, each report with its attached screenshot (tap to zoom),
+the call audio with a player, and who reported. For each case: pick the time (1 hour to 30 days or forever),
 write the reason and tap "Banir" (suspend); or "Só remover a foto" (remove
 the photo only); or "Ignorar" (dismiss). Below is the list of suspended
 accounts with "desbanir" (lift). It only opens with the key set in the
