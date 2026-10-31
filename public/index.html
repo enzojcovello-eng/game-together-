@@ -93,6 +93,7 @@
         <svg class="i"><use href="#i-chat"/></svg>
         <span class="badge" id="panel-badge" hidden>0</span>
       </button>
+      <button type="button" class="btn-primary small" id="login-btn" hidden><svg class="i"><use href="#i-user"/></svg><span data-i18n="auth.enter">Criar nickname</span></button>
       <span class="user-pill" id="user-pill" hidden>
         <span class="user-avatar" id="user-avatar">?</span>
         <span class="user-name" id="user-name"></span>
@@ -105,6 +106,31 @@
     </div>
   </header>
 
+  <!-- BOAS-VINDAS: bonequinho com a placa; ao tocar, a placa amassa como papel e cai -->
+  <div class="splash" id="splash" hidden role="dialog" aria-label="Boas-vindas">
+    <div class="splash-glow"></div>
+    <div class="splash-scene" id="splash-scene">
+      <svg class="splash-guy" viewBox="0 0 220 260" aria-hidden="true">
+        <defs>
+          <linearGradient id="g-body" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff8f3d"/><stop offset="1" stop-color="#e35f05"/></linearGradient>
+          <linearGradient id="g-head" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff3e2"/><stop offset="1" stop-color="#e9d6bb"/></linearGradient>
+        </defs>
+        <ellipse class="shadow" cx="110" cy="248" rx="70" ry="9" fill="#000" opacity=".35"/>
+        <g class="legs"><rect x="78" y="188" width="22" height="52" rx="11" fill="url(#g-body)"/><rect x="120" y="188" width="22" height="52" rx="11" fill="url(#g-body)"/></g>
+        <rect class="body" x="64" y="104" width="92" height="96" rx="38" fill="url(#g-body)"/>
+        <circle class="head" cx="110" cy="66" r="44" fill="url(#g-head)"/>
+        <g class="face"><circle cx="95" cy="62" r="4.5" fill="#1a0f05"/><circle cx="125" cy="62" r="4.5" fill="#1a0f05"/><path d="M94 80 Q110 94 126 80" stroke="#1a0f05" stroke-width="4" fill="none" stroke-linecap="round"/></g>
+        <g class="arms" stroke="url(#g-body)" stroke-width="20" stroke-linecap="round" fill="none"><path d="M70 130 Q40 150 28 172"/><path d="M150 130 Q180 150 192 172"/></g>
+      </svg>
+      <div class="splash-sign" id="splash-sign">
+        <div class="paper">
+          <span class="splash-text" id="splash-text" data-i18n="splash.text">Seja bem-vindo!</span>
+          <span class="splash-sub" id="splash-sub">game<em>together</em></span>
+        </div>
+      </div>
+      <p class="splash-hint" data-i18n="splash.tap">Toque na tela para entrar</p>
+    </div>
+  </div>
   <div class="update-banner announce" id="announce-banner" hidden>
     <svg class="i"><use href="#i-crown"/></svg>
     <span><strong data-i18n="announce.title">Aviso da administração:</strong> <span id="announce-text"></span></span>
@@ -154,11 +180,6 @@
 
     <!-- INÍCIO: escolha do jogo -->
     <section class="screen" id="screen-home">
-      <div class="welcome" id="welcome">
-        <h2 id="welcome-title" data-i18n="welcome.title">Bem-vindo ao Game Together! 👋</h2>
-        <p id="welcome-text" data-i18n="welcome.text">Escolha um jogo abaixo, diga quantas pessoas, o idioma e a sua plataforma. Na hora de entrar na chamada você cria um nickname: sem senha, sem e-mail, leva 5 segundos.</p>
-        <button type="button" class="btn-primary small" id="welcome-cta" data-i18n="welcome.cta">Criar meu nickname</button>
-      </div>
       <div class="hero-banner" id="hero-banner">
         <div class="hero-text">
           <div class="hero-brand">game<em>together</em></div>

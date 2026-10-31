@@ -226,9 +226,7 @@
   function renderUser() {
     $('#user-pill').hidden = !state.token;
     $('#panel-btn').hidden = !state.token;
-    $('#welcome-title').textContent = state.token ? t('welcome.back', { name: state.name }) : t('welcome.title');
-    $('#welcome-text').textContent = state.token ? t('welcome.textBack') : t('welcome.text');
-    $('#welcome-cta').hidden = Boolean(state.token);
+    $('#login-btn').hidden = Boolean(state.token);
     $('#user-name').innerHTML = escapeHtml(state.name) + ownerBadge(state.profile.title);
     $('#user-avatar').innerHTML = avatarInner(state.name, state.profile.avatar);
     renderProfile();
@@ -1657,7 +1655,7 @@
 
   // ---------- eventos da interface ----------
   $('#auth-form').addEventListener('submit', onAuthSubmit);
-  $('#welcome-cta').addEventListener('click', () => askNickname(null));
+  $('#login-btn').addEventListener('click', () => askNickname(null));
   $('#auth-back').addEventListener('click', () => { state.afterAuth = null; $('#auth-why').hidden = true; showScreen(state.game ? 'screen-setup' : 'screen-home'); });
   $('#pending-cancel').addEventListener('click', cancelPending);
   $('#logout-btn').addEventListener('click', confirmLogout);
@@ -1710,6 +1708,30 @@
   $$('#ui-lang-switch button').forEach((b) => b.addEventListener('click', () => setUiLang(b.dataset.lang)));
   window.addEventListener('beforeunload', () => { if (state.room) socket.emit('leave'); });
 
+  // ---------- boas-vindas ----------
+  function showSplash() {
+    let seen = false;
+    try { seen = sessionStorage.getItem('gt:splash') === '1'; } catch (_) {}
+    if (seen) return;
+    const el = $('#splash');
+    const text = $('#splash-text');
+    const msg = t('splash.text');
+    text.innerHTML = [...msg].map((c, i) => `<span class="ch" style="animation-delay:${0.45 + i * 0.045}s">${c === ' ' ? '&nbsp;' : escapeHtml(c)}</span>`).join('');
+    el.hidden = false;
+    document.body.classList.add('splash-open');
+    let leaving = false;
+    const dismiss = () => {
+      if (leaving) return;
+      leaving = true;
+      try { sessionStorage.setItem('gt:splash', '1'); } catch (_) {}
+      el.classList.add('leaving');
+      playTone('join');
+      setTimeout(() => { el.hidden = true; el.classList.remove('leaving'); document.body.classList.remove('splash-open'); }, 1300);
+    };
+    el.addEventListener('pointerdown', dismiss);
+    window.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ' || e.key === 'Escape') dismiss(); }, { once: true });
+  }
+
   // ---------- boot ----------
   fetch('/api/config')
     .then((r) => r.json())
@@ -1720,6 +1742,7 @@
       renderHeroCovers();
       $('#share-host').textContent = location.host;
       setUiLang(detectLang());
+      showSplash();
       setPanelTab('reports');
       checkGithub();
       // se o socket já conectou antes de sabermos a versão, confere agora
