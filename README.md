@@ -88,23 +88,37 @@ quantidade de pessoas e uma plataforma compatível.
 | Valorant | 5 | PC, PlayStation, Xbox | Parcial: PlayStation e Xbox juntos; PC só com PC |
 | GTA V | 5 | PC, PlayStation, Xbox | Não: cada plataforma só encontra a própria |
 | Helldivers 2 | 4 | PC, PlayStation, Xbox | Sim |
+| Brawl Stars | 3 | Celular | Sim |
+| FIFA 27 (EA FC 27) | 3 | PC, PlayStation, Xbox, Switch | Sim |
+| FIFA 26 (EA FC 26) | 3 | PC, PlayStation, Xbox, Switch | Sim |
 
 Cada cartão de jogo mostra quantas pessoas estão em chamada e quantas estão
 procurando naquele jogo agora. No topo da tela inicial aparece o total.
 
 Idiomas: Português (BR) e English (US). O idioma escolhido também traduz o site.
 
-### Sua conta fica em um aparelho por vez e não sai sozinha
+### Sua conta: vários aparelhos, com a sua aprovação
 
 A conta é o seu nickname, guardada no aparelho em que você entrou. Ela não
 sai com atualização do site nem com reinício do servidor: só sai se você
-tocar em **Sair**. Se alguém digitar o seu nickname em outro aparelho, esse
-aparelho fica esperando e você recebe um aviso no app: **Permitir** ou
-**Recusar**. Se não viu o aviso, o pedido fica na aba **Logins**, dentro do
-botão de chat no topo. Ao permitir, a conta passa para o outro aparelho.
+tocar em **Sair**.
 
-**Sair** apaga tudo: a conta, os amigos e as conversas. O nickname fica
-livre para qualquer pessoa usar.
+Você pode usar a mesma conta no celular, no PC e onde mais quiser. Quando
+digitar o seu nickname num aparelho novo, ele fica esperando e os aparelhos
+que já estão na conta recebem um aviso: **Permitir** ou **Recusar**. Se não
+viu o aviso, o pedido fica na aba **Logins**, dentro do botão de chat no
+topo. Ao permitir, o aparelho novo entra junto e todos continuam logados,
+com os mesmos amigos e conversas. Se alguém tentar entrar com o seu nickname
+sem ser você, é só recusar.
+
+**Sair** apaga tudo: a conta em todos os aparelhos, os amigos e as
+conversas. O nickname fica livre para qualquer pessoa usar.
+
+### Caiu com alguém com quem não quer falar?
+
+É só sair da chamada. Ninguém é avisado, não tem denúncia nem bloqueio para
+preencher, e você pode procurar de novo na hora. O aviso aparece na própria
+tela de busca.
 
 ### Por que é seguro mesmo sem senha
 
@@ -112,9 +126,10 @@ livre para qualquer pessoa usar.
   um código longo e aleatório, assinado por ele, e guarda só no seu aparelho.
   É esse código que prova que a conta é sua. Ninguém consegue adivinhar nem
   fabricar um igual: sem a assinatura do servidor, o código não vale.
-- **Só um aparelho por vez.** Se alguém digitar o seu nickname em outro
-  lugar, não entra: fica esperando e você recebe o pedido para permitir ou
-  recusar. Quem tenta não vê nada da sua conta enquanto espera.
+- **Aparelho novo só entra com a sua aprovação.** Se alguém digitar o seu
+  nickname em outro lugar, não entra: fica esperando e você recebe o pedido
+  para permitir ou recusar nos aparelhos que já estão na conta. Quem tenta
+  não vê nada da sua conta enquanto espera.
 - **Não tem o que roubar.** O site não pede e-mail, telefone, nome real nem
   senha. Guarda o nickname (que todo mundo vê na chamada), a lista de amigos
   e as mensagens entre amigos. O áudio não é gravado. Se alguém invadisse o
@@ -124,9 +139,9 @@ livre para qualquer pessoa usar.
   senha em vários sites. Pedir uma senha para um site de chamada de voz só
   criaria um lugar a mais onde ela pode vazar, sem proteger nada a mais.
 - **O limite é o seu aparelho.** Quem pega o seu celular desbloqueado usa a
-  sua conta, como em qualquer app sem bloqueio próprio. E se o aparelho for
-  perdido, a conta fica nele: o novo aparelho pede permissão e o antigo não
-  está lá para responder. Nesse caso, crie outro nickname. Como a conta não
+  sua conta, como em qualquer app sem bloqueio próprio. Se perder um
+  aparelho e tiver a conta em outro, aprove o aparelho novo por ele. Se a
+  conta estava só no aparelho perdido, crie outro nickname: como a conta não
   tem nada sensível, o prejuízo é só o nome e a lista de amigos.
 - **Contra abuso.** O servidor limita quantos pedidos de login um mesmo
   endereço pode fazer, limita o tamanho das mensagens e só aceita pedidos de
@@ -199,6 +214,9 @@ ilustração. Formato bom: vertical, 600 x 800 pixels ou maior.
 | Valorant | `valorant.jpg` |
 | GTA V | `gta-5.jpg` |
 | Helldivers 2 | `helldivers-2.jpg` |
+| Brawl Stars | `brawl-stars.jpg` |
+| FIFA 27 | `fifa-27.jpg` |
+| FIFA 26 | `fifa-26.jpg` |
 
 ---
 
@@ -290,6 +308,9 @@ call size and a compatible platform.
 | Valorant | 5 | PC, PlayStation, Xbox | Partial: PlayStation and Xbox together; PC only with PC |
 | GTA V | 5 | PC, PlayStation, Xbox | No: each platform only matches itself |
 | Helldivers 2 | 4 | PC, PlayStation, Xbox | Yes |
+| Brawl Stars | 3 | Mobile | Yes |
+| FIFA 27 (EA FC 27) | 3 | PC, PlayStation, Xbox, Switch | Yes |
+| FIFA 26 (EA FC 26) | 3 | PC, PlayStation, Xbox, Switch | Yes |
 
 Each game card shows how many people are on a call and how many are
 searching in that game right now. The home screen shows the total at the top.
@@ -297,17 +318,28 @@ searching in that game right now. The home screen shows the total at the top.
 Languages: Português (BR) and English (US). The language you pick also
 translates the site.
 
-### Your account lives on one device at a time and never leaves on its own
+### Your account: several devices, with your approval
 
 The account is your nickname, kept on the device you entered from. It does
 not leave with a site update or a server restart: it only leaves when you
-tap **Log out**. If someone types your nickname on another device, that
-device waits and you get a notice in the app: **Allow** or **Deny**. If you
-missed the notice, the request stays in the **Logins** tab, inside the chat
-button at the top. When you allow it, the account moves to the other device.
+tap **Log out**.
 
-**Log out** deletes everything: the account, the friends and the
-conversations. The nickname becomes free for anyone to use.
+You can use the same account on your phone, your PC and anywhere else. When
+you type your nickname on a new device, it waits and the devices already on
+the account get a notice: **Allow** or **Deny**. If you missed the notice,
+the request stays in the **Logins** tab, inside the chat button at the top.
+When you allow it, the new device joins and everyone stays logged in, with
+the same friends and conversations. If someone else tries to enter with
+your nickname, just deny.
+
+**Log out** deletes everything: the account on every device, the friends
+and the conversations. The nickname becomes free for anyone to use.
+
+### Landed with someone you do not want to talk to?
+
+Just leave the call. Nobody is notified, there is no report or block to
+fill in, and you can search again right away. The reminder is on the search
+screen itself.
 
 ### Why it is safe even without a password
 
@@ -315,9 +347,10 @@ conversations. The nickname becomes free for anyone to use.
   generates a long random code, signed by it, and stores it only on your
   device. That code is what proves the account is yours. Nobody can guess or
   forge one: without the server's signature, the code is worthless.
-- **One device at a time.** If someone types your nickname somewhere else,
-  they do not get in: they wait, and you get the request to allow or deny.
-  While waiting they see nothing of your account.
+- **A new device only gets in with your approval.** If someone types your
+  nickname somewhere else, they do not get in: they wait, and you get the
+  request to allow or deny on the devices already on the account. While
+  waiting they see nothing of your account.
 - **There is nothing to steal.** The site does not ask for email, phone,
   real name or password. It stores the nickname (which everyone sees on the
   call), the friends list and the messages between friends. Audio is never
@@ -328,11 +361,11 @@ conversations. The nickname becomes free for anyone to use.
   password across sites. Asking for one on a voice call site would only add
   one more place for it to leak, without protecting anything extra.
 - **The limit is your device.** Whoever holds your unlocked phone can use
-  your account, as with any app without its own lock. And if the device is
-  lost, the account stays on it: a new device asks for permission and the
-  old one is not there to answer. In that case, create another nickname.
-  Since the account holds nothing sensitive, the loss is just the name and
-  the friends list.
+  your account, as with any app without its own lock. If you lose a device
+  and have the account on another one, approve the new device from there.
+  If the account was only on the lost device, create another nickname: since
+  the account holds nothing sensitive, the loss is just the name and the
+  friends list.
 - **Against abuse.** The server limits how many login requests one address
   can make, caps message size, and only takes friend requests from people on
   the same call or already friends.
@@ -404,6 +437,9 @@ larger.
 | Valorant | `valorant.jpg` |
 | GTA V | `gta-5.jpg` |
 | Helldivers 2 | `helldivers-2.jpg` |
+| Brawl Stars | `brawl-stars.jpg` |
+| FIFA 27 | `fifa-27.jpg` |
+| FIFA 26 | `fifa-26.jpg` |
 
 ## License
 

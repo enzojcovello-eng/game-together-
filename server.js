@@ -97,7 +97,7 @@ app.get('/api/me', (req, res) => {
   const user = auth.verify(token);
   if (!user) return res.status(401).json({ error: 'not_logged_in' });
   auth.touch(token);
-  res.json({ name: user.name, recovered: user.recovered, pending: auth.pendingFor(token) || [] });
+  res.json({ name: user.name, recovered: user.recovered, devices: auth.devicesOf(token), pending: auth.pendingFor(token) || [] });
 });
 
 app.get('/api/requests', (req, res) => {
@@ -112,8 +112,7 @@ app.post('/api/requests/:id/approve', (req, res) => {
   const r = auth.approve(token, req.params.id);
   if (r.error) return res.status(r.error === 'not_logged_in' ? 401 : 404).json({ error: r.error });
   io.to(claimRoom(req.params.id)).emit('claim-update', { requestId: req.params.id, status: 'approved' });
-  io.to(acctRoom(key)).emit('account-transferred');
-  io.in(acctRoom(key)).socketsLeave(acctRoom(key));
+  io.to(acctRoom(key)).emit('login-requests-changed');
   res.json(r);
 });
 
@@ -133,6 +132,7 @@ app.post('/api/logout', (req, res) => {
   if (key) {
     const affected = social.erase(key);
     auth.logout(token);
+    io.to(acctRoom(key)).emit('account-deleted'); // todos os aparelhos da conta saem
     io.in(acctRoom(key)).socketsLeave(acctRoom(key));
     for (const f of affected) pushSocial(f);
   }
