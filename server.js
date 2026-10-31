@@ -73,11 +73,13 @@ function visitSummary() {
 }
 // Endereço oficial: com SITE_URL definido (ex.: https://gametogether.com.br), qualquer outro
 // endereço (como o onrender.com) redireciona para ele, para o Google contar um site só.
-const SITE_URL = (process.env.SITE_URL || '').replace(/\/$/, '');
-if (SITE_URL) {
-  const siteHost = new URL(SITE_URL).host;
+let SITE_URL = (process.env.SITE_URL || '').trim().replace(/\/$/, '');
+if (SITE_URL && !/^https?:\/\//i.test(SITE_URL)) SITE_URL = `https://${SITE_URL}`;
+let siteHost = null;
+try { if (SITE_URL) siteHost = new URL(SITE_URL).host.toLowerCase(); } catch (_) { console.warn('SITE_URL inválida, ignorando:', SITE_URL); SITE_URL = ''; }
+if (siteHost) {
   app.use((req, res, next) => {
-    const host = req.headers.host || '';
+    const host = (req.headers.host || '').toLowerCase();
     if (host && host !== siteHost && !host.startsWith('localhost') && !host.startsWith('127.')) {
       return res.redirect(301, SITE_URL + req.originalUrl);
     }
