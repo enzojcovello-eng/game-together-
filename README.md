@@ -153,6 +153,23 @@ tela de busca.
   endereço pode fazer, limita o tamanho das mensagens e só aceita pedidos de
   amizade de quem está na mesma chamada ou já é amigo.
 
+### Perfil: foto e nickname
+
+No botão de chat no topo, a aba **Perfil** deixa trocar a foto e o
+nickname. A foto pode ser uma capa de jogo da galeria, uma foto sua (JPG ou
+PNG, até 4 MB) ou nenhuma. Toda foto enviada passa por uma checagem
+automática no servidor antes de aparecer: fotos com nudez ou conteúdo
+sexual são recusadas na hora. Trocar o nickname mantém amigos, conversas e
+foto; o nickname antigo fica livre.
+
+### Denúncias
+
+Em qualquer cartão de pessoa (na chamada ou na lista de amigos) tem uma
+bandeirinha para denunciar foto ou nickname impróprio. Com três denúncias
+de pessoas diferentes, a foto enviada sai do ar sozinha. Tudo fica
+registrado para quem administra o site decidir (remover a foto, ignorar ou
+banir o nickname).
+
 ### Amigos
 
 Numa chamada, toque em **+ amigo** ao lado de alguém. A pessoa recebe o
@@ -200,6 +217,14 @@ inicial) vê uma faixa amarela "Tem uma versão nova" com o botão
 "Esta cópia do app está desatualizada" com o botão para baixar a versão
 nova aqui no GitHub.
 
+
+## Administração das denúncias
+
+A página `/admin.html` lista as denúncias abertas, com a foto denunciada,
+quem denunciou e os botões "Remover foto", "Banir nickname" e "Ignorar".
+Ela só abre com a chave definida na variável de ambiente `ADMIN_KEY` do
+servidor (um texto longo e aleatório). Banir apaga a conta e bloqueia o
+nickname para sempre.
 
 ## Quantas pessoas visitaram
 
@@ -398,6 +423,23 @@ screen itself.
   can make, caps message size, and only takes friend requests from people on
   the same call or already friends.
 
+### Profile: photo and nickname
+
+In the chat button at the top, the **Profile** tab lets you change your
+photo and nickname. The photo can be a game cover from the gallery, a photo
+of yours (JPG or PNG, up to 4 MB) or none. Every uploaded photo goes
+through an automatic check on the server before it shows up: photos with
+nudity or sexual content are refused on the spot. Changing the nickname
+keeps friends, conversations and photo; the old nickname becomes free.
+
+### Reports
+
+Every person card (on a call or in the friends list) has a small flag to
+report an inappropriate photo or nickname. With three reports from
+different people, the uploaded photo goes offline by itself. Everything is
+logged for whoever runs the site to decide (remove the photo, dismiss or
+ban the nickname).
+
 ### Friends
 
 On a call, tap **+ friend** next to someone. They get the request and
@@ -443,6 +485,14 @@ in a few minutes. Anyone with the app open (or installed on the home
 screen) sees a yellow bar "There is a new version" with an **Update now**
 button. Anyone running their own copy on a computer sees "This copy of the
 app is outdated" with a button to download the new version here on GitHub.
+
+## Managing reports
+
+The `/admin.html` page lists open reports with the reported photo, who
+reported it and the buttons "Remover foto" (remove photo), "Banir nickname"
+(ban) and "Ignorar" (dismiss). It only opens with the key set in the
+server's `ADMIN_KEY` environment variable (a long random text). Banning
+deletes the account and blocks the nickname for good.
 
 ## How many people visited
 
