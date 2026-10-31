@@ -1711,9 +1711,6 @@
   // ---------- boas-vindas ----------
   function showSplash() {
     const el = $('#splash'); // toda vez que o app abre, inclusive ao recarregar
-    const text = $('#splash-text');
-    const msg = t('splash.text');
-    text.innerHTML = [...msg].map((c, i) => `<span class="ch" style="animation-delay:${0.45 + i * 0.045}s">${c === ' ' ? '&nbsp;' : escapeHtml(c)}</span>`).join('');
     el.hidden = false;
     document.body.classList.add('splash-open');
     let leaving = false;

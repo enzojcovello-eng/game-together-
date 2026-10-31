@@ -366,6 +366,22 @@
       ],
       "crossplay": true,
       "cover": "covers/palworld.jpg"
+    },
+    {
+      "id": "overwatch-2",
+      "name": "Overwatch 2",
+      "short": "Overwatch 2",
+      "emoji": "🎯",
+      "color": "#f99e1a",
+      "maxPlayers": 4,
+      "platforms": [
+        "pc",
+        "playstation",
+        "xbox",
+        "switch"
+      ],
+      "crossplay": true,
+      "cover": "covers/overwatch-2.jpg"
     }
   ]
 }
