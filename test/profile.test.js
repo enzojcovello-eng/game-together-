@@ -62,9 +62,19 @@ reports.resolve('enzo_pro');
 assert.strictEqual(reports.open().length, 0);
 assert.strictEqual(new Reports({ dataDir: dir }).list.length, 3, 'persistiu');
 
+// título fica para sempre: sair da conta e voltar com o mesmo nickname mantém; só a administração tira
+assert.strictEqual(auth.setTitle('Enzo_Pro', 'Dono').ok, true);
+assert.strictEqual(auth.logout(enzo.token), 'enzo_pro');
+tick();
+const volta = auth.claim('Enzo_Pro');
+assert.strictEqual(volta.status, 'created');
+assert.strictEqual(auth.titleOf('enzo_pro'), 'Dono', 'título sobrevive ao Sair');
+assert.strictEqual(auth.setTitle('Enzo_Pro', '').title, null);
+assert.strictEqual(auth.titleOf('enzo_pro'), null, 'administração tirou');
+auth.setTitle('Enzo_Pro', 'Mod');
 // banir: conta some e o nickname fica bloqueado
 assert.strictEqual(auth.ban('enzo_pro'), true);
-assert.strictEqual(auth.verify(enzo.token), null);
+assert.strictEqual(auth.verify(volta.token), null);
 tick();
 assert.strictEqual(auth.claim('enzo_pro').error, 'banned');
 assert.strictEqual(auth.rename(ana.token, 'Enzo_Pro').error, 'banned');

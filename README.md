@@ -229,8 +229,8 @@ nickname para sempre.
 Na mesma página dá para dar um **título** a qualquer pessoa: digite o
 nickname e o texto (por exemplo "Dono", "Mod" ou "VIP", até 16 letras).
 O selo aparece ao lado do nickname para todo mundo (topo, chamada, amigos e
-perfil), acompanha a troca de nickname e só pode ser dado ou tirado por
-quem tem a chave.
+perfil), acompanha a troca de nickname e fica para sempre, mesmo se a
+pessoa sair e entrar de novo com o mesmo nickname: só quem tem a chave tira.
 
 ## Quantas pessoas visitaram
 
@@ -503,8 +503,8 @@ deletes the account and blocks the nickname for good.
 On the same page you can give anyone a **title**: type the nickname and
 the text (for example "Dono", "Mod" or "VIP", up to 16 letters). The badge
 shows next to the nickname for everyone (top bar, call, friends and
-profile), follows a nickname change and can only be given or removed with
-the key.
+profile), follows a nickname change and stays forever, even if the person
+logs out and comes back with the same nickname: only the key removes it.
 
 ## How many people visited
 
