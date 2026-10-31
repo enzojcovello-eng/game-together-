@@ -71,7 +71,7 @@ em branco, espere um pouco e recarregue.
 4. Clique em **Matchmake**.
    - **2 pessoas**: você e mais 1. Fica procurando até aparecer alguém com a mesma escolha.
    - **3 ou mais**: você entra numa sala aberta (ou cria uma) e as pessoas vão entrando até o limite do jogo.
-5. Na chamada: mute, sair, lista de quem está falando e o painel com Denúncias, Amigos, Perfil e Logins.
+5. Na chamada: mute, sair, lista de quem está falando, o chat de texto da chamada e o painel com Denúncias, Amigos, Perfil e Logins.
 
 Você só cai com quem escolheu o mesmo jogo, o mesmo idioma, a mesma
 quantidade de pessoas e uma plataforma compatível.
@@ -164,7 +164,8 @@ foto; o nickname antigo fica livre.
 
 ### Denúncias e suspensão
 
-A aba **Denúncias** (a primeira do painel, no topo e na chamada) mostra
+A aba **Denúncias** (a primeira do painel, no topo e na chamada; o chat de
+texto fica numa caixa própria na tela da chamada) mostra
 quem está na chamada agora, quem já esteve numa chamada com você e um campo
 para digitar o nickname de outra pessoa. Cada uma tem o botão "Denunciar".
 Os cartões de pessoa (na chamada ou na lista de amigos) também têm a
@@ -375,7 +376,7 @@ blank screen, wait a bit and reload.
 4. Click **Matchmake**.
    - **2 people**: you and 1 more. It keeps searching until someone with the same choice shows up.
    - **3 or more**: you join an open room (or create one) and people keep joining until the game's limit.
-5. On the call: mute, leave, a list of who is speaking and the panel with Reports, Friends, Profile and Logins.
+5. On the call: mute, leave, a list of who is speaking, the call text chat and the panel with Reports, Friends, Profile and Logins.
 
 You only match people who picked the same game, the same language, the same
 call size and a compatible platform.

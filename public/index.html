@@ -251,6 +251,14 @@
       </div>
       <p class="status" id="room-status"></p>
       <ul class="members" id="members"></ul>
+      <section class="room-chat" id="room-chat">
+        <div class="room-chat-head"><svg class="i"><use href="#i-chat"/></svg><span data-i18n="chat.title">Chat da chamada</span></div>
+        <div class="chat-log" id="chat-log"></div>
+        <form class="chat-form" id="chat-form">
+          <input type="text" id="chat-input" maxlength="300" data-i18n-placeholder="room.chatPh" placeholder="Mensagem rápida">
+          <button type="submit" class="icon-btn" aria-label="Enviar"><svg class="i"><use href="#i-send"/></svg></button>
+        </form>
+      </section>
       <div id="room-panel-slot"></div>
       <div class="controls">
         <button type="button" class="ctrl" id="mute-btn">

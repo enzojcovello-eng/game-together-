@@ -1001,6 +1001,7 @@
     state.searching = false;
     state.room = room;
     state.me = me;
+    $('#chat-log').innerHTML = '';
     rememberPeople(room);
     renderRoom();
     setPanelTab(state.requests.length ? 'logins' : 'reports');
@@ -1258,6 +1259,16 @@
     peer.meter = makeMeter(stream, (lvl) => speakingClass(id, lvl));
   }
 
+  // ---------- chat da chamada ----------
+  function addChat({ name, text, sys }) {
+    const log = $('#chat-log');
+    const div = document.createElement('div');
+    div.className = 'msg' + (sys ? ' sys' : '');
+    div.innerHTML = sys ? escapeHtml(text) : `<b>${escapeHtml(name)}:</b> ${escapeHtml(text)}`;
+    log.appendChild(div);
+    log.scrollTop = log.scrollHeight;
+  }
+
   // ---------- atualização ----------
   const GITHUB_RAW = 'https://raw.githubusercontent.com/enzojcovello-eng/game-together-/main/package.json';
   let loadedVersion = null; // { version, build } da versão que esta página carregou
@@ -1309,6 +1320,7 @@
     renderRoom();
     rememberPeople(room);
     toast(t('toast.joined', { name: peer.name }));
+    addChat({ sys: true, text: t('toast.joined', { name: peer.name }) });
     connectPeer(peer, false);
   });
   socket.on('peer-left', ({ room, peerId }) => {
@@ -1319,8 +1331,10 @@
     state.room = room;
     renderRoom();
     toast(t('toast.left', { name }));
+    addChat({ sys: true, text: t('toast.left', { name }) });
   });
   socket.on('signal', onSignal);
+  socket.on('chat', addChat);
   socket.on('room-update', ({ room }) => { if (state.room && room && room.id === state.room.id) { state.room = room; rememberPeople(room); renderRoom(); } });
   socket.on('profile', (p) => { setProfile(p); maybeReupload(); });
   socket.on('token', ({ token }) => { if (token && state.token) { state.token = token; store.set('gt:token', token); } });
@@ -1402,6 +1416,14 @@
   $('#mute-btn').addEventListener('click', toggleMute);
   $('#leave-btn').addEventListener('click', () => leaveRoom());
   $('#report-by-name').addEventListener('submit', (e) => { e.preventDefault(); reportByName($('#report-name-input').value); });
+  $('#chat-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const input = $('#chat-input');
+    const text = input.value.trim();
+    if (!text) return;
+    socket.emit('chat', text);
+    input.value = '';
+  });
   $('#update-btn').addEventListener('click', reloadApp);
   $('#share-link').addEventListener('click', copySiteLink);
   $('#game-search').addEventListener('input', filterGames);
