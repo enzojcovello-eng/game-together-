@@ -1033,6 +1033,7 @@
     .then(async (cfg) => {
       state.config = cfg;
       loadedVersion = { version: cfg.version, build: cfg.build };
+      $('#about-games').textContent = cfg.games.map((g) => g.name).join(', ') + '.';
       setUiLang(detectLang());
       setPanelTab('chat');
       checkGithub();

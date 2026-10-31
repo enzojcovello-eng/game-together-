@@ -4,8 +4,38 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#15130f">
-  <title>Game Together</title>
-  <meta name="description" content="Encontre gente para jogar junto. Chamada de voz por jogo, idioma, plataforma e quantidade de jogadores.">
+  <title>Game Together: encontre gente para jogar junto por chamada de voz</title>
+  <meta name="description" content="Site grátis de chamada de voz para achar gente para jogar: escolha o jogo (Fortnite, Roblox, Minecraft, ARK, Rocket League, GTA V e mais), o idioma e a plataforma e clique em Matchmake. Sem cadastro, sem câmera. Funciona no PC e no celular.">
+  <link rel="canonical" href="https://game-together.onrender.com/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Game Together">
+  <meta property="og:title" content="Game Together: encontre gente para jogar junto">
+  <meta property="og:description" content="Chamada de voz por jogo, idioma e plataforma. Sem cadastro, sem câmera. Funciona no PC e no celular.">
+  <meta property="og:url" content="https://game-together.onrender.com/">
+  <meta property="og:image" content="https://game-together.onrender.com/og.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:locale" content="pt_BR">
+  <meta property="og:locale:alternate" content="en_US">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Game Together: encontre gente para jogar junto">
+  <meta name="twitter:description" content="Chamada de voz por jogo, idioma e plataforma. Sem cadastro, sem câmera. Funciona no PC e no celular.">
+  <meta name="twitter:image" content="https://game-together.onrender.com/og.png">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Game Together",
+    "url": "https://game-together.onrender.com/",
+    "description": "Chamada de voz grátis para encontrar gente para jogar junto. Escolha o jogo, o idioma e a plataforma e clique em Matchmake.",
+    "applicationCategory": "GameApplication",
+    "operatingSystem": "Any",
+    "browserRequirements": "Requires a modern browser with microphone access",
+    "inLanguage": ["pt-BR", "en-US"],
+    "isAccessibleForFree": true,
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "BRL" }
+  }
+  </script>
   <link rel="icon" href="/icons/icon-192.png" type="image/png">
   <link rel="manifest" href="/manifest.webmanifest">
   <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
@@ -94,8 +124,23 @@
           <p class="error" id="auth-error" hidden></p>
           <button type="submit" class="btn-primary btn-big" id="auth-submit"><span data-i18n="auth.submit">Entrar</span></button>
         </form>
-        <p class="hint" data-i18n="auth.hint">Uma conta fica em um aparelho por vez. Se você entrar com o mesmo nome em outro aparelho, o app pede sua permissão neste aqui.</p>
+        <p class="hint" data-i18n="auth.hint">Você pode usar a conta em vários aparelhos. Cada aparelho novo só entra depois que você aprova pelo aparelho que já está na conta.</p>
       </div>
+      <section class="about">
+        <h2 data-i18n="about.title">O que é o Game Together</h2>
+        <p data-i18n="about.p1">Um site grátis de chamada de voz para quem quer jogar acompanhado. Você escolhe o jogo, quantas pessoas quer na chamada, o idioma e a sua plataforma, clica em Matchmake e cai numa chamada com quem escolheu a mesma coisa.</p>
+        <p data-i18n="about.p2">Sem cadastro, sem senha, sem câmera: só o seu nickname e o microfone. Funciona no PC, no Android e no iPhone, direto no navegador, e dá para instalar como app.</p>
+        <h3 data-i18n="about.games">Jogos disponíveis</h3>
+        <p id="about-games">ARK: Survival Evolved, ARK: Survival Ascended, Rocket League, Fortnite, Roblox, Terraria, Minecraft, Valorant, GTA V, Helldivers 2, Brawl Stars, FIFA 27 e FIFA 26.</p>
+        <h3 data-i18n="about.how">Como funciona</h3>
+        <ol>
+          <li data-i18n="about.s1">Escolha um nickname (não precisa ser seu nome real).</li>
+          <li data-i18n="about.s2">Toque no jogo e escolha 2 pessoas ou 3 ou mais, o idioma (Português ou English) e a plataforma.</li>
+          <li data-i18n="about.s3">Clique em Matchmake. A chamada começa assim que alguém com a mesma escolha aparecer.</li>
+          <li data-i18n="about.s4">Gostou de alguém? Adicione como amigo, mande mensagem e chame para jogar de novo.</li>
+        </ol>
+        <p class="hint"><span data-i18n="about.source">O site é aberto: o código fica no GitHub, e você pode sugerir jogos por lá.</span> <a href="https://github.com/enzojcovello-eng/game-together-" rel="noopener">github.com/enzojcovello-eng/game-together-</a></p>
+      </section>
     </section>
 
     <!-- ESPERANDO PERMISSÃO -->
