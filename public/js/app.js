@@ -18,7 +18,8 @@
     pendingId: null,
     pendingName: '',
     requests: [],
-    social: { me: null, friends: [], requests: [], dms: {} },
+    social: { me: null, friends: [], contacts: [], requests: [], dms: {} },
+    pendingContact: null, // conversa aberta por nickname antes da primeira mensagem
     profile: { avatar: null, avatarKind: null, title: null },
     ban: null, // { until, reason } enquanto a conta estiver congelada
     clip: null, // { blob, seconds, mime } últimos segundos da chamada, guardados pela pessoa para uma denúncia
@@ -688,12 +689,15 @@
   // ---------- amigos ----------
   const keyOf = (name) => String(name || '').trim().replace(/\s+/g, ' ').toLowerCase();
   const friendOf = (key) => state.social.friends.find((f) => f.key === key);
-  const friendName = (key) => { const f = friendOf(key); return f ? f.name : key; };
+  const contactOf = (key) => state.social.contacts.find((f) => f.key === key) || (state.pendingContact && state.pendingContact.key === key ? state.pendingContact : null);
+  const personOf = (key) => friendOf(key) || contactOf(key);
+  const friendName = (key) => { const f = personOf(key); return f ? f.name : key; };
   function setSocial(st) {
-    state.social = { me: st.me || null, friends: st.friends || [], requests: st.requests || [], dms: st.dms || {} };
-    for (const k of Object.keys(state.unread)) if (!friendOf(k)) delete state.unread[k];
+    state.social = { me: st.me || null, friends: st.friends || [], contacts: st.contacts || [], requests: st.requests || [], dms: st.dms || {} };
+    if (state.pendingContact && (friendOf(state.pendingContact.key) || state.social.contacts.some((c) => c.key === state.pendingContact.key))) state.pendingContact = null;
+    for (const k of Object.keys(state.unread)) if (!personOf(k)) delete state.unread[k];
     if (state.token) store.set('gt:social', JSON.stringify({ friends: state.social.friends.map((f) => f.key), dms: state.social.dms }));
-    if (state.dmWith && !friendOf(state.dmWith)) closeDm();
+    if (state.dmWith && !personOf(state.dmWith)) closeDm();
     renderFriends();
     renderBadges();
     if (state.room) renderRoom();
@@ -743,6 +747,41 @@
       ]));
       list.appendChild(li);
     }
+    const cl = $('#contacts-list');
+    cl.innerHTML = '';
+    const contacts = [...state.social.contacts].sort((a, b) => (b.online - a.online) || a.name.localeCompare(b.name));
+    for (const c of contacts) {
+      const li = document.createElement('li');
+      li.className = 'friend' + (c.online ? ' is-online' : '');
+      const unread = state.unread[c.key] || 0;
+      li.innerHTML = `<span class="avatar">${avatarInner(c.name, c.avatar)}<span class="st"></span></span>
+        <span class="info"><span class="name">${escapeHtml(c.name)}</span><span class="sub">${ownerBadge(c.title)}${c.online ? t('friends.online') : t('friends.offline')}</span></span>
+        ${unread ? `<span class="unread">${unread}</span>` : ''}
+        <span class="acts">
+          <button type="button" class="icon-btn" data-act="dm" title="${t('friends.message')}">${icon('i-chat')}</button>
+          <button type="button" class="icon-btn primary" data-act="add" title="${t('friends.add')}">${icon('i-plus')}</button>
+          <button type="button" class="icon-btn danger" data-act="report" title="${t('report.btn')}">${icon('i-flag')}</button>
+        </span>`;
+      li.querySelector('[data-act="dm"]').addEventListener('click', () => openDm(c.key));
+      li.querySelector('[data-act="add"]').addEventListener('click', () => addFriend(c.name));
+      li.querySelector('[data-act="report"]').addEventListener('click', () => reportUser(c.name));
+      cl.appendChild(li);
+    }
+    $('#contacts-wrap').hidden = contacts.length === 0;
+  }
+  async function openDirect(name) {
+    const clean = String(name || '').trim().replace(/\s+/g, ' ');
+    setError('#direct-error', '');
+    if (!clean) return;
+    if (keyOf(clean) === keyOf(state.name)) return setError('#direct-error', t('friends.self'));
+    try {
+      const { exists, name: real } = await api('/api/exists/' + encodeURIComponent(clean));
+      if (!exists) return setError('#direct-error', t('reports.unknown'));
+      const key = keyOf(real || clean);
+      if (!personOf(key)) state.pendingContact = { key, name: real || clean, avatar: null, title: null, online: false };
+      $('#direct-input').value = '';
+      openDm(key);
+    } catch (err) { setError('#direct-error', errText(err)); }
   }
   function addFriend(name) {
     socket.emit('friend-request', { to: name }, (r) => {
@@ -759,6 +798,7 @@
     $('#friends-home').hidden = true;
     $('#dm-view').hidden = false;
     $('#dm-name').textContent = friendName(key);
+    $('#dm-call').hidden = !friendOf(key); // chamada direta só entre amigos
     markRead(key);
     renderDm();
     $('#dm-input').focus();
@@ -1496,6 +1536,13 @@
   socket.on('login-requests-changed', refreshRequests);
   socket.on('not-logged-in', () => { if (state.token) recoverSession(); });
   socket.on('social', setSocial);
+  socket.on('announce', (a) => {
+    if (!a || a.clear) { $('#announce-banner').hidden = true; return; }
+    $('#announce-text').textContent = a.text;
+    $('#announce-banner').hidden = false;
+    if (state.room) addChat({ sys: true, text: `${t('announce.title')} ${a.text}` });
+    toast(`${t('announce.title')} ${a.text}`, 8000);
+  });
   socket.on('dm', onDm);
   socket.on('friend-request', ({ from, name }) => toast(t('friends.requestToast', { name }), 20000, [
     { label: t('friends.accept'), primary: true, onClick: () => socket.emit('friend-accept', { from }) },
@@ -1578,6 +1625,8 @@
   $('#chat-form').addEventListener('submit', (e) => { e.preventDefault(); sendChat($('#chat-input')); });
   $('#panel-chat-form').addEventListener('submit', (e) => { e.preventDefault(); sendChat($('#panel-chat-input')); });
   $('#update-btn').addEventListener('click', reloadApp);
+  $('#announce-close').addEventListener('click', () => { $('#announce-banner').hidden = true; });
+  $('#direct-form').addEventListener('submit', (e) => { e.preventDefault(); openDirect($('#direct-input').value); });
   $('#share-link').addEventListener('click', copySiteLink);
   $('#game-search').addEventListener('input', filterGames);
   $('#panel-btn').addEventListener('click', () => openPanel(state.requests.length ? 'logins' : (state.social.requests.length || unreadTotal()) ? 'friends' : state.panelTab));
