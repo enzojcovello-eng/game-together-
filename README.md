@@ -266,6 +266,25 @@ seus amigos e conversas; se o servidor reiniciar sem os dados, a cópia volta
 sozinha. Nada da chamada de voz fica salvo: ao fechar o app a pessoa sai da
 sala.
 
+O que mais vale saber:
+
+- **O áudio vai de aparelho a aparelho (WebRTC).** Como em qualquer chamada
+  desse tipo, o navegador da outra pessoa fica sabendo o seu endereço IP
+  para conectar, e o seu fica sabendo o dela. Ninguém vê isso na tela, mas
+  é tecnicamente visível para quem está na chamada. O site não mostra, não
+  guarda nem repassa.
+- **A foto de perfil é pública** para quem souber o nickname; ela fica num
+  endereço fixo por nickname.
+- **As denúncias** (relato, print, áudio) ficam no servidor até a
+  administração julgar, e só a página de administração mostra.
+- **A página de administração** só aceita a chave num cabeçalho da
+  requisição (nunca no link), para ela não parar em logs nem no histórico
+  do navegador. A chave fica guardada só na aba, enquanto ela está aberta.
+- **As visitas** são contadas a partir de um resumo (hash) de IP, navegador
+  e dia; o IP em si não é guardado.
+- **O servidor não guarda e-mail, telefone, nome real, localização nem
+  senha.** O nickname é o único identificador.
+
 ## Atualizações
 
 O site atualiza sozinho: toda mudança aprovada aqui no GitHub vai para o ar
@@ -621,6 +640,25 @@ nickname, which device holds it, the friends list and the private messages
 and conversations; if the server restarts without its data, the copy comes
 back by itself. Nothing from the voice call is stored: closing the app
 leaves the room.
+
+What else is worth knowing:
+
+- **The audio goes device to device (WebRTC).** Like in any call of this
+  kind, the other person's browser learns your IP address to connect,
+  and yours learns theirs. Nobody sees it on screen, but it is technically
+  visible to whoever is on the call. The site does not show, store or
+  share it.
+- **The profile photo is public** for anyone who knows the nickname; it
+  is served at a fixed address per nickname.
+- **Reports** (account, screenshot, audio) stay on the server until the
+  admin judges them, and only the admin page shows them.
+- **The admin page** only accepts the key in a request header (never in
+  the link), so it does not end up in logs or browser history. It is kept
+  in the tab only while it is open.
+- **Visits** are counted from a hash of IP, browser and day; the IP
+  itself is not stored.
+- **The server stores no e-mail, phone, real name, location or
+  password.** The nickname is the only identifier.
 
 ## Updates
 
