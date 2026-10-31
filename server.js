@@ -133,6 +133,8 @@ const mm = new Matchmaker(config);
 // DATA_DIR: pasta das contas e amigos. SESSION_SECRET: assina os tokens
 // (defina no host para as contas sobreviverem a reinícios e atualizações).
 const auth = new Auth({ dataDir: process.env.DATA_DIR });
+// TITLES="nick=Dono,outro=Mod": títulos que nunca somem, mesmo se o servidor perder os dados
+auth.loadFixedTitles(process.env.TITLES);
 const social = new Social({ dataDir: process.env.DATA_DIR });
 const reports = new Reports({ dataDir: process.env.DATA_DIR });
 const ADMIN_KEY = process.env.ADMIN_KEY || '';
@@ -339,6 +341,21 @@ app.post('/api/profile/name', (req, res) => {
 });
 
 // denúncia com relato obrigatório e print opcional (guardado só para a administração)
+// confere se existe alguém com esse nickname (para denunciar quem já saiu da chamada)
+app.get('/api/exists/:name', (req, res) => {
+  if (!auth.ownerKey(tokenFrom(req))) return res.status(401).json({ error: 'not_logged_in' });
+  const key = String(req.params.name || '').trim().replace(/\s+/g, ' ').toLowerCase();
+  const exists = Boolean(key) && auth.exists(key);
+  res.json({ exists, name: exists ? auth.nameOf(key) : null });
+});
+
+// as denúncias que a própria pessoa enviou, com a situação de cada uma
+app.get('/api/my-reports', (req, res) => {
+  const by = auth.ownerKey(tokenFrom(req));
+  if (!by) return res.status(401).json({ error: 'not_logged_in' });
+  res.json({ reports: reports.byReporter(by).slice(0, 30).map((r) => ({ id: r.id, target: auth.nameOf(r.target) || r.target, at: r.at, status: r.status })) });
+});
+
 app.post('/api/report', async (req, res) => {
   const by = auth.ownerKey(tokenFrom(req));
   if (!by) return res.status(401).json({ error: 'not_logged_in' });
@@ -418,7 +435,8 @@ app.post('/api/admin/title', (req, res) => {
   const { name, title } = req.body || {};
   const r = auth.setTitle(name, title);
   if (r.error) return res.status(r.error === 'unknown_user' ? 404 : 400).json(r);
-  pushProfile(r.key);
+  // só a administração tirando o título apaga o comprovante guardado no aparelho
+  pushProfile(r.key, r.title ? {} : { titleRemoved: true });
   res.json(r);
 });
 

@@ -24,7 +24,9 @@
     clip: null, // { blob, seconds, mime } últimos segundos da chamada, guardados pela pessoa para uma denúncia
     dmWith: null,
     unread: {},
-    panelTab: 'chat',
+    panelTab: 'reports',
+    recent: [],   // pessoas que passaram por chamadas nesta sessão (para denunciar depois)
+    myReports: [],
     panelOpen: false,
     game: null,
     mode: 'duo',
@@ -234,8 +236,9 @@
     if (p.name && state.token && !raw) { state.name = p.name; store.set('gt:name', p.name); }
     state.profile = { avatar: p.avatar || null, avatarKind: p.avatarKind || (p.avatar ? (p.avatar.startsWith('/avatars/') ? 'upload' : 'cover') : null), title: p.title || null };
     if (p.removed) { store.set('gt:avatar', null); store.set('gt:avatarCover', null); toast(t('profile.photoRemoved'), 6000); }
+    // o comprovante do título só sai daqui quando a administração tira o título (ou no "Sair")
     if (p.titleCert) store.set('gt:titleCert', p.titleCert);
-    else if (p.title === null && Object.prototype.hasOwnProperty.call(p, 'titleCert')) store.set('gt:titleCert', null);
+    else if (p.titleRemoved) store.set('gt:titleCert', null);
     renderUser();
     if (state.room) renderRoom();
   }
@@ -366,6 +369,7 @@
       if (audio && !reportAudio) { state.clip = null; $('#clip-btn').classList.remove('rec-on'); }
       closeReport();
       toast(t('report.sent'), 4000);
+      loadMyReports();
     } catch (err) { setError('#report-error', errText(err)); }
     btn.disabled = false;
   }
@@ -580,7 +584,7 @@
     ]);
   }
 
-  // ---------- painel (chat + logins) ----------
+  // ---------- painel (denúncias, amigos, perfil, logins) ----------
   function placePanel() {
     const panel = $('#panel');
     const inRoom = $('#screen-room').classList.contains('active');
@@ -597,18 +601,85 @@
       panel.hidden = !state.panelOpen;
       $('#panel-backdrop').hidden = !state.panelOpen;
     }
-    $('#chat-empty').hidden = Boolean(state.room);
-    $('#chat-form').hidden = !state.room;
   }
   function setPanelTab(tab) {
     state.panelTab = tab;
     $$('#panel-tabs .tab').forEach((b) => b.classList.toggle('active', b.dataset.tab === tab));
-    $('#tab-chat').hidden = tab !== 'chat';
+    $('#tab-reports').hidden = tab !== 'reports';
     $('#tab-friends').hidden = tab !== 'friends';
     $('#tab-profile').hidden = tab !== 'profile';
     $('#tab-logins').hidden = tab !== 'logins';
     if (tab === 'profile') renderProfile();
+    if (tab === 'reports') { renderReportsTab(); loadMyReports(); }
     if (tab === 'friends' && state.dmWith) markRead(state.dmWith);
+  }
+
+  // ---------- aba de denúncias ----------
+  function rememberPeople(room) {
+    if (!room) return;
+    for (const m of room.members) {
+      if (m.id === state.me) continue;
+      const key = keyOf(m.name);
+      state.recent = state.recent.filter((r) => r.key !== key);
+      state.recent.unshift({ key, name: m.name, avatar: m.avatar || null, title: m.title || null, at: Date.now() });
+    }
+    state.recent = state.recent.slice(0, 20);
+  }
+  function personLi(p, extra = '') {
+    const li = document.createElement('li');
+    li.className = 'friend';
+    li.innerHTML = `<span class="avatar">${avatarInner(p.name, p.avatar)}</span>
+      <span class="info"><span class="name">${escapeHtml(p.name)}${ownerBadge(p.title)}${extra}</span></span>
+      <span class="acts"><button type="button" class="btn-secondary small report-person">${icon('i-flag')}${t('report.btn')}</button></span>`;
+    li.querySelector('button').addEventListener('click', () => reportUser(p.name));
+    return li;
+  }
+  function renderReportsTab() {
+    const inCall = state.room ? state.room.members.filter((m) => m.id !== state.me) : [];
+    const room = $('#report-room');
+    room.innerHTML = '';
+    for (const m of inCall) room.appendChild(personLi({ name: m.name, avatar: m.avatar, title: m.title }));
+    $('#report-room-empty').hidden = inCall.length > 0;
+    const inCallKeys = new Set(inCall.map((m) => keyOf(m.name)));
+    const recent = state.recent.filter((r) => !inCallKeys.has(r.key));
+    const rl = $('#report-recent');
+    rl.innerHTML = '';
+    for (const r of recent) rl.appendChild(personLi(r));
+    $('#report-recent-wrap').hidden = recent.length === 0;
+    renderMyReports();
+  }
+  function renderMyReports() {
+    const wrap = $('#my-reports-wrap');
+    const ul = $('#my-reports');
+    ul.innerHTML = '';
+    for (const r of state.myReports) {
+      const li = document.createElement('li');
+      const status = r.status === 'open' ? 'open' : r.status === 'dismissed' ? 'dismissed' : 'done';
+      li.className = 'my-report ' + status;
+      li.innerHTML = `<span class="who">${escapeHtml(r.target)}</span><span class="when">${new Date(r.at).toLocaleDateString(state.uiLang === 'en-US' ? 'en-US' : 'pt-BR')}</span><span class="status">${t('reports.status.' + status)}</span>`;
+      ul.appendChild(li);
+    }
+    wrap.hidden = state.myReports.length === 0;
+  }
+  async function loadMyReports() {
+    if (!state.token) return;
+    try {
+      const { reports } = await api('/api/my-reports');
+      state.myReports = reports || [];
+      renderMyReports();
+    } catch (_) { /* sem rede ou sem conta: a lista fica como está */ }
+  }
+  async function reportByName(name) {
+    const clean = String(name || '').trim().replace(/\s+/g, ' ');
+    setError('#report-name-error', '');
+    if (!clean) return;
+    if (keyOf(clean) === keyOf(state.name)) return setError('#report-name-error', t('reports.self'));
+    try {
+      const { exists, name: real } = await api('/api/exists/' + encodeURIComponent(clean));
+      if (!exists) return setError('#report-name-error', t('reports.unknown'));
+      $('#report-name-input').value = '';
+      reportUser(real || clean);
+    } catch (err) { setError('#report-name-error', errText(err)); }
   }
 
   // ---------- amigos ----------
@@ -931,8 +1002,9 @@
     state.room = room;
     state.me = me;
     $('#chat-log').innerHTML = '';
+    rememberPeople(room);
     renderRoom();
-    setPanelTab(state.requests.length ? 'logins' : 'chat');
+    setPanelTab(state.requests.length ? 'logins' : 'reports');
     showScreen('screen-room');
     const initiators = new Set(initiateWith || []);
     for (const m of room.members) {
@@ -983,6 +1055,7 @@
       if (canAdd) li.querySelector('.add').addEventListener('click', () => addFriend(m.name));
       list.appendChild(li);
     }
+    if (!$('#tab-reports').hidden) renderReportsTab();
     $('#mute-btn .ctrl-label').textContent = state.muted ? t('room.unmute') : t('room.mute');
     $('#mute-icon').setAttribute('href', state.muted ? '#i-mic-off' : '#i-mic');
     $('#mute-btn').classList.toggle('active', state.muted);
@@ -1186,7 +1259,7 @@
     peer.meter = makeMeter(stream, (lvl) => speakingClass(id, lvl));
   }
 
-  // ---------- chat ----------
+  // ---------- chat da chamada ----------
   function addChat({ name, text, sys }) {
     const log = $('#chat-log');
     const div = document.createElement('div');
@@ -1245,6 +1318,7 @@
     if (!state.room) return;
     state.room = room;
     renderRoom();
+    rememberPeople(room);
     toast(t('toast.joined', { name: peer.name }));
     addChat({ sys: true, text: t('toast.joined', { name: peer.name }) });
     connectPeer(peer, false);
@@ -1261,7 +1335,7 @@
   });
   socket.on('signal', onSignal);
   socket.on('chat', addChat);
-  socket.on('room-update', ({ room }) => { if (state.room && room && room.id === state.room.id) { state.room = room; renderRoom(); } });
+  socket.on('room-update', ({ room }) => { if (state.room && room && room.id === state.room.id) { state.room = room; rememberPeople(room); renderRoom(); } });
   socket.on('profile', (p) => { setProfile(p); maybeReupload(); });
   socket.on('token', ({ token }) => { if (token && state.token) { state.token = token; store.set('gt:token', token); } });
   socket.on('banned', (ban) => setBan(ban || { until: null, reason: '' }));
@@ -1341,6 +1415,7 @@
   $('#cancel-btn').addEventListener('click', cancelSearch);
   $('#mute-btn').addEventListener('click', toggleMute);
   $('#leave-btn').addEventListener('click', () => leaveRoom());
+  $('#report-by-name').addEventListener('submit', (e) => { e.preventDefault(); reportByName($('#report-name-input').value); });
   $('#chat-form').addEventListener('submit', (e) => {
     e.preventDefault();
     const input = $('#chat-input');
@@ -1369,7 +1444,7 @@
       renderHeroCovers();
       $('#share-host').textContent = location.host;
       setUiLang(detectLang());
-      setPanelTab('chat');
+      setPanelTab('reports');
       checkGithub();
       // se o socket já conectou antes de sabermos a versão, confere agora
       api('/api/version').then(onServerVersion).catch(() => {});

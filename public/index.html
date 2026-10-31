@@ -251,6 +251,14 @@
       </div>
       <p class="status" id="room-status"></p>
       <ul class="members" id="members"></ul>
+      <section class="room-chat" id="room-chat">
+        <div class="room-chat-head"><svg class="i"><use href="#i-chat"/></svg><span data-i18n="chat.title">Chat da chamada</span></div>
+        <div class="chat-log" id="chat-log"></div>
+        <form class="chat-form" id="chat-form">
+          <input type="text" id="chat-input" maxlength="300" data-i18n-placeholder="room.chatPh" placeholder="Mensagem rápida">
+          <button type="submit" class="icon-btn" aria-label="Enviar"><svg class="i"><use href="#i-send"/></svg></button>
+        </form>
+      </section>
       <div id="room-panel-slot"></div>
       <div class="controls">
         <button type="button" class="ctrl" id="mute-btn">
@@ -269,23 +277,36 @@
     </section>
   </main>
 
-  <!-- PAINEL: chat e pedidos de login (inline na chamada, gaveta no resto) -->
+  <!-- PAINEL: denúncias, amigos, perfil e logins (inline na chamada, gaveta no resto) -->
   <div class="panel-backdrop" id="panel-backdrop" hidden></div>
   <aside class="panel drawer" id="panel" hidden>
     <div class="panel-tabs" id="panel-tabs">
-      <button type="button" class="tab active" data-tab="chat"><svg class="i"><use href="#i-chat"/></svg><span data-i18n="panel.chat">Chat</span></button>
+      <button type="button" class="tab active" data-tab="reports"><svg class="i"><use href="#i-flag"/></svg><span data-i18n="panel.reports">Denúncias</span></button>
       <button type="button" class="tab" data-tab="friends"><svg class="i"><use href="#i-users"/></svg><span data-i18n="panel.friends">Amigos</span><span class="badge" id="friends-badge" hidden>0</span></button>
       <button type="button" class="tab" data-tab="profile"><svg class="i"><use href="#i-user"/></svg><span data-i18n="panel.profile">Perfil</span></button>
       <button type="button" class="tab" data-tab="logins"><svg class="i"><use href="#i-bell"/></svg><span data-i18n="panel.logins">Logins</span><span class="badge" id="logins-badge" hidden>0</span></button>
       <button type="button" class="icon-btn small panel-close" id="panel-close" data-i18n-title="panel.close" title="Fechar"><svg class="i"><use href="#i-x"/></svg></button>
     </div>
-    <div class="panel-body" id="tab-chat">
-      <div class="chat-log" id="chat-log"></div>
-      <p class="chat-empty" id="chat-empty" data-i18n="chat.empty">O chat abre quando você estiver numa chamada.</p>
-      <form class="chat-form" id="chat-form">
-        <input type="text" id="chat-input" maxlength="300" data-i18n-placeholder="room.chatPh" placeholder="Mensagem rápida">
-        <button type="submit" class="icon-btn" aria-label="Enviar"><svg class="i"><use href="#i-send"/></svg></button>
+    <div class="panel-body" id="tab-reports">
+      <p class="hint" data-i18n="reports.intro">Alguém ofendeu, assediou ou atrapalhou? Denuncie aqui. A administração lê o relato, vê o print, ouve o áudio e pode suspender a conta da pessoa por horas, dias ou para sempre.</p>
+      <h3 data-i18n="reports.inCall">Na chamada agora</h3>
+      <p class="hint" id="report-room-empty" data-i18n="reports.inCallEmpty">Você não está numa chamada. Quem passou por uma chamada com você fica na lista abaixo.</p>
+      <ul class="friends report-people" id="report-room"></ul>
+      <div id="report-recent-wrap" hidden>
+        <h3 data-i18n="reports.recent">Quem já esteve com você</h3>
+        <ul class="friends report-people" id="report-recent"></ul>
+      </div>
+      <h3 data-i18n="reports.other">Outra pessoa</h3>
+      <form class="report-by-name" id="report-by-name">
+        <input type="text" id="report-name-input" maxlength="24" autocomplete="off" data-i18n-placeholder="reports.namePh" placeholder="Nickname da pessoa">
+        <button type="submit" class="btn-primary small"><svg class="i"><use href="#i-flag"/></svg><span data-i18n="report.btn">Denunciar</span></button>
       </form>
+      <p class="error" id="report-name-error" hidden></p>
+      <p class="hint" data-i18n="reports.clipTip">Dica: durante a chamada, o botão "Últimos 30s" guarda o áudio recente para anexar à denúncia.</p>
+      <div id="my-reports-wrap" hidden>
+        <h3 data-i18n="reports.mine">Suas denúncias</h3>
+        <ul class="my-reports" id="my-reports"></ul>
+      </div>
     </div>
     <div class="panel-body" id="tab-friends" hidden>
       <div id="friends-home">
