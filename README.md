@@ -417,36 +417,6 @@ screen) sees a yellow bar "There is a new version" with an **Update now**
 button. Anyone running their own copy on a computer sees "This copy of the
 app is outdated" with a button to download the new version here on GitHub.
 
-## Showing up on Google and sharing the link
-
-The site comes ready: title and description for search, a preview with
-image when the link is pasted on WhatsApp, Discord, Instagram or X,
-`sitemap.xml`, `robots.txt` and an introduction text on the home page.
-Google finds new sites on its own, but it takes time. To speed it up:
-
-1. Go to https://search.google.com/search-console with your Google account.
-2. Click "Add property", choose "URL prefix" and paste
-   `https://game-together.onrender.com/`.
-3. For verification, choose "HTML tag", copy the `content="..."` code and
-   add it to the site (or use another method from the list).
-4. Once verified, open "Sitemaps" and submit `sitemap.xml`.
-
-Within a few days the site starts showing up. Your own domain (for example
-`gametogether.com`) ranks better than `onrender.com` and is easier to tell
-friends:
-
-1. Register the domain with any registrar.
-2. On Render, open the service, go to "Settings", then "Custom Domains",
-   click "Add Custom Domain" and type the domain. Render shows what to set
-   in DNS.
-3. In the registrar's panel, create the records Render asked for (usually a
-   `CNAME` for `www` and an `A` or `ALIAS` for the bare domain).
-4. Wait for propagation (minutes to a few hours). Render issues the HTTPS
-   certificate by itself.
-5. Replace `game-together.onrender.com` with the new domain in
-   `public/index.html`, `public/robots.txt` and `public/sitemap.xml`, and
-   add the new domain to Search Console.
-
 ## Game covers
 
 The covers that ship with the site are original illustrations (official
