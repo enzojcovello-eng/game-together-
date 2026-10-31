@@ -540,6 +540,21 @@
   }
 
   // ---------- início ----------
+  // capas inclinadas deslizando devagar no topo (a lista vem duas vezes para não ter emenda)
+  function renderHeroCovers() {
+    const track = $('#hero-track');
+    if (!track || !state.config) return;
+    const games = state.config.games;
+    track.innerHTML = [...games, ...games].map((g) => `<div class="hero-cover"><img src="${coverOf(g)}" alt="" loading="lazy"></div>`).join('');
+  }
+  async function copySiteLink() {
+    const url = location.origin + '/';
+    try {
+      if (navigator.share && /Android|iPhone|iPad/i.test(navigator.userAgent)) { await navigator.share({ title: 'Game Together', url }); return; }
+      await navigator.clipboard.writeText(url);
+      toast(t('hero.copied'));
+    } catch (_) { toast(url, 5000); }
+  }
   function renderGameGrid() {
     const grid = $('#game-grid');
     if (!state.config) return;
@@ -1020,6 +1035,7 @@
     input.value = '';
   });
   $('#update-btn').addEventListener('click', reloadApp);
+  $('#share-link').addEventListener('click', copySiteLink);
   $('#panel-btn').addEventListener('click', () => openPanel(state.requests.length ? 'logins' : (state.social.requests.length || unreadTotal()) ? 'friends' : state.panelTab));
   $('#panel-close').addEventListener('click', closePanel);
   $('#panel-backdrop').addEventListener('click', closePanel);
@@ -1034,6 +1050,8 @@
       state.config = cfg;
       loadedVersion = { version: cfg.version, build: cfg.build };
       $('#about-games').textContent = cfg.games.map((g) => g.name).join(', ') + '.';
+      renderHeroCovers();
+      $('#share-host').textContent = location.host;
       setUiLang(detectLang());
       setPanelTab('chat');
       checkGithub();

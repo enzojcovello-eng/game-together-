@@ -156,9 +156,14 @@
 
     <!-- INÍCIO: escolha do jogo -->
     <section class="screen" id="screen-home">
-      <div class="hero">
-        <h1 data-i18n="hero.title">Encontre gente para jogar junto</h1>
-        <p class="lead" data-i18n="hero.subtitle">Escolha o jogo, quantas pessoas quer na chamada e seu idioma. A gente conecta você por voz com quem escolheu o mesmo.</p>
+      <div class="hero-banner" id="hero-banner">
+        <div class="hero-text">
+          <div class="hero-brand">game<em>together</em></div>
+          <h1 data-i18n="hero.title">Encontre gente para jogar junto</h1>
+          <p class="lead" data-i18n="hero.banner">Chamada de voz por jogo, idioma e plataforma. Sem cadastro, sem câmera. Funciona no PC e no celular.</p>
+          <button type="button" class="hero-pill" id="share-link" data-i18n-title="hero.copy" title="Copiar o link do site"><svg class="i"><use href="#i-logo"/></svg><span id="share-host">game-together.onrender.com</span></button>
+        </div>
+        <div class="hero-covers" aria-hidden="true"><div class="hero-tilt"><div class="hero-track" id="hero-track"></div></div></div>
       </div>
       <p class="home-stats" id="home-stats"><span class="dot"></span><span id="home-stats-text"></span></p>
       <h2 class="section-title" data-i18n="home.choose">Escolha o jogo</h2>
