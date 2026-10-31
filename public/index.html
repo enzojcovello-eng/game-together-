@@ -167,8 +167,15 @@
         <div class="hero-covers" aria-hidden="true"><div class="hero-tilt"><div class="hero-track" id="hero-track"></div></div></div>
       </div>
       <p class="home-stats" id="home-stats"><span class="dot"></span><span id="home-stats-text"></span></p>
-      <h2 class="section-title" data-i18n="home.choose">Escolha o jogo</h2>
+      <div class="games-head">
+        <h2 class="section-title" data-i18n="home.choose">Escolha o jogo</h2>
+        <label class="search" for="game-search">
+          <svg class="i"><use href="#i-search"/></svg>
+          <input type="search" id="game-search" autocomplete="off" data-i18n-placeholder="home.searchPh" placeholder="Buscar jogo">
+        </label>
+      </div>
       <div class="game-grid" id="game-grid"></div>
+      <p class="hint center" id="game-empty" hidden data-i18n="home.noResults">Nenhum jogo com esse nome. Sugira ele no GitHub!</p>
       <p class="hint center" data-i18n="home.hint">Sem câmera, só voz. Funciona no PC e no celular, direto no navegador.</p>
     </section>
 

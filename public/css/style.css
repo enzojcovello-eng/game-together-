@@ -170,6 +170,14 @@ main { max-width: 1040px; margin: 0 auto; padding: 24px 20px 48px; padding-botto
 @media (prefers-reduced-motion: reduce) { .hero-track { animation: none; } }
 .home-stats { display: inline-flex; align-items: center; gap: 8px; margin: -12px 0 22px; padding: 7px 12px; border-radius: 999px; border: 1px solid var(--border); background: var(--card); color: var(--muted); font-size: 0.88rem; }
 .home-stats .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--ok); box-shadow: 0 0 6px var(--ok); }
+.games-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; flex-wrap: wrap; }
+.games-head .section-title { margin: 0; }
+.search { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 999px; border: 1px solid var(--border-strong); background: var(--bg-2); color: var(--muted); min-width: 220px; flex: 1; max-width: 320px; }
+.search:focus-within { border-color: var(--accent); color: var(--text); }
+.search .i { width: 18px; height: 18px; }
+.search input { flex: 1; min-width: 0; border: 0; background: transparent; color: var(--text); outline: none; font-size: 0.95rem; }
+.search input::-webkit-search-cancel-button { -webkit-appearance: none; }
+.game-card.hidden { display: none; }
 .section-title { font-size: 0.8rem; color: var(--muted); font-weight: 700; margin: 0 0 14px; text-transform: uppercase; letter-spacing: 0.12em; font-family: var(--font-body); }
 .game-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 18px 14px; }
 .game-card { background: none; border: 0; padding: 0; text-align: left; color: var(--text); display: flex; flex-direction: column; gap: 10px; }
@@ -316,6 +324,7 @@ main { max-width: 1040px; margin: 0 auto; padding: 24px 20px 48px; padding-botto
   .game-grid { grid-template-columns: repeat(2, 1fr); gap: 16px 12px; }
   .choice-grid { grid-template-columns: repeat(2, 1fr); }
   .hero-banner { grid-template-columns: 1fr; min-height: 0; border-radius: 18px; }
+  .search { max-width: none; min-width: 0; width: 100%; }
   .hero-text { padding: 26px 20px 18px; }
   .hero-covers { position: relative; width: 100%; height: 210px; }
   .hero-covers::before { background: linear-gradient(90deg, #12100d 0%, rgba(18, 16, 13, 0) 15%, rgba(18, 16, 13, 0) 85%, #12100d 100%); }

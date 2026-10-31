@@ -287,6 +287,53 @@
       ],
       "crossplay": true,
       "cover": "covers/minecraft-dungeons-2.jpg"
+    },
+    {
+      "id": "no-mans-sky",
+      "name": "No Man's Sky",
+      "short": "NMS",
+      "emoji": "🪐",
+      "color": "#5a2a9a",
+      "maxPlayers": 7,
+      "platforms": [
+        "pc",
+        "playstation",
+        "xbox",
+        "switch"
+      ],
+      "crossplay": true,
+      "cover": "covers/no-mans-sky.jpg"
+    },
+    {
+      "id": "subnautica-2",
+      "name": "Subnautica 2",
+      "short": "Subnautica 2",
+      "emoji": "🤿",
+      "color": "#0d6fa8",
+      "maxPlayers": 4,
+      "platforms": [
+        "pc",
+        "playstation",
+        "xbox"
+      ],
+      "crossplay": true,
+      "cover": "covers/subnautica-2.jpg"
+    },
+    {
+      "id": "overcooked",
+      "name": "Overcooked! 2",
+      "short": "Overcooked 2",
+      "emoji": "🍳",
+      "color": "#e53935",
+      "maxPlayers": 4,
+      "platforms": [
+        "pc",
+        "playstation",
+        "xbox",
+        "switch"
+      ],
+      "crossplay": true,
+      "cover": "covers/overcooked.jpg"
     }
   ]
 }
