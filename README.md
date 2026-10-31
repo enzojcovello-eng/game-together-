@@ -95,7 +95,7 @@ quantidade de pessoas e uma plataforma compatível.
 | Minecraft Dungeons II | 4 | PC, PlayStation, Xbox, Switch | Sim |
 | No Man's Sky | 7 | PC, PlayStation, Xbox, Switch | Sim |
 | Subnautica 2 | 4 | PC, PlayStation, Xbox | Sim |
-| Overcooked! All You Can Eat (2) | 4 | PC, PlayStation, Xbox, Switch | Sim |
+| Overcooked! 2 | 4 | PC, PlayStation, Xbox, Switch | Sim |
 
 Cada cartão de jogo mostra quantas pessoas estão em chamada e quantas estão
 procurando naquele jogo agora. No topo da tela inicial aparece o total.
@@ -335,7 +335,7 @@ call size and a compatible platform.
 | Minecraft Dungeons II | 4 | PC, PlayStation, Xbox, Switch | Yes |
 | No Man's Sky | 7 | PC, PlayStation, Xbox, Switch | Yes |
 | Subnautica 2 | 4 | PC, PlayStation, Xbox | Yes |
-| Overcooked! All You Can Eat (2) | 4 | PC, PlayStation, Xbox, Switch | Yes |
+| Overcooked! 2 | 4 | PC, PlayStation, Xbox, Switch | Yes |
 
 Each game card shows how many people are on a call and how many are
 searching in that game right now. The home screen shows the total at the top.

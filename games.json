@@ -302,7 +302,7 @@
         "switch"
       ],
       "crossplay": true,
-      "cover": "covers/no-mans-sky.svg"
+      "cover": "covers/no-mans-sky.jpg"
     },
     {
       "id": "subnautica-2",
@@ -317,12 +317,12 @@
         "xbox"
       ],
       "crossplay": true,
-      "cover": "covers/subnautica-2.svg"
+      "cover": "covers/subnautica-2.jpg"
     },
     {
       "id": "overcooked",
-      "name": "Overcooked! All You Can Eat (2)",
-      "short": "Overcooked",
+      "name": "Overcooked! 2",
+      "short": "Overcooked 2",
       "emoji": "🍳",
       "color": "#e53935",
       "maxPlayers": 4,
@@ -333,7 +333,7 @@
         "switch"
       ],
       "crossplay": true,
-      "cover": "covers/overcooked.svg"
+      "cover": "covers/overcooked.jpg"
     }
   ]
 }
