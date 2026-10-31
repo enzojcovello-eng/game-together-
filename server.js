@@ -71,6 +71,20 @@ function visitSummary() {
     byDay: Object.fromEntries(Object.entries(visits.days).sort().map(([k, v]) => [k, { visits: v.visits, visitors: v.visitors.length }])),
   };
 }
+// Endereço oficial: com SITE_URL definido (ex.: https://gametogether.com.br), qualquer outro
+// endereço (como o onrender.com) redireciona para ele, para o Google contar um site só.
+const SITE_URL = (process.env.SITE_URL || '').replace(/\/$/, '');
+if (SITE_URL) {
+  const siteHost = new URL(SITE_URL).host;
+  app.use((req, res, next) => {
+    const host = req.headers.host || '';
+    if (host && host !== siteHost && !host.startsWith('localhost') && !host.startsWith('127.')) {
+      return res.redirect(301, SITE_URL + req.originalUrl);
+    }
+    next();
+  });
+}
+
 app.get(['/', '/index.html'], (req, _res, next) => {
   // só aberturas de verdade da página (não as buscas internas do service worker)
   const mode = req.headers['sec-fetch-mode'];
