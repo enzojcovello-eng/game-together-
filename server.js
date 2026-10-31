@@ -243,7 +243,7 @@ function removeUploadedAvatar(key) {
   auth.setAvatarByKey(key, null);
 }
 function pushProfile(key, extra = {}) {
-  io.to(acctRoom(key)).emit('profile', { ...profileOf(key), ...extra });
+  io.to(acctRoom(key)).emit('profile', { ...profileOf(key), titleCert: auth.titleCert(key), ...extra });
   pushPresence(key);
 }
 
@@ -313,7 +313,8 @@ app.post('/api/profile/name', (req, res) => {
   }
   pushProfile(r.newKey);
   pushSocial(r.newKey);
-  res.json({ ...profileOf(r.newKey), name: r.name });
+  // o aparelho que pediu já leva um token com o nome novo por dentro
+  res.json({ ...profileOf(r.newKey), name: r.name, token: auth.refreshToken(token) || undefined, titleCert: auth.titleCert(r.newKey) });
 });
 
 // denúncia de foto ou nome
@@ -442,7 +443,7 @@ io.on('connection', (socket) => {
   const myName = () => (socket.data.key ? auth.nameOf(socket.data.key) : null);
 
   // o aparelho se identifica; se o servidor perdeu os dados, devolve a cópia
-  socket.on('hello', ({ token, name, snapshot } = {}) => {
+  socket.on('hello', ({ token, name, snapshot, titleCert } = {}) => {
     for (const r of socket.rooms) if (r.startsWith('acct:')) socket.leave(r);
     const user = auth.verify(token);
     socket.data.key = null;
@@ -452,6 +453,9 @@ io.on('connection', (socket) => {
     socket.data.token = token;
     auth.touch(token);
     auth.restoreName(token, name); // devolve as maiúsculas do nickname após uma recuperação
+    if (titleCert) auth.restoreTitle(token, titleCert); // devolve o título após um reinício sem dados
+    const fresh = auth.refreshToken(token); // nickname trocado: token passa a carregar o nome atual
+    if (fresh) { socket.data.token = fresh; socket.emit('token', { token: fresh }); }
     // a cópia do aparelho religa amizades (quando os dois lados confirmam) e mensagens.
     // Guardamos a cópia em memória: quando o outro lado confirmar, reprocessamos esta.
     if (snapshot) lastSnapshot.set(key, snapshot);
@@ -459,7 +463,7 @@ io.on('connection', (socket) => {
     for (const f of relinked) if (lastSnapshot.has(f)) social.merge(f, lastSnapshot.get(f));
     socket.join(acctRoom(key));
     socket.emit('login-requests', { requests: auth.pendingFor(token) || [] });
-    socket.emit('profile', profileOf(key));
+    socket.emit('profile', { ...profileOf(key), titleCert: auth.titleCert(key) });
     pushSocial(key);
     pushPresence(key);
     for (const f of relinked) pushSocial(f);

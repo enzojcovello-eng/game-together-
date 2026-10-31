@@ -62,13 +62,32 @@ reports.resolve('enzo_pro');
 assert.strictEqual(reports.open().length, 0);
 assert.strictEqual(new Reports({ dataDir: dir }).list.length, 3, 'persistiu');
 
-// título fica para sempre: sair da conta e voltar com o mesmo nickname mantém; só a administração tira
+// título: só sai com "Sair" da conta ou pelo "tirar" da administração
 assert.strictEqual(auth.setTitle('Enzo_Pro', 'Dono').ok, true);
-assert.strictEqual(auth.logout(enzo.token), 'enzo_pro');
+// o token antigo trazia o nome velho por dentro: depois da troca, o servidor renova
+const tok = auth.refreshToken(enzo.token);
+assert.ok(tok && tok !== enzo.token, 'token renovado com o nome atual');
+assert.strictEqual(auth.refreshToken(tok), null, 'já está atualizado');
+assert.strictEqual(auth.verify(enzo.token), null, 'token velho sai da lista');
+assert.deepStrictEqual(auth.verify(tok), { name: 'ENZO_pro', recovered: false });
+const cert = auth.titleCert('enzo_pro');
+assert.ok(cert && cert.startsWith('t1.'));
+// reinício sem dados: o aparelho devolve o comprovante assinado e o título volta
+tick();
+const lostA = new Auth({ dataDir: fs.mkdtempSync(path.join(os.tmpdir(), 'gt-lt-')), now: () => clock, secret: 's' });
+assert.strictEqual(lostA.verify(tok).recovered, true);
+assert.strictEqual(lostA.titleOf('enzo_pro'), null);
+assert.strictEqual(lostA.restoreTitle(tok, cert), true, 'comprovante válido devolve o título');
+assert.strictEqual(lostA.titleOf('enzo_pro'), 'Dono');
+assert.strictEqual(lostA.restoreTitle(tok, cert.slice(0, -3) + 'xyz'), false, 'comprovante adulterado não vale');
+assert.strictEqual(lostA.restoreTitle(ana.token, cert), false, 'comprovante de outra pessoa não vale');
+// Sair tira o título; voltar com o mesmo nickname não traz de volta
+assert.strictEqual(auth.logout(tok), 'enzo_pro');
 tick();
 const volta = auth.claim('Enzo_Pro');
 assert.strictEqual(volta.status, 'created');
-assert.strictEqual(auth.titleOf('enzo_pro'), 'Dono', 'título sobrevive ao Sair');
+assert.strictEqual(auth.titleOf('enzo_pro'), null, 'Sair tirou o título');
+auth.setTitle('Enzo_Pro', 'Dono');
 assert.strictEqual(auth.setTitle('Enzo_Pro', '').title, null);
 assert.strictEqual(auth.titleOf('enzo_pro'), null, 'administração tirou');
 auth.setTitle('Enzo_Pro', 'Mod');
@@ -79,6 +98,7 @@ tick();
 assert.strictEqual(auth.claim('enzo_pro').error, 'banned');
 assert.strictEqual(auth.rename(ana.token, 'Enzo_Pro').error, 'banned');
 assert.strictEqual(new Auth({ dataDir: dir, now: () => clock, secret: 's' }).claim('ENZO_PRO').error, 'banned', 'bloqueio persiste');
+assert.strictEqual(auth.titleOf('enzo_pro'), 'Mod', 'banir não mexe no título');
 
 fs.rmSync(dir, { recursive: true, force: true });
 console.log('perfil: todos os testes passaram');

@@ -184,7 +184,7 @@
     if (!state.token) return;
     let snapshot = null;
     try { snapshot = JSON.parse(store.get('gt:social') || 'null'); } catch (_) {}
-    socket.emit('hello', { token: state.token, name: state.name, snapshot });
+    socket.emit('hello', { token: state.token, name: state.name, snapshot, titleCert: store.get('gt:titleCert') });
   }
   function setUser(name, token) {
     state.name = name || '';
@@ -231,7 +231,9 @@
     const raw = p.name && p.name === p.name.toLowerCase() && state.name && state.name.toLowerCase() === p.name && state.name !== p.name;
     if (p.name && state.token && !raw) { state.name = p.name; store.set('gt:name', p.name); }
     state.profile = { avatar: p.avatar || null, avatarKind: p.avatarKind || (p.avatar ? (p.avatar.startsWith('/avatars/') ? 'upload' : 'cover') : null), title: p.title || null };
-    if (p.removed) { store.set('gt:avatar', null); toast(t('profile.photoRemoved'), 6000); }
+    if (p.removed) { store.set('gt:avatar', null); store.set('gt:avatarCover', null); toast(t('profile.photoRemoved'), 6000); }
+    if (p.titleCert) store.set('gt:titleCert', p.titleCert);
+    else if (p.title === null && Object.prototype.hasOwnProperty.call(p, 'titleCert')) store.set('gt:titleCert', null);
     renderUser();
     if (state.room) renderRoom();
   }
@@ -250,6 +252,7 @@
     try {
       const p = await api('/api/profile/avatar/cover', { method: 'POST', body: { id } });
       store.set('gt:avatar', null);
+      store.set('gt:avatarCover', id || null);
       setProfile({ ...p, avatarKind: id ? 'cover' : null });
       toast(t('profile.photoSaved'));
       $('#avatar-picker').hidden = true;
@@ -282,27 +285,37 @@
     try {
       const p = await api('/api/profile/avatar', { method: 'POST', body: { image: data } });
       store.set('gt:avatar', data); // cópia local: volta sozinha se o servidor perder a foto
+      store.set('gt:avatarCover', null);
       setProfile({ ...p, avatarKind: 'upload' });
       toast(t('profile.photoSaved'));
       $('#avatar-picker').hidden = true;
     } catch (err) { $('#toast').hidden = true; setError('#avatar-error', errText(err)); }
   }
-  // o servidor perdeu a foto enviada (reinício sem dados): reenvia a cópia local
+  // o servidor perdeu a foto (reinício sem dados): devolve a cópia local (foto enviada ou capa escolhida)
   let reuploaded = false;
   async function maybeReupload() {
+    if (reuploaded || state.profile.avatar) return;
     const data = store.get('gt:avatar');
-    if (!data || reuploaded || state.profile.avatar) return;
+    const cover = store.get('gt:avatarCover');
+    if (!data && !cover) return;
     reuploaded = true;
     try {
-      const p = await api('/api/profile/avatar', { method: 'POST', body: { image: data } });
-      setProfile({ ...p, avatarKind: 'upload' });
+      if (data) {
+        const p = await api('/api/profile/avatar', { method: 'POST', body: { image: data } });
+        setProfile({ ...p, avatarKind: 'upload' });
+      } else {
+        const p = await api('/api/profile/avatar/cover', { method: 'POST', body: { id: cover } });
+        setProfile({ ...p, avatarKind: 'cover' });
+      }
     } catch (_) { /* fica sem foto até a pessoa escolher outra */ }
   }
   async function renameAccount(newName) {
     setError('#rename-error', '');
     try {
       const p = await api('/api/profile/name', { method: 'POST', body: { name: newName } });
+      if (p.token) { state.token = p.token; store.set('gt:token', p.token); }
       setProfile(p);
+      sendHello();
       toast(t('profile.renamed', { name: p.name }), 5000);
       $('#rename-form').hidden = true;
       if (state.room) renderRoom();
@@ -350,7 +363,9 @@
     setUser('', null);
     store.set('gt:social', null);
     store.set('gt:avatar', null);
-    state.profile = { avatar: null, avatarKind: null };
+    store.set('gt:avatarCover', null);
+    store.set('gt:titleCert', null);
+    state.profile = { avatar: null, avatarKind: null, title: null };
     state.game = null;
     state.requests = [];
     state.dmWith = null;
@@ -1086,6 +1101,7 @@
   socket.on('chat', addChat);
   socket.on('room-update', ({ room }) => { if (state.room && room && room.id === state.room.id) { state.room = room; renderRoom(); } });
   socket.on('profile', (p) => { setProfile(p); maybeReupload(); });
+  socket.on('token', ({ token }) => { if (token && state.token) { state.token = token; store.set('gt:token', token); } });
 
   // conta
   socket.on('login-request', onLoginRequest);

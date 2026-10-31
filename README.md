@@ -229,8 +229,10 @@ nickname para sempre.
 Na mesma página dá para dar um **título** a qualquer pessoa: digite o
 nickname e o texto (por exemplo "Dono", "Mod" ou "VIP", até 16 letras).
 O selo aparece ao lado do nickname para todo mundo (topo, chamada, amigos e
-perfil), acompanha a troca de nickname e fica para sempre, mesmo se a
-pessoa sair e entrar de novo com o mesmo nickname: só quem tem a chave tira.
+perfil) e acompanha a troca de nickname. Ele só sai de duas formas: a
+pessoa tocar em **Sair** da conta, ou quem tem a chave tirar na página de
+administração. Reinício do servidor, atualização do site ou banimento não
+mexem nele (o aparelho guarda um comprovante assinado e devolve sozinho).
 
 ## Quantas pessoas visitaram
 
@@ -242,6 +244,10 @@ início (`visitsTotal`), além de um resumo por dia. O site não usa cookies
 nem rastreadores: conta só a abertura da página.
 
 ## Capas dos jogos
+
+A foto de perfil (enviada ou capa escolhida) também fica: o aparelho guarda
+uma cópia e devolve sozinho se o servidor reiniciar sem os dados. Ela só sai
+se a pessoa tocar em **Sair**, ou por denúncias e administração.
 
 As capas que vêm no site são ilustrações próprias (as oficiais têm direitos
 autorais). Para trocar por outra imagem não precisa mexer em código: é só
@@ -503,8 +509,10 @@ deletes the account and blocks the nickname for good.
 On the same page you can give anyone a **title**: type the nickname and
 the text (for example "Dono", "Mod" or "VIP", up to 16 letters). The badge
 shows next to the nickname for everyone (top bar, call, friends and
-profile), follows a nickname change and stays forever, even if the person
-logs out and comes back with the same nickname: only the key removes it.
+profile) and follows a nickname change. It only goes away in two cases:
+the person taps **Log out**, or whoever has the key removes it on the admin
+page. Server restarts, site updates or bans do not touch it (the device
+keeps a signed receipt and sends it back by itself).
 
 ## How many people visited
 
@@ -516,6 +524,11 @@ many accounts exist and the visits: today (`visitsToday`, with
 trackers: it only counts page opens.
 
 ## Game covers
+
+The profile photo (uploaded or chosen cover) also stays: the device keeps a
+copy and sends it back by itself if the server restarts without its data.
+It only goes away if the person taps **Log out**, or through reports and
+administration.
 
 The covers that ship with the site are original illustrations (official
 ones are copyrighted). To swap in another image you do not need to touch
