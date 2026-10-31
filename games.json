@@ -382,6 +382,21 @@
       ],
       "crossplay": true,
       "cover": "covers/overwatch-2.jpg"
+    },
+    {
+      "id": "riders-republic",
+      "name": "Riders Republic",
+      "short": "Riders Republic",
+      "emoji": "🚵",
+      "color": "#1f8fff",
+      "maxPlayers": 4,
+      "platforms": [
+        "pc",
+        "playstation",
+        "xbox"
+      ],
+      "crossplay": true,
+      "cover": "covers/riders-republic.svg"
     }
   ]
 }
