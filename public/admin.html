@@ -38,6 +38,10 @@
     .titled .w strong { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .rm { border: 0; border-radius: 999px; padding: 7px 14px; background: var(--danger); color: #fff; font-weight: 700; font-size: 0.85rem; cursor: pointer; }
     .ok { border: 0; border-radius: 999px; padding: 7px 14px; background: var(--ok); color: #0b1f14; font-weight: 700; font-size: 0.85rem; cursor: pointer; }
+    .fold { background: none; border: 0; color: var(--text); font-size: 1rem; padding: 0; cursor: pointer; display: flex; align-items: center; gap: 6px; width: 100%; text-align: left; }
+    .fold .arrow { display: inline-block; transition: transform .15s; color: var(--muted); }
+    .fold[aria-expanded="true"] .arrow { transform: rotate(90deg); }
+    .call-tag { font-size: 0.75rem; background: rgba(80,200,120,.15); color: #5ac878; border-radius: 999px; padding: 2px 8px; margin-left: 6px; }
     #zoom { position: fixed; inset: 0; background: rgba(0,0,0,.9); display: grid; place-items: center; z-index: 99; cursor: zoom-out; }
     #zoom img { max-width: 96vw; max-height: 96vh; }
   </style>
@@ -49,6 +53,22 @@
     <p class="lead">Página só para quem tem a chave de administração (variável <code>ADMIN_KEY</code> no servidor).</p>
     <div class="key"><input type="password" id="key" placeholder="Chave de administração"><button type="button" class="btn-primary" id="load">Entrar</button></div>
     <p class="hint" id="stats"></p>
+
+    <div class="rep" id="announce-box" hidden>
+      <strong>Aviso para todo mundo</strong>
+      <div class="muted">O texto aparece numa faixa no topo do site para quem está online agora e para quem entrar na próxima meia hora; quem está em chamada também vê no chat. "Apagar" tira a faixa de todo mundo.</div>
+      <div class="title-form">
+        <input type="text" id="announce-text" placeholder="Ex.: Manutenção às 22h, a chamada pode cair por 1 minuto" maxlength="300">
+        <button type="button" class="btn-primary" id="announce-send">Enviar aviso</button>
+        <button type="button" class="rm" id="announce-clear">apagar</button>
+      </div>
+      <div class="muted" id="announce-msg"></div>
+    </div>
+
+    <div class="rep" id="online-box" hidden>
+      <button type="button" class="fold" id="online-toggle" aria-expanded="false"><span class="arrow">▸</span> <strong>Online agora: <span id="online-count">0</span></strong> <span class="muted" id="online-sub"></span></button>
+      <ul class="titled" id="online-list" hidden></ul>
+    </div>
 
     <div class="rep" id="title-box" hidden>
       <strong>Títulos ao lado do nickname</strong>
@@ -93,7 +113,37 @@
       await loadTitles();
       renderReports(data.reports);
       renderBans(data.bans);
+      $('#announce-box').hidden = false; $('#online-box').hidden = false;
+      loadAnnounce(); loadOnline();
+      if (!onlineTimer) onlineTimer = setInterval(loadOnline, 15000);
     }
+
+    let onlineTimer = null;
+    async function loadOnline() {
+      const d = await fetch('/api/admin/online', { headers: hdr() }).then((x) => x.json()).catch(() => null);
+      if (!d) return;
+      $('#online-count').textContent = d.count;
+      $('#online-sub').textContent = `(${d.people.filter((p) => p.inCall).length} em chamada${d.anonymous ? `, ${d.anonymous} sem conta` : ''})`;
+      $('#online-list').innerHTML = d.people.length ? d.people.map((p) => `<li><span class="w"><strong>${esc(p.name)}</strong>${p.title ? `<span class="title-tag">${esc(p.title)}</span>` : ''}${p.inCall ? '<span class="call-tag">em chamada</span>' : ''}${p.devices > 1 ? `<span class="muted"> · ${p.devices} aparelhos</span>` : ''}</span></li>`).join('') : '<li class="muted">Ninguém com conta online agora.</li>';
+    }
+    $('#online-toggle').addEventListener('click', () => {
+      const open = $('#online-toggle').getAttribute('aria-expanded') !== 'true';
+      $('#online-toggle').setAttribute('aria-expanded', String(open));
+      $('#online-list').hidden = !open;
+    });
+
+    async function loadAnnounce() {
+      const d = await fetch('/api/admin/announce', { headers: hdr() }).then((x) => x.json()).catch(() => null);
+      $('#announce-msg').textContent = d && d.announce ? `No ar: "${d.announce.text}" (${when(d.announce.at)})` : 'Nenhum aviso no ar.';
+    }
+    async function sendAnnounce(text) {
+      const r = await fetch('/api/admin/announce', { method: 'POST', headers: { ...hdr(), 'Content-Type': 'application/json' }, body: JSON.stringify({ text }) });
+      if (!r.ok) { $('#announce-msg').textContent = 'Não consegui enviar.'; return; }
+      if (text) $('#announce-text').value = '';
+      loadAnnounce();
+    }
+    $('#announce-send').addEventListener('click', () => { const t = $('#announce-text').value.trim(); if (t) sendAnnounce(t); });
+    $('#announce-clear').addEventListener('click', () => sendAnnounce(''));
 
     async function loadTitles() {
       const tt = await fetch('/api/admin/titles', { headers: hdr() }).then((x) => x.json()).catch(() => ({ titles: [] }));

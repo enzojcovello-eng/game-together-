@@ -421,3 +421,9 @@ body.banned { overflow: hidden; }
 
 /* aviso abaixo dos botões da chamada */
 .bg-warn { margin: 0 0 16px; padding: 10px 14px; border-radius: var(--radius-sm); background: rgba(255, 196, 0, 0.1); border: 1px solid rgba(255, 196, 0, 0.35); color: var(--text); font-size: 0.88rem; line-height: 1.45; }
+
+/* aviso da administração */
+.update-banner.announce { background: rgba(255, 196, 0, 0.12); border-color: rgba(255, 196, 0, 0.45); color: var(--text); }
+.update-banner.announce .i { color: #ffc400; }
+.update-banner.announce > span { flex: 1; min-width: 0; }
+#direct-form { margin-bottom: 4px; }

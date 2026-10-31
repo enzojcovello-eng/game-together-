@@ -43,9 +43,9 @@ assert.deepStrictEqual(lost.merge('ana', snapAna), [], 'um lado só não religa'
 assert.ok(!lost.areFriends('ana', 'bia'), 'ninguém se adiciona sozinho na lista do outro');
 assert.deepStrictEqual(lost.merge('bia', snapBia), ['ana'], 'os dois lados confirmam: religa');
 assert.ok(lost.areFriends('ana', 'bia'));
-assert.deepStrictEqual(lost.thread('ana', 'bia').map((x) => x.text), ['bora!'], 'Bia devolveu só o que ela mandou');
+assert.deepStrictEqual(lost.thread('ana', 'bia').map((x) => x.text), ['bora jogar?', 'bora!'], 'cada lado devolveu só o que mandou (mensagens não dependem da amizade)');
 lost.merge('ana', snapAna);
-assert.deepStrictEqual(lost.thread('ana', 'bia').map((x) => x.text), ['bora jogar?', 'bora!'], 'Ana devolveu a dela; nada duplica');
+assert.deepStrictEqual(lost.thread('ana', 'bia').map((x) => x.text), ['bora jogar?', 'bora!'], 'nada duplica');
 lost.merge('ana', snapAna);
 assert.strictEqual(lost.thread('ana', 'bia').length, 2, 'não duplica');
 // um lado desfaz a amizade: a cópia velha do outro não religa sozinha
@@ -64,4 +64,22 @@ assert.deepStrictEqual(s.friendsOf('ana'), []);
 const s2 = new Social({ dataDir: dir });
 assert.ok(!s2.areFriends('ana', 'bia'));
 fs.rmSync(dir, { recursive: true, force: true });
+// mensagem direta sem amizade: vira "contato" dos dois lados; a cópia do aparelho devolve as próprias mensagens
+{
+  const d = new Social({ dataDir: fs.mkdtempSync(path.join(os.tmpdir(), 'gt-social-dm-')), now: () => ++clock });
+  assert.strictEqual(d.send('ana', 'caio', 'oi').error, 'not_friends');
+  assert.strictEqual(d.send('ana', 'ana', 'oi', true).error, 'invalid');
+  const r = d.send('ana', 'caio', 'oi, bora jogar?', true);
+  assert.ok(r.ok);
+  assert.deepStrictEqual(d.contactsOf('ana'), ['caio']);
+  assert.deepStrictEqual(d.contactsOf('caio'), ['ana']);
+  assert.deepStrictEqual(d.snapshot('caio').contacts, ['ana']);
+  assert.strictEqual(d.snapshot('caio').dms.ana.length, 1);
+  d.request('ana', 'caio'); d.accept('caio', 'ana');
+  assert.deepStrictEqual(d.contactsOf('ana'), [], 'virou amigo: sai dos contatos');
+  const lost2 = new Social({ dataDir: fs.mkdtempSync(path.join(os.tmpdir(), 'gt-social-dm2-')), now: () => ++clock });
+  lost2.merge('ana', { friends: [], dms: { caio: [r.msg, { id: 'x1', from: 'caio', text: 'forjada', at: 1 }] } });
+  assert.deepStrictEqual(lost2.thread('ana', 'caio').map((m) => m.text), ['oi, bora jogar?'], 'só as próprias mensagens voltam');
+  assert.deepStrictEqual(lost2.contactsOf('caio'), ['ana']);
+}
 console.log('social: todos os testes passaram');

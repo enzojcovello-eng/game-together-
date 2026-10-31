@@ -216,6 +216,13 @@ tempo acaba, o site volta ao normal sozinho. Na aba Denúncias você vê as
 suas denúncias com a situação de cada uma: em análise, resolvida ou
 arquivada.
 
+### Mensagem direta para qualquer pessoa
+
+Na aba **Amigos** tem o campo "Mensagem direta": digite o nickname de
+alguém e abre uma conversa, sem precisar ser amigo. As conversas com quem
+não é amigo ficam em "Outras conversas", com botões para adicionar como
+amigo ou denunciar. Chamada direta continua só entre amigos.
+
 ### Amigos
 
 Numa chamada, toque em **+ amigo** ao lado de alguém. A pessoa recebe o
@@ -281,6 +288,13 @@ perfil) e acompanha a troca de nickname. Ele só sai de duas formas: a
 pessoa tocar em **Sair** da conta, ou quem tem a chave tirar na página de
 administração. Reinício do servidor, atualização do site ou banimento não
 mexem nele (o aparelho guarda um comprovante assinado e devolve sozinho).
+
+A página também tem "Aviso para todo mundo": o texto aparece numa faixa no
+topo do site para quem está online e para quem entrar na próxima meia
+hora, e no chat de quem está em chamada; "apagar" tira a faixa. E "Online
+agora" mostra quantas contas estão conectadas, quantas em chamada, com a
+lista de nicknames escondida atrás de uma setinha (abre só quando você
+quer, para não atrapalhar quando for muita gente).
 
 Para um título que não dependa de nada disso, use a variável de ambiente
 `TITLES` do servidor, por exemplo `seunick=Dono` (vários separados por
@@ -554,6 +568,13 @@ no calls, no messages and no logging out. When the time is up, the site
 goes back to normal by itself. In the Reports tab you see your own reports
 with their status: under review, resolved or archived.
 
+### Direct message to anyone
+
+In the **Friends** tab there is a "Direct message" field: type someone's
+nickname and a conversation opens, no friendship needed. Conversations
+with people who are not friends stay under "Other conversations", with
+buttons to add as a friend or report. Direct calls remain friends only.
+
 ### Friends
 
 On a call, tap **+ friend** next to someone. They get the request and
@@ -617,6 +638,14 @@ profile) and follows a nickname change. It only goes away in two cases:
 the person taps **Log out**, or whoever has the key removes it on the admin
 page. Server restarts, site updates or bans do not touch it (the device
 keeps a signed receipt and sends it back by itself).
+
+The page also has "Aviso para todo mundo" (message to everyone): the text
+shows in a bar at the top of the site for everyone online and for whoever
+joins in the next half hour, and in the chat of people on a call; "apagar"
+removes the bar. And "Online agora" shows how many accounts are connected
+and how many on a call, with the nickname list folded behind a small arrow
+(it opens only when you want, so it does not get in the way with many
+people).
 
 For a title that depends on none of that, use the server's `TITLES`
 environment variable, for example `yournick=Dono` (several separated by

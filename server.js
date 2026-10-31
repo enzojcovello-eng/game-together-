@@ -430,6 +430,39 @@ function applyBan(key) {
   io.to(acctRoom(key)).emit('banned', b);
 }
 // títulos ao lado do nickname ("Dono", "Mod"...), dados pela administração
+// Aviso da administração: vai para todo mundo conectado e para quem entrar na próxima meia hora
+let announce = null;
+const ANNOUNCE_TTL = 30 * 60 * 1000;
+app.post('/api/admin/announce', (req, res) => {
+  if (!isAdmin(req)) return res.status(401).json({ error: 'admin_key' });
+  const text = String((req.body || {}).text || '').trim().slice(0, 300);
+  if (!text) { announce = null; io.emit('announce', { clear: true }); return res.json({ ok: true, cleared: true }); }
+  announce = { id: crypto.randomBytes(6).toString('hex'), text, at: Date.now() };
+  io.emit('announce', announce);
+  res.json({ ok: true, announce });
+});
+app.get('/api/admin/announce', (req, res) => {
+  if (!isAdmin(req)) return res.status(401).json({ error: 'admin_key' });
+  res.json({ announce: announce && Date.now() - announce.at < ANNOUNCE_TTL ? announce : null });
+});
+
+// Quem está online agora (uma linha por conta; aparelhos sem conta contam só no total)
+app.get('/api/admin/online', (req, res) => {
+  if (!isAdmin(req)) return res.status(401).json({ error: 'admin_key' });
+  const people = new Map();
+  let anonymous = 0;
+  for (const s of io.sockets.sockets.values()) {
+    const k = s.data.key;
+    if (!k) { anonymous += 1; continue; }
+    const cur = people.get(k) || { key: k, name: auth.nameOf(k) || k, title: auth.titleOf(k), devices: 0, inCall: false };
+    cur.devices += 1;
+    if (mm.roomOf(s.id)) cur.inCall = true;
+    people.set(k, cur);
+  }
+  const list = [...people.values()].sort((a, b) => (b.inCall - a.inCall) || a.name.localeCompare(b.name));
+  res.json({ count: list.length, anonymous, connections: io.sockets.sockets.size, people: list });
+});
+
 app.get('/api/admin/titles', (req, res) => {
   if (!isAdmin(req)) return res.status(401).json({ error: 'admin_key' });
   res.json({ titles: auth.allTitles() });
@@ -474,9 +507,11 @@ function isOnline(key) {
 
 function socialState(key) {
   const snap = social.snapshot(key);
+  const person = (f) => ({ key: f, name: auth.nameOf(f) || f, online: isOnline(f), avatar: avatarUrl(f), title: auth.titleOf(f) });
   return {
     me: key,
-    friends: snap.friends.map((f) => ({ key: f, name: auth.nameOf(f) || f, online: isOnline(f), avatar: avatarUrl(f), title: auth.titleOf(f) })),
+    friends: snap.friends.map(person),
+    contacts: snap.contacts.map(person),
     requests: snap.requests.map((r) => ({ from: r.from, name: auth.nameOf(r.from) || r.from, at: r.at, avatar: avatarUrl(r.from) })),
     dms: snap.dms,
   };
@@ -533,6 +568,7 @@ io.on('connection', (socket) => {
   online += 1;
   broadcastStats();
   socket.emit('version', VERSION);
+  if (announce && Date.now() - announce.at < ANNOUNCE_TTL) socket.emit('announce', announce);
 
   const me = () => socket.data.key || null;
   const myName = () => (socket.data.key ? auth.nameOf(socket.data.key) : null);
@@ -616,12 +652,16 @@ io.on('connection', (socket) => {
     pushSocial(k); pushSocial(keyOf(name));
   });
 
+  // mensagem direta: para amigos e também para qualquer nickname que exista
   socket.on('dm', ({ to, text } = {}, ack) => {
     const k = me(); if (!k) return ack && ack({ error: 'not_logged_in' });
     if (frozen(ack)) return;
     const target = keyOf(to);
-    const r = social.send(k, target, text);
+    if (!auth.exists(target)) return ack && ack({ error: 'unknown_user' });
+    const fresh = !social.areFriends(k, target) && social.thread(k, target).length === 0;
+    const r = social.send(k, target, text, true);
     if (r.error) return ack && ack(r);
+    if (fresh) { pushSocial(k); pushSocial(target); } // a conversa nova entra na lista dos dois
     io.to(acctRoom(k)).emit('dm', { with: target, msg: r.msg });
     io.to(acctRoom(target)).emit('dm', { with: k, msg: r.msg });
     ack && ack({ ok: true });
