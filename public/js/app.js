@@ -570,10 +570,25 @@
         <span class="meta">${icon('i-users')}<span>${t('game.upTo', { n: g.maxPlayers })}</span></span>
         <span class="live" data-game="${g.id}"><span class="dot"></span><span></span></span>
         <span class="plats">${g.platforms.map((p) => icon(PLATFORM_ICON[p] || 'i-pc')).join('')}</span>`;
+      b.dataset.name = g.name;
       b.addEventListener('click', () => openSetup(g));
       grid.appendChild(b);
     }
     renderStats();
+    filterGames();
+  }
+
+  // busca por nome: ignora maiúsculas e acentos
+  const fold = (s) => String(s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  function filterGames() {
+    const q = fold($('#game-search').value.trim());
+    let shown = 0;
+    $$('#game-grid .game-card').forEach((card) => {
+      const hit = !q || fold(card.dataset.name).includes(q);
+      card.classList.toggle('hidden', !hit);
+      if (hit) shown += 1;
+    });
+    $('#game-empty').hidden = shown > 0;
   }
 
   // ---------- configuração ----------
@@ -1036,6 +1051,7 @@
   });
   $('#update-btn').addEventListener('click', reloadApp);
   $('#share-link').addEventListener('click', copySiteLink);
+  $('#game-search').addEventListener('input', filterGames);
   $('#panel-btn').addEventListener('click', () => openPanel(state.requests.length ? 'logins' : (state.social.requests.length || unreadTotal()) ? 'friends' : state.panelTab));
   $('#panel-close').addEventListener('click', closePanel);
   $('#panel-backdrop').addEventListener('click', closePanel);
