@@ -10,10 +10,14 @@ const { Server } = require('socket.io');
 const { Matchmaker } = require('./lib/matchmaker');
 const { Auth } = require('./lib/auth');
 const { Social } = require('./lib/social');
+const { Reports } = require('./lib/reports');
+const moderation = require('./lib/moderation');
 
 const config = require('./games.json');
 const pkg = require('./package.json');
 const PORT = process.env.PORT || 3000;
+const DATA_DIR = process.env.DATA_DIR || path.join(__dirname, 'data');
+const AVATAR_DIR = path.join(DATA_DIR, 'avatars');
 
 // Versão do app: muda a cada publicação. O cliente compara com a que carregou
 // e avisa para atualizar. BUILD vem do Render (commit) ou da hora de início.
@@ -115,7 +119,9 @@ app.get(['/', '/index.html'], (req, _res, next) => {
   next();
 });
 
+app.use('/avatars', express.static(AVATAR_DIR, { maxAge: '7d', immutable: true }));
 app.use(express.static(path.join(__dirname, 'public')));
+app.use('/api/profile/avatar', express.json({ limit: '6mb' }));
 app.use(express.json({ limit: '200kb' }));
 app.get('/api/config', (_req, res) => res.json(resolveConfig()));
 app.get('/api/version', (_req, res) => res.json(VERSION));
@@ -126,6 +132,10 @@ const mm = new Matchmaker(config);
 // (defina no host para as contas sobreviverem a reinícios e atualizações).
 const auth = new Auth({ dataDir: process.env.DATA_DIR });
 const social = new Social({ dataDir: process.env.DATA_DIR });
+const reports = new Reports({ dataDir: process.env.DATA_DIR });
+const ADMIN_KEY = process.env.ADMIN_KEY || '';
+if (!ADMIN_KEY) console.warn('Aviso: defina ADMIN_KEY para abrir a página de administração (/admin).');
+moderation.warmUp();
 if (!process.env.SESSION_SECRET) console.warn('Aviso: defina SESSION_SECRET para as contas sobreviverem a reinícios do servidor.');
 let online = 0;
 
@@ -172,7 +182,8 @@ app.get('/api/me', (req, res) => {
   const user = auth.verify(token);
   if (!user) return res.status(401).json({ error: 'not_logged_in' });
   auth.touch(token);
-  res.json({ name: user.name, recovered: user.recovered, devices: auth.devicesOf(token), pending: auth.pendingFor(token) || [] });
+  const key = auth.ownerKey(token);
+  res.json({ name: user.name, recovered: user.recovered, devices: auth.devicesOf(token), pending: auth.pendingFor(token) || [], avatar: avatarUrl(key), avatarKind: (auth.avatarOf(key) || {}).type || null });
 });
 
 app.get('/api/requests', (req, res) => {
@@ -214,6 +225,135 @@ app.post('/api/logout', (req, res) => {
   res.json({ ok: true });
 });
 
+// ---- perfil ----
+function avatarUrl(key) {
+  const a = auth.avatarOf(key);
+  if (!a) return null;
+  if (a.type === 'cover') { const g = config.games.find((x) => x.id === a.id); return g ? resolveConfig().games.find((x) => x.id === a.id).cover : null; }
+  if (a.type === 'upload') return `/avatars/${encodeURIComponent(key)}.jpg?v=${a.ver}`;
+  return null;
+}
+function profileOf(key) {
+  return { key, name: auth.nameOf(key) || key, avatar: avatarUrl(key) };
+}
+function removeUploadedAvatar(key) {
+  try { fs.unlinkSync(path.join(AVATAR_DIR, `${key}.jpg`)); } catch (_) { /* já não existia */ }
+  auth.setAvatarByKey(key, null);
+}
+function pushProfile(key, extra = {}) {
+  io.to(acctRoom(key)).emit('profile', { ...profileOf(key), ...extra });
+  pushPresence(key);
+}
+
+app.get('/api/profile', (req, res) => {
+  const key = auth.ownerKey(tokenFrom(req));
+  if (!key) return res.status(401).json({ error: 'not_logged_in' });
+  res.json({ ...profileOf(key), avatarKind: (auth.avatarOf(key) || {}).type || null });
+});
+
+// foto da galeria (capa de jogo) ou nenhuma
+app.post('/api/profile/avatar/cover', (req, res) => {
+  const token = tokenFrom(req);
+  const key = auth.ownerKey(token);
+  if (!key) return res.status(401).json({ error: 'not_logged_in' });
+  const id = (req.body || {}).id;
+  if (id === null || id === '') { removeUploadedAvatar(key); pushProfile(key); return res.json(profileOf(key)); }
+  if (!config.games.some((g) => g.id === id)) return res.status(400).json({ error: 'unknown_game' });
+  removeUploadedAvatar(key);
+  auth.setAvatar(token, { type: 'cover', id });
+  pushProfile(key);
+  res.json(profileOf(key));
+});
+
+// upload: a imagem passa pela checagem antes de ser salva
+const uploadsByKey = new Map();
+app.post('/api/profile/avatar', async (req, res) => {
+  const token = tokenFrom(req);
+  const key = auth.ownerKey(token);
+  if (!key) return res.status(401).json({ error: 'not_logged_in' });
+  const last = uploadsByKey.get(key) || 0;
+  if (Date.now() - last < 15 * 1000) return res.status(429).json({ error: 'too_many_attempts' });
+  uploadsByKey.set(key, Date.now());
+  const data = String((req.body || {}).image || '');
+  const m = /^data:image\/(jpeg|jpg|png);base64,(.+)$/i.exec(data);
+  if (!m) return res.status(400).json({ error: 'bad_image' });
+  const buf = Buffer.from(m[2], 'base64');
+  if (buf.length > 4 * 1024 * 1024) return res.status(400).json({ error: 'too_large' });
+  const result = await moderation.processAvatar(buf);
+  if (!result.ok) return res.status(result.error === 'moderation_unavailable' ? 503 : 400).json({ error: result.error });
+  fs.mkdirSync(AVATAR_DIR, { recursive: true });
+  fs.writeFileSync(path.join(AVATAR_DIR, `${key}.jpg`), result.jpeg);
+  auth.setAvatar(token, { type: 'upload', ver: Date.now() });
+  pushProfile(key);
+  res.json(profileOf(key));
+});
+
+// trocar nickname mantendo amigos, conversas e foto
+app.post('/api/profile/name', (req, res) => {
+  const token = tokenFrom(req);
+  const r = auth.rename(token, (req.body || {}).name);
+  if (r.error) return res.status(r.error === 'not_logged_in' ? 401 : 400).json({ error: r.error });
+  if (!r.same) {
+    const affected = social.rename(r.oldKey, r.newKey);
+    mm.renamePlayer(r.oldKey, r.name);
+    try { fs.renameSync(path.join(AVATAR_DIR, `${r.oldKey}.jpg`), path.join(AVATAR_DIR, `${r.newKey}.jpg`)); } catch (_) { /* sem upload */ }
+    // os sockets da conta mudam de sala de aviso
+    for (const s of io.sockets.adapter.rooms.get(acctRoom(r.oldKey)) || []) {
+      const sock = io.sockets.sockets.get(s);
+      if (sock) { sock.leave(acctRoom(r.oldKey)); sock.join(acctRoom(r.newKey)); sock.data.key = r.newKey; }
+    }
+    for (const f of affected) pushSocial(f);
+    // quem está na mesma chamada vê o nome novo
+    const room = [...io.sockets.adapter.rooms.get(acctRoom(r.newKey)) || []].map((id) => mm.roomOf(id)).find(Boolean);
+    if (room) io.to(room.id).emit('room-update', { room: publicRoom(room) });
+  } else {
+    mm.renamePlayer(r.oldKey, r.name);
+  }
+  pushProfile(r.newKey);
+  pushSocial(r.newKey);
+  res.json({ ...profileOf(r.newKey), name: r.name });
+});
+
+// denúncia de foto ou nome
+app.post('/api/report', (req, res) => {
+  const by = auth.ownerKey(tokenFrom(req));
+  if (!by) return res.status(401).json({ error: 'not_logged_in' });
+  const { target, reason, note } = req.body || {};
+  const key = String(target || '').trim().toLowerCase();
+  if (!auth.exists(key)) return res.status(404).json({ error: 'unknown_user' });
+  const r = reports.report(by, key, reason, note);
+  if (r.error) return res.status(400).json(r);
+  if (r.autoHide && (auth.avatarOf(key) || {}).type === 'upload') { removeUploadedAvatar(key); pushProfile(key, { removed: true }); }
+  res.json({ ok: true });
+});
+
+// ---- administração (ADMIN_KEY) ----
+function isAdmin(req) {
+  const k = req.headers['x-admin-key'] || req.query.key;
+  return Boolean(ADMIN_KEY) && typeof k === 'string' && k.length === ADMIN_KEY.length && crypto.timingSafeEqual(Buffer.from(k), Buffer.from(ADMIN_KEY));
+}
+app.get('/api/admin/reports', (req, res) => {
+  if (!isAdmin(req)) return res.status(401).json({ error: 'admin_key' });
+  const list = reports.open().map((r) => ({ ...r, byName: auth.nameOf(r.by) || r.by, target: r.target, targetName: auth.nameOf(r.target) || r.target, targetAvatar: avatarUrl(r.target), targetExists: auth.exists(r.target) }));
+  res.json({ reports: list, stats: { accounts: auth.users.size, banned: auth.banned.size } });
+});
+app.post('/api/admin/action', (req, res) => {
+  if (!isAdmin(req)) return res.status(401).json({ error: 'admin_key' });
+  const { target, action } = req.body || {};
+  const key = String(target || '').toLowerCase();
+  if (action === 'remove_photo') { removeUploadedAvatar(key); pushProfile(key, { removed: true }); reports.resolve(key, 'photo_removed'); }
+  else if (action === 'ban') {
+    const affected = social.erase(key);
+    auth.ban(key);
+    io.to(acctRoom(key)).emit('account-deleted');
+    io.in(acctRoom(key)).socketsLeave(acctRoom(key));
+    for (const f of affected) pushSocial(f);
+    reports.resolve(key, 'banned');
+  } else if (action === 'dismiss') reports.resolve(key, 'dismissed');
+  else return res.status(400).json({ error: 'unknown_action' });
+  res.json({ ok: true });
+});
+
 // ---- amigos ----
 function isOnline(key) {
   const r = io.sockets.adapter.rooms.get(acctRoom(key));
@@ -224,8 +364,8 @@ function socialState(key) {
   const snap = social.snapshot(key);
   return {
     me: key,
-    friends: snap.friends.map((f) => ({ key: f, name: auth.nameOf(f) || f, online: isOnline(f) })),
-    requests: snap.requests.map((r) => ({ from: r.from, name: auth.nameOf(r.from) || r.from, at: r.at })),
+    friends: snap.friends.map((f) => ({ key: f, name: auth.nameOf(f) || f, online: isOnline(f), avatar: avatarUrl(f) })),
+    requests: snap.requests.map((r) => ({ from: r.from, name: auth.nameOf(r.from) || r.from, at: r.at, avatar: avatarUrl(r.from) })),
     dms: snap.dms,
   };
 }
@@ -245,10 +385,17 @@ function broadcastStats() {
   io.emit('stats', { ...mm.stats(), online });
 }
 
+/** Sala pública com a foto de cada membro. */
+function publicRoom(room) {
+  const pub = mm.publicRoom(room);
+  pub.members = pub.members.map((m) => ({ ...m, avatar: avatarUrl(String(m.name).toLowerCase()) }));
+  return pub;
+}
+
 /** Avisa a sala de quem entrou e manda "matched" para quem entrou. */
 function announceJoin(result) {
   const room = result.room;
-  const pub = mm.publicRoom(room);
+  const pub = publicRoom(room);
   const joinedSet = new Set(result.joined);
   const existing = [...room.members.keys()].filter((id) => !joinedSet.has(id));
   result.joined.forEach((id, idx) => {
@@ -264,7 +411,7 @@ function announceJoin(result) {
     if (!s) continue;
     for (const id of result.joined) {
       const m = room.members.get(id);
-      s.emit('peer-joined', { room: pub, peer: { id, name: m.name, platform: m.platform } });
+      s.emit('peer-joined', { room: pub, peer: { id, name: m.name, platform: m.platform, avatar: avatarUrl(String(m.name).toLowerCase()) } });
     }
   }
   broadcastStats();
@@ -288,7 +435,7 @@ io.on('connection', (socket) => {
     socket.data.key = key;
     socket.data.token = token;
     auth.touch(token);
-    if (user.recovered) auth.restoreName(token, name);
+    auth.restoreName(token, name); // devolve as maiúsculas do nickname após uma recuperação
     // a cópia do aparelho religa amizades (quando os dois lados confirmam) e mensagens.
     // Guardamos a cópia em memória: quando o outro lado confirmar, reprocessamos esta.
     if (snapshot) lastSnapshot.set(key, snapshot);
@@ -296,6 +443,7 @@ io.on('connection', (socket) => {
     for (const f of relinked) if (lastSnapshot.has(f)) social.merge(f, lastSnapshot.get(f));
     socket.join(acctRoom(key));
     socket.emit('login-requests', { requests: auth.pendingFor(token) || [] });
+    socket.emit('profile', profileOf(key));
     pushSocial(key);
     pushPresence(key);
     for (const f of relinked) pushSocial(f);
@@ -444,7 +592,7 @@ function handleLeave(socket) {
   const result = mm.leave(socket.id);
   if (result) {
     socket.leave(result.room.id);
-    const pub = mm.publicRoom(result.room);
+    const pub = publicRoom(result.room);
     for (const id of result.remaining) {
       const s = io.sockets.sockets.get(id);
       if (s) s.emit('peer-left', { room: pub, peerId: socket.id });

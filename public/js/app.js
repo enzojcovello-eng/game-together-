@@ -19,6 +19,7 @@
     pendingName: '',
     requests: [],
     social: { me: null, friends: [], requests: [], dms: {} },
+    profile: { avatar: null, avatarKind: null },
     dmWith: null,
     unread: {},
     panelTab: 'chat',
@@ -210,11 +211,107 @@
       logout({ reason: 'auth.expired' });
     } finally { recovering = false; }
   }
+  // foto de perfil (ou a inicial do nickname)
+  function avatarInner(name, url) {
+    return url ? `<img src="${escapeHtml(url)}" alt="" loading="lazy">` : escapeHtml((name || '?').slice(0, 1).toUpperCase());
+  }
   function renderUser() {
     $('#user-pill').hidden = !state.token;
     $('#panel-btn').hidden = !state.token;
     $('#user-name').textContent = state.name;
-    $('#user-avatar').textContent = (state.name || '?').slice(0, 1).toUpperCase();
+    $('#user-avatar').innerHTML = avatarInner(state.name, state.profile.avatar);
+    renderProfile();
+  }
+
+  // ---------- perfil ----------
+  function setProfile(p) {
+    if (!p) return;
+    // nome "cru" de uma recuperação (tudo minúsculo) não apaga as maiúsculas guardadas aqui
+    const raw = p.name && p.name === p.name.toLowerCase() && state.name && state.name.toLowerCase() === p.name && state.name !== p.name;
+    if (p.name && state.token && !raw) { state.name = p.name; store.set('gt:name', p.name); }
+    state.profile = { avatar: p.avatar || null, avatarKind: p.avatarKind || (p.avatar ? (p.avatar.startsWith('/avatars/') ? 'upload' : 'cover') : null) };
+    if (p.removed) { store.set('gt:avatar', null); toast(t('profile.photoRemoved'), 6000); }
+    renderUser();
+    if (state.room) renderRoom();
+  }
+  function renderProfile() {
+    $('#profile-avatar').innerHTML = avatarInner(state.name, state.profile.avatar);
+    $('#profile-name').textContent = state.name;
+    const grid = $('#avatar-covers');
+    if (state.config && !grid.childElementCount) {
+      grid.innerHTML = state.config.games.map((g) => `<button type="button" data-id="${g.id}" title="${escapeHtml(g.name)}"><img src="${coverOf(g)}" alt="${escapeHtml(g.name)}" loading="lazy"></button>`).join('');
+      grid.querySelectorAll('button').forEach((b) => b.addEventListener('click', () => chooseCover(b.dataset.id)));
+    }
+    grid.querySelectorAll('button').forEach((b) => b.classList.toggle('on', state.profile.avatarKind === 'cover' && state.profile.avatar && state.profile.avatar.includes(`/${b.dataset.id}.`)));
+  }
+  async function chooseCover(id) {
+    setError('#avatar-error', '');
+    try {
+      const p = await api('/api/profile/avatar/cover', { method: 'POST', body: { id } });
+      store.set('gt:avatar', null);
+      setProfile({ ...p, avatarKind: id ? 'cover' : null });
+      toast(t('profile.photoSaved'));
+      $('#avatar-picker').hidden = true;
+    } catch (err) { setError('#avatar-error', errText(err)); }
+  }
+  function readImage(file) {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      const url = URL.createObjectURL(file);
+      img.onload = () => {
+        const max = 512;
+        const scale = Math.min(1, max / Math.max(img.width, img.height));
+        const c = document.createElement('canvas');
+        c.width = Math.round(img.width * scale); c.height = Math.round(img.height * scale);
+        c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+        URL.revokeObjectURL(url);
+        resolve(c.toDataURL('image/jpeg', 0.9));
+      };
+      img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('bad_image')); };
+      img.src = url;
+    });
+  }
+  async function uploadAvatar(file, { silent } = {}) {
+    if (!file) return;
+    setError('#avatar-error', '');
+    if (file.size > 4 * 1024 * 1024) return setError('#avatar-error', t('err.too_large'));
+    let data;
+    try { data = await readImage(file); } catch (_) { return setError('#avatar-error', t('err.bad_image')); }
+    if (!silent) toast(t('profile.checking'), 30000);
+    try {
+      const p = await api('/api/profile/avatar', { method: 'POST', body: { image: data } });
+      store.set('gt:avatar', data); // cópia local: volta sozinha se o servidor perder a foto
+      setProfile({ ...p, avatarKind: 'upload' });
+      toast(t('profile.photoSaved'));
+      $('#avatar-picker').hidden = true;
+    } catch (err) { $('#toast').hidden = true; setError('#avatar-error', errText(err)); }
+  }
+  // o servidor perdeu a foto enviada (reinício sem dados): reenvia a cópia local
+  let reuploaded = false;
+  async function maybeReupload() {
+    const data = store.get('gt:avatar');
+    if (!data || reuploaded || state.profile.avatar) return;
+    reuploaded = true;
+    try {
+      const p = await api('/api/profile/avatar', { method: 'POST', body: { image: data } });
+      setProfile({ ...p, avatarKind: 'upload' });
+    } catch (_) { /* fica sem foto até a pessoa escolher outra */ }
+  }
+  async function renameAccount(newName) {
+    setError('#rename-error', '');
+    try {
+      const p = await api('/api/profile/name', { method: 'POST', body: { name: newName } });
+      setProfile(p);
+      toast(t('profile.renamed', { name: p.name }), 5000);
+      $('#rename-form').hidden = true;
+      if (state.room) renderRoom();
+    } catch (err) { setError('#rename-error', errText(err)); }
+  }
+  function reportUser(name) {
+    toast(t('report.confirm', { name }), 15000, [
+      { label: t('report.yes'), primary: true, onClick: () => api('/api/report', { method: 'POST', body: { target: name, reason: 'other' } }).then(() => toast(t('report.sent'), 4000)).catch((err) => toast(errText(err))) },
+      { label: t('friends.cancel'), onClick: () => {} },
+    ]);
   }
 
   async function onAuthSubmit(e) {
@@ -251,6 +348,8 @@
     if (state.token && !reason) api('/api/logout', { method: 'POST' }).catch(() => {});
     setUser('', null);
     store.set('gt:social', null);
+    store.set('gt:avatar', null);
+    state.profile = { avatar: null, avatarKind: null };
     state.game = null;
     state.requests = [];
     state.dmWith = null;
@@ -401,7 +500,9 @@
     $$('#panel-tabs .tab').forEach((b) => b.classList.toggle('active', b.dataset.tab === tab));
     $('#tab-chat').hidden = tab !== 'chat';
     $('#tab-friends').hidden = tab !== 'friends';
+    $('#tab-profile').hidden = tab !== 'profile';
     $('#tab-logins').hidden = tab !== 'logins';
+    if (tab === 'profile') renderProfile();
     if (tab === 'friends' && state.dmWith) markRead(state.dmWith);
   }
 
@@ -427,7 +528,7 @@
     for (const r of reqs) {
       const li = document.createElement('li');
       li.className = 'friend is-online';
-      li.innerHTML = `<span class="avatar">${escapeHtml(r.name.slice(0, 1).toUpperCase())}</span>
+      li.innerHTML = `<span class="avatar">${avatarInner(r.name, r.avatar)}</span>
         <span class="info"><span class="name">${escapeHtml(r.name)}</span><span class="sub">${t('friends.pendingFrom')}</span></span>
         <span class="acts">
           <button type="button" class="icon-btn primary" data-act="accept" title="${t('friends.accept')}">${icon('i-check')}</button>
@@ -445,14 +546,16 @@
       const li = document.createElement('li');
       li.className = 'friend' + (f.online ? ' is-online' : '');
       const unread = state.unread[f.key] || 0;
-      li.innerHTML = `<span class="avatar">${escapeHtml(f.name.slice(0, 1).toUpperCase())}<span class="st"></span></span>
+      li.innerHTML = `<span class="avatar">${avatarInner(f.name, f.avatar)}<span class="st"></span></span>
         <span class="info"><span class="name">${escapeHtml(f.name)}</span><span class="sub">${f.online ? t('friends.online') : t('friends.offline')}</span></span>
         ${unread ? `<span class="unread">${unread}</span>` : ''}
         <span class="acts">
           <button type="button" class="icon-btn" data-act="dm" title="${t('friends.message')}">${icon('i-chat')}</button>
           <button type="button" class="icon-btn primary" data-act="call" title="${t('friends.call')}">${icon('i-mic')}</button>
           <button type="button" class="icon-btn danger" data-act="rm" title="${t('friends.remove')}">${icon('i-trash')}</button>
+          <button type="button" class="icon-btn danger" data-act="report" title="${t('report.btn')}">${icon('i-flag')}</button>
         </span>`;
+      li.querySelector('[data-act="report"]').addEventListener('click', () => reportUser(f.name));
       li.querySelector('[data-act="dm"]').addEventListener('click', () => openDm(f.key));
       li.querySelector('[data-act="call"]').addEventListener('click', () => callFriend(f.key));
       li.querySelector('[data-act="rm"]').addEventListener('click', () => toast(t('friends.removeConfirm', { name: f.name }), 15000, [
@@ -759,13 +862,15 @@
       li.dataset.id = m.id;
       const canAdd = !isMe && state.token && !friendOf(keyOf(m.name));
       li.innerHTML = `
-        <span class="avatar">${escapeHtml((m.name || '?').slice(0, 1).toUpperCase())}</span>
+        <span class="avatar">${avatarInner(m.name, isMe ? state.profile.avatar : m.avatar)}</span>
         <span class="info">
           <span class="name">${escapeHtml(m.name)}${isMe ? ` <span class="muted">(${t('room.you')})</span>` : ''}</span>
           <span class="plat">${m.platform ? platformHtml(m.platform) : icon('i-globe') + `<span>${room.private ? t('friends.title').toLowerCase() : t('room.anyPlatform')}</span>`}</span>
         </span>
+        ${isMe ? '' : `<button type="button" class="report" title="${t('report.btn')}">${icon('i-flag')}</button>`}
         ${canAdd ? `<button type="button" class="add">${icon('i-plus')}${t('friends.add')}</button>` : ''}
         <span class="mic">${icon(isMe && state.muted ? 'i-mic-off' : 'i-mic')}</span>`;
+      if (!isMe) li.querySelector('.report').addEventListener('click', () => reportUser(m.name));
       if (canAdd) li.querySelector('.add').addEventListener('click', () => addFriend(m.name));
       list.appendChild(li);
     }
@@ -978,6 +1083,8 @@
   });
   socket.on('signal', onSignal);
   socket.on('chat', addChat);
+  socket.on('room-update', ({ room }) => { if (state.room && room && room.id === state.room.id) { state.room = room; renderRoom(); } });
+  socket.on('profile', (p) => { setProfile(p); maybeReupload(); });
 
   // conta
   socket.on('login-request', onLoginRequest);
@@ -1019,6 +1126,12 @@
   $('#pending-cancel').addEventListener('click', cancelPending);
   $('#logout-btn').addEventListener('click', confirmLogout);
   $('#dm-back').addEventListener('click', closeDm);
+  $('#avatar-btn').addEventListener('click', () => { const p = $('#avatar-picker'); p.hidden = !p.hidden; $('#rename-form').hidden = true; renderProfile(); });
+  $('#rename-btn').addEventListener('click', () => { const f = $('#rename-form'); f.hidden = !f.hidden; $('#avatar-picker').hidden = true; $('#rename-input').value = state.name; if (!f.hidden) $('#rename-input').focus(); });
+  $('#rename-cancel').addEventListener('click', () => { $('#rename-form').hidden = true; });
+  $('#rename-form').addEventListener('submit', (e) => { e.preventDefault(); renameAccount($('#rename-input').value.trim()); });
+  $('#avatar-none').addEventListener('click', () => chooseCover(null));
+  $('#avatar-file').addEventListener('change', (e) => { uploadAvatar(e.target.files[0]); e.target.value = ''; });
   $('#dm-call').addEventListener('click', () => { if (state.dmWith) callFriend(state.dmWith); });
   $('#dm-form').addEventListener('submit', (e) => {
     e.preventDefault();
@@ -1084,7 +1197,9 @@
         state.token = token; state.name = name;
         try {
           const me = await api('/api/me');
-          setUser(me.name, token);
+          // depois de uma recuperação o servidor devolve o nome em minúsculas: mantém as maiúsculas guardadas
+          setUser(name && name.toLowerCase() === String(me.name).toLowerCase() ? name : me.name, token);
+          setProfile({ name: me.name, avatar: me.avatar, avatarKind: me.avatarKind });
           setRequests(me.pending);
           showScreen('screen-home');
           return;

@@ -74,6 +74,9 @@
     <symbol id="i-mobile" viewBox="0 0 24 24"><rect x="7" y="2.5" width="10" height="19" rx="2"/><path d="M11 18h2"/></symbol>
     <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
     <symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></symbol>
+    <symbol id="i-flag" viewBox="0 0 24 24"><path d="M5 21V4M5 4h12l-2 4 2 4H5"/></symbol>
+    <symbol id="i-camera" viewBox="0 0 24 24"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></symbol>
+    <symbol id="i-edit" viewBox="0 0 24 24"><path d="M4 20h4l10-10-4-4L4 16zM13 7l4 4"/></symbol>
     <symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z" fill="currentColor" stroke="none"/></symbol>
   </svg>
 
@@ -266,6 +269,7 @@
     <div class="panel-tabs" id="panel-tabs">
       <button type="button" class="tab active" data-tab="chat"><svg class="i"><use href="#i-chat"/></svg><span data-i18n="panel.chat">Chat</span></button>
       <button type="button" class="tab" data-tab="friends"><svg class="i"><use href="#i-users"/></svg><span data-i18n="panel.friends">Amigos</span><span class="badge" id="friends-badge" hidden>0</span></button>
+      <button type="button" class="tab" data-tab="profile"><svg class="i"><use href="#i-user"/></svg><span data-i18n="panel.profile">Perfil</span></button>
       <button type="button" class="tab" data-tab="logins"><svg class="i"><use href="#i-bell"/></svg><span data-i18n="panel.logins">Logins</span><span class="badge" id="logins-badge" hidden>0</span></button>
       <button type="button" class="icon-btn small panel-close" id="panel-close" data-i18n-title="panel.close" title="Fechar"><svg class="i"><use href="#i-x"/></svg></button>
     </div>
@@ -299,6 +303,35 @@
           <button type="submit" class="icon-btn" aria-label="Enviar"><svg class="i"><use href="#i-send"/></svg></button>
         </form>
       </div>
+    </div>
+    <div class="panel-body" id="tab-profile" hidden>
+      <div class="profile-card">
+        <span class="avatar xl" id="profile-avatar">?</span>
+        <div class="profile-info">
+          <strong id="profile-name"></strong>
+          <span class="hint" data-i18n="profile.sub">É assim que as pessoas te veem na chamada e na lista de amigos.</span>
+        </div>
+      </div>
+      <div class="profile-actions">
+        <button type="button" class="btn-secondary" id="avatar-btn"><svg class="i"><use href="#i-camera"/></svg><span data-i18n="profile.changePhoto">Trocar foto</span></button>
+        <button type="button" class="btn-secondary" id="rename-btn"><svg class="i"><use href="#i-edit"/></svg><span data-i18n="profile.changeName">Trocar nickname</span></button>
+      </div>
+      <div class="picker" id="avatar-picker" hidden>
+        <p class="hint" data-i18n="profile.pickHint">Escolha uma capa de jogo, envie uma foto sua ou fique sem foto.</p>
+        <div class="picker-grid" id="avatar-covers"></div>
+        <div class="picker-actions">
+          <label class="btn-primary small"><svg class="i"><use href="#i-camera"/></svg><span data-i18n="profile.upload">Enviar foto</span><input type="file" id="avatar-file" accept="image/jpeg,image/png" hidden></label>
+          <button type="button" class="btn-secondary" id="avatar-none" data-i18n="profile.noPhoto">Sem foto</button>
+        </div>
+        <p class="hint" data-i18n="profile.uploadRules">Foto enviada: JPG ou PNG, até 4 MB. Toda foto passa por uma checagem automática antes de aparecer; fotos impróprias são recusadas.</p>
+        <p class="error" id="avatar-error" hidden></p>
+      </div>
+      <form class="rename" id="rename-form" hidden>
+        <label class="field"><span data-i18n="profile.newName">Novo nickname</span><input type="text" id="rename-input" maxlength="20" minlength="3" autocomplete="off"></label>
+        <p class="hint" data-i18n="profile.renameHint">Seus amigos, conversas e foto continuam. O nickname antigo fica livre para outra pessoa.</p>
+        <p class="error" id="rename-error" hidden></p>
+        <div class="picker-actions"><button type="submit" class="btn-primary small" data-i18n="profile.save">Salvar</button><button type="button" class="btn-secondary" id="rename-cancel" data-i18n="friends.cancel">Cancelar</button></div>
+      </form>
     </div>
     <div class="panel-body" id="tab-logins" hidden>
       <h3 data-i18n="req.title">Pedidos de login</h3>
