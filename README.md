@@ -127,8 +127,12 @@ conversas. O nickname fica livre para qualquer pessoa usar.
 > sai da aba: no PC e no celular ele desliga, a não ser que o site continue
 > aberto em segundo plano. Troque de aba ou de app sem fechar o site.
 
-Durante a chamada a tela não apaga sozinha (o site pede isso ao celular),
-porque com a tela apagada alguns celulares cortam o microfone. Se você
+Durante a chamada a tela não apaga sozinha: o site pede isso ao celular
+e, onde o navegador não aceita o pedido (iPhone mais antigo), usa o mesmo
+truque dos apps de chamada, um vídeo invisível tocando. Com a tela apagada
+alguns celulares cortam o microfone, por isso o cuidado. Quando alguém
+entra ou sai da chamada toca um som curto (duas notas subindo na entrada,
+descendo na saída). Se você
 apagar a tela de propósito, o que acontece depende do aparelho: vários
 mantêm a chamada, outros cortam o microfone e ele volta quando a tela
 acende de novo.
@@ -478,9 +482,12 @@ and the conversations. The nickname becomes free for anyone to use.
 > stays open in the background. Switch tabs or apps without closing the
 > site.
 
-During a call the screen does not turn off by itself (the site asks the
-phone for that), because with the screen off some phones cut the
-microphone. If you turn the screen off on purpose, what happens depends on
+During a call the screen does not turn off by itself: the site asks the
+phone for that and, where the browser refuses (older iPhones), uses the
+same trick call apps use, an invisible playing video. With the screen off
+some phones cut the microphone, hence the care. When someone joins or
+leaves the call a short sound plays (two notes going up on join, down on
+leave). If you turn the screen off on purpose, what happens depends on
 the device: many keep the call going, others cut the microphone and it
 comes back when the screen turns on again.
 
