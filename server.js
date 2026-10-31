@@ -88,7 +88,9 @@ if (siteHost) {
   app.use((req, res, next) => {
     const host = (req.headers.host || '').toLowerCase().replace(/\.+(?=:|$)/, '');
     if (host && host !== siteHost && !host.startsWith('localhost') && !host.startsWith('127.')) {
-      return res.redirect(301, SITE_URL + req.originalUrl);
+      // sem cache: se a configuração estiver errada por um tempo, o navegador não fica preso nela
+      res.set('Cache-Control', 'no-store');
+      return res.redirect(302, SITE_URL + req.originalUrl);
     }
     next();
   });
@@ -100,6 +102,7 @@ app.use((req, res, next) => {
   if (req.method === 'GET' && /\.+$/.test(req.path) && req.path !== '/') {
     const clean = req.path.replace(/\.+$/, '') || '/';
     const q = req.originalUrl.includes('?') ? req.originalUrl.slice(req.originalUrl.indexOf('?')) : '';
+    res.set('Cache-Control', 'no-store');
     return res.redirect(302, clean + q);
   }
   next();
