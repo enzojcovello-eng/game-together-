@@ -166,7 +166,8 @@ foto; o nickname antigo fica livre.
 
 Em qualquer cartão de pessoa (na chamada ou na lista de amigos) tem uma
 bandeirinha para denunciar. Abre um formulário: você conta o que aconteceu
-(obrigatório) e pode anexar um print. Na chamada tem também o botão
+(obrigatório) e pode anexar um print ou um áudio gravado no seu aparelho
+(m4a, mp3, ogg ou webm, até 6 MB). Na chamada tem também o botão
 **Últimos 30s**: ele guarda o trecho mais recente do áudio da chamada, e
 esse trecho vai junto com a denúncia (durante a chamada o app guarda só os
 últimos 30 segundos, em memória, no seu aparelho; nada é enviado a menos
@@ -460,7 +461,8 @@ keeps friends, conversations and photo; the old nickname becomes free.
 
 Every person card (on a call or in the friends list) has a small flag to
 report. It opens a form: you tell what happened (required) and can attach
-a screenshot. On a call there is also the **Last 30s** button: it keeps the
+a screenshot or an audio file recorded on your device (m4a, mp3, ogg or
+webm, up to 6 MB). On a call there is also the **Last 30s** button: it keeps the
 most recent stretch of the call audio, and that clip goes along with the
 report (during a call the app only keeps the last 30 seconds, in memory, on
 your device; nothing is sent unless you attach it to a report). The report

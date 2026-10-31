@@ -324,19 +324,36 @@
   }
   let reportTarget = null;
   let reportImage = null;
+  let reportAudio = null; // áudio escolhido do aparelho (dataURL)
   function reportUser(name) {
     reportTarget = name;
     reportImage = null;
+    reportAudio = null;
     $('#report-who').textContent = name;
     $('#report-note').value = '';
     $('#report-file-name').textContent = '';
+    $('#report-audio-name').textContent = '';
     setError('#report-error', '');
     $('#report-clip').hidden = !state.clip;
     if (state.clip) $('#report-clip-text').textContent = t('clip.attached', { s: state.clip.seconds });
     $('#report-backdrop').hidden = false;
     $('#report-note').focus();
   }
-  function closeReport() { $('#report-backdrop').hidden = true; reportTarget = null; reportImage = null; }
+  function closeReport() { $('#report-backdrop').hidden = true; reportTarget = null; reportImage = null; reportAudio = null; }
+  async function pickReportAudio(file) {
+    if (!file) return;
+    setError('#report-error', '');
+    if (file.size > 6 * 1024 * 1024) return setError('#report-error', t('report.audioBig'));
+    const type = file.type || '';
+    const okType = /^audio\/(webm|mp4|ogg|mpeg|aac|x-m4a)$/i.test(type) || /^video\/webm$/i.test(type) || /\.(m4a|mp3|ogg|webm)$/i.test(file.name);
+    if (!okType) return setError('#report-error', t('report.audioType'));
+    let data = await blobToDataUrl(file);
+    // alguns celulares não informam o tipo: deduz pela extensão
+    if (!type) data = data.replace(/^data:[^;]*;/, `data:audio/${/\.mp3$/i.test(file.name) ? 'mpeg' : /\.ogg$/i.test(file.name) ? 'ogg' : /\.webm$/i.test(file.name) ? 'webm' : 'mp4'};`);
+    reportAudio = data;
+    $('#report-audio-name').textContent = file.name;
+    $('#report-clip').hidden = true; // o áudio escolhido vale no lugar do trecho
+  }
   async function sendReport(e) {
     e.preventDefault();
     const note = $('#report-note').value.trim();
@@ -344,9 +361,9 @@
     const btn = $('#report-send');
     btn.disabled = true;
     try {
-      const audio = state.clip && !$('#report-clip').hidden ? await blobToDataUrl(state.clip.blob) : undefined;
+      const audio = reportAudio || (state.clip && !$('#report-clip').hidden ? await blobToDataUrl(state.clip.blob) : undefined);
       await api('/api/report', { method: 'POST', body: { target: reportTarget, reason: 'other', note, image: reportImage || undefined, audio } });
-      if (audio) { state.clip = null; $('#clip-btn').classList.remove('rec-on'); }
+      if (audio && !reportAudio) { state.clip = null; $('#clip-btn').classList.remove('rec-on'); }
       closeReport();
       toast(t('report.sent'), 4000);
     } catch (err) { setError('#report-error', errText(err)); }
@@ -1298,6 +1315,7 @@
   $('#report-form').addEventListener('submit', sendReport);
   $('#report-cancel').addEventListener('click', closeReport);
   $('#report-clip-rm').addEventListener('click', () => { $('#report-clip').hidden = true; });
+  $('#report-audio').addEventListener('change', (e) => { pickReportAudio(e.target.files[0]); e.target.value = ''; });
   $('#clip-btn').addEventListener('click', saveClip);
   $('#report-file').addEventListener('change', (e) => { pickReportImage(e.target.files[0]); e.target.value = ''; });
   $('#avatar-file').addEventListener('change', (e) => { uploadAvatar(e.target.files[0]); e.target.value = ''; });
