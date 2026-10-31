@@ -105,4 +105,20 @@ mm.leave('w');
 assert.strictEqual(mm.stats().searching, 3, 'na fila só sobram "b", "e" e "m2"');
 assert.strictEqual(mm.stats().games.friends.inCall, 4);
 
+// reconexão: o jogador volta com outro id e continua na mesma sala, na mesma posição
+{
+  const m2 = new Matchmaker(config);
+  const req = { gameId: 'rocket-league', lang: 'pt-BR', mode: 'duo', platform: 'pc' };
+  m2.find('s1', { name: 'A', ...req });
+  const r = m2.find('s2', { name: 'B', ...req });
+  assert.strictEqual(r.status, 'matched');
+  const room = m2.replaceId('s1', 's9');
+  assert.ok(room && room.id === r.room.id);
+  assert.deepStrictEqual([...room.members.keys()], ['s9', 's2']);
+  assert.strictEqual(m2.roomOf('s9').id, room.id);
+  assert.strictEqual(m2.roomOf('s1'), null);
+  assert.strictEqual(m2.replaceId('nope', 'x'), null);
+  const left = m2.leave('s9');
+  assert.deepStrictEqual(left.remaining, ['s2']);
+}
 console.log('matchmaking: todos os testes passaram');

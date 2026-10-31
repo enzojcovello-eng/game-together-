@@ -601,11 +601,14 @@
       panel.hidden = !state.panelOpen;
       $('#panel-backdrop').hidden = !state.panelOpen;
     }
+    $('#chat-empty').hidden = Boolean(state.room);
+    $('#panel-chat-form').hidden = !state.room;
   }
   function setPanelTab(tab) {
     state.panelTab = tab;
     $$('#panel-tabs .tab').forEach((b) => b.classList.toggle('active', b.dataset.tab === tab));
     $('#tab-reports').hidden = tab !== 'reports';
+    $('#tab-chat').hidden = tab !== 'chat';
     $('#tab-friends').hidden = tab !== 'friends';
     $('#tab-profile').hidden = tab !== 'profile';
     $('#tab-logins').hidden = tab !== 'logins';
@@ -804,6 +807,7 @@
   }
   async function acceptInvite(id) {
     try { await getMic(); applyMute(); } catch (err) { return toast(t(err && err.message === 'insecure' ? 'setup.insecure' : 'setup.micDenied'), 5000); }
+    keepAliveStart();
     socket.emit('invite-accept', { id }, (r) => {
       if (!r || r.error) toast(r && r.error ? t(`err.${r.error}`) : t('err.generic'));
     });
@@ -943,6 +947,7 @@
       video: false,
     });
     state.localStream = stream;
+    watchMic(stream);
     return stream;
   }
 
@@ -958,6 +963,7 @@
 
     const btn = $('#matchmake-btn');
     btn.disabled = true;
+    keepAliveStart();
     try {
       await getMic();
     } catch (err) {
@@ -993,15 +999,17 @@
   function cancelSearch() {
     state.searching = false;
     socket.emit('cancel');
+    keepAliveStop();
     showScreen('screen-setup');
   }
 
   // ---------- sala / chamada ----------
   function enterRoom(room, me, initiateWith) {
+    const rejoin = Boolean(state.room && state.room.id === room.id);
     state.searching = false;
     state.room = room;
     state.me = me;
-    $('#chat-log').innerHTML = '';
+    if (!rejoin) { $('#chat-log').innerHTML = ''; $('#panel-chat-log').innerHTML = ''; state.clip = null; $('#clip-btn').classList.remove('rec-on'); }
     rememberPeople(room);
     renderRoom();
     setPanelTab(state.requests.length ? 'logins' : 'reports');
@@ -1011,8 +1019,9 @@
       if (m.id !== me) connectPeer(m, initiators.has(m.id));
     }
     monitorLocalLevel();
-    state.clip = null; $('#clip-btn').classList.remove('rec-on');
     recStart();
+    keepAliveStart();
+    mediaSessionStart(room);
   }
 
   function renderRoom() {
@@ -1138,6 +1147,8 @@
     for (const id of [...state.peers.keys()]) removePeer(id);
     if (localMeter) { localMeter.stop(); localMeter = null; }
     recStop();
+    keepAliveStop();
+    mediaSessionStop();
     state.room = null;
     state.me = null;
     socket.emit('leave');
@@ -1259,14 +1270,117 @@
     peer.meter = makeMeter(stream, (lvl) => speakingClass(id, lvl));
   }
 
+  // ---------- chamada em segundo plano ----------
+  // Ao trocar de app ou de aba, o celular tende a pausar áudio, cortar o microfone e
+  // derrubar a conexão. Três cuidados: um áudio silencioso em loop mantém a sessão de
+  // áudio viva; a Media Session mostra a chamada nos controles do sistema; e na volta
+  // o microfone e os alto-falantes são retomados (ou pedidos de novo, se o sistema cortou).
+  let keepAlive = null;
+  let micMutedSince = 0;
+  function silentWav() { // 1 segundo de silêncio (8 kHz, mono, 8 bits)
+    const rate = 8000; const n = rate;
+    const buf = new ArrayBuffer(44 + n); const v = new DataView(buf);
+    const str = (o, txt) => { for (let i = 0; i < txt.length; i++) v.setUint8(o + i, txt.charCodeAt(i)); };
+    str(0, 'RIFF'); v.setUint32(4, 36 + n, true); str(8, 'WAVE'); str(12, 'fmt '); v.setUint32(16, 16, true);
+    v.setUint16(20, 1, true); v.setUint16(22, 1, true); v.setUint32(24, rate, true); v.setUint32(28, rate, true);
+    v.setUint16(32, 1, true); v.setUint16(34, 8, true); str(36, 'data'); v.setUint32(40, n, true);
+    for (let i = 0; i < n; i++) v.setUint8(44 + i, 128);
+    return URL.createObjectURL(new Blob([buf], { type: 'audio/wav' }));
+  }
+  function keepAliveStart() {
+    if (keepAlive) return;
+    try {
+      keepAlive = new Audio(silentWav());
+      keepAlive.loop = true; keepAlive.volume = 0.01; keepAlive.setAttribute('playsinline', '');
+      keepAlive.play().catch(() => {});
+    } catch (_) { keepAlive = null; }
+  }
+  function keepAliveStop() {
+    if (!keepAlive) return;
+    try { keepAlive.pause(); keepAlive.src = ''; } catch (_) {}
+    keepAlive = null;
+  }
+  function mediaSessionStart(room) {
+    if (!('mediaSession' in navigator)) return;
+    try {
+      const g = gameById(room.gameId) || { name: room.gameName };
+      navigator.mediaSession.metadata = new MediaMetadata({ title: t('bg.title', { game: g.name }), artist: 'Game Together', artwork: g.cover ? [{ src: new URL(coverOf(g), location.href).href, sizes: '512x512', type: 'image/jpeg' }] : [] });
+      navigator.mediaSession.playbackState = 'playing';
+      const keep = () => { try { navigator.mediaSession.playbackState = 'playing'; } catch (_) {} };
+      for (const a of ['play', 'pause']) { try { navigator.mediaSession.setActionHandler(a, keep); } catch (_) {} }
+      try { navigator.mediaSession.setActionHandler('hangup', () => leaveRoom()); } catch (_) {}
+      try { navigator.mediaSession.setActionHandler('togglemicrophone', toggleMute); } catch (_) {}
+    } catch (_) {}
+  }
+  function mediaSessionStop() {
+    if (!('mediaSession' in navigator)) return;
+    try { navigator.mediaSession.metadata = null; navigator.mediaSession.playbackState = 'none'; } catch (_) {}
+    for (const a of ['play', 'pause', 'hangup', 'togglemicrophone']) { try { navigator.mediaSession.setActionHandler(a, null); } catch (_) {} }
+  }
+  function watchMic(stream) {
+    const tr = stream.getAudioTracks()[0];
+    if (!tr) return;
+    micMutedSince = tr.muted ? Date.now() : 0;
+    tr.onmute = () => { micMutedSince = Date.now(); };
+    tr.onunmute = () => { micMutedSince = 0; };
+    tr.onended = () => { if (document.visibilityState === 'visible') recoverMic(); };
+  }
+  let micRecovering = false;
+  async function recoverMic() {
+    const old = state.localStream;
+    if (!state.room || !old || micRecovering) return;
+    const tr = old.getAudioTracks()[0];
+    const dead = !tr || tr.readyState === 'ended' || (tr.muted && micMutedSince && Date.now() - micMutedSince > 3000);
+    if (!dead) return;
+    micRecovering = true;
+    try {
+      state.localStream = null;
+      const fresh = await getMic();
+      const track = fresh.getAudioTracks()[0];
+      track.enabled = !state.muted;
+      for (const p of state.peers.values()) {
+        const sender = p.pc.getSenders().find((x) => x.track && x.track.kind === 'audio') || p.pc.getSenders()[0];
+        if (sender) await sender.replaceTrack(track).catch(() => {});
+      }
+      for (const x of old.getTracks()) { try { x.stop(); } catch (_) {} }
+      if (localMeter) { localMeter.stop(); localMeter = null; }
+      monitorLocalLevel();
+      if (rec.ctx) {
+        const src = rec.sources.get('me');
+        if (src) { try { src.disconnect(); } catch (_) {} rec.sources.delete('me'); }
+        recAdd('me', fresh);
+      }
+    } catch (_) { if (!state.localStream) state.localStream = old; }
+    micRecovering = false;
+  }
+  function resumeAudio() {
+    if (!state.room) return;
+    if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume().catch(() => {});
+    for (const p of state.peers.values()) if (p.audio && p.audio.paused && p.audio.srcObject) p.audio.play().catch(() => {});
+    if (keepAlive && keepAlive.paused) keepAlive.play().catch(() => {});
+    recoverMic();
+  }
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') resumeAudio(); });
+  window.addEventListener('pageshow', resumeAudio);
+  window.addEventListener('focus', resumeAudio);
+  setInterval(() => { if (state.room && document.visibilityState === 'visible') resumeAudio(); }, 5000);
+
   // ---------- chat da chamada ----------
+  // a mesma conversa aparece na caixa da tela da chamada e na aba Chat do painel
   function addChat({ name, text, sys }) {
-    const log = $('#chat-log');
-    const div = document.createElement('div');
-    div.className = 'msg' + (sys ? ' sys' : '');
-    div.innerHTML = sys ? escapeHtml(text) : `<b>${escapeHtml(name)}:</b> ${escapeHtml(text)}`;
-    log.appendChild(div);
-    log.scrollTop = log.scrollHeight;
+    for (const log of [$('#chat-log'), $('#panel-chat-log')]) {
+      const div = document.createElement('div');
+      div.className = 'msg' + (sys ? ' sys' : '');
+      div.innerHTML = sys ? escapeHtml(text) : `<b>${escapeHtml(name)}:</b> ${escapeHtml(text)}`;
+      log.appendChild(div);
+      log.scrollTop = log.scrollHeight;
+    }
+  }
+  function sendChat(input) {
+    const text = input.value.trim();
+    if (!text || !state.room) return;
+    socket.emit('chat', text);
+    input.value = '';
   }
 
   // ---------- atualização ----------
@@ -1310,28 +1424,39 @@
 
   // ---------- socket ----------
   const socket = io({ transports: ['websocket', 'polling'] });
+  if (/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) { window.__gtSocket = socket; window.__gtState = state; } // só para testes locais
   socket.on('version', onServerVersion);
 
   socket.on('stats', renderStats);
   socket.on('matched', ({ room, you, initiateWith }) => enterRoom(room, you, initiateWith));
-  socket.on('peer-joined', ({ room, peer }) => {
+  socket.on('peer-joined', ({ room, peer, rejoining }) => {
     if (!state.room) return;
     state.room = room;
     renderRoom();
     rememberPeople(room);
-    toast(t('toast.joined', { name: peer.name }));
-    addChat({ sys: true, text: t('toast.joined', { name: peer.name }) });
+    if (!rejoining) {
+      toast(t('toast.joined', { name: peer.name }));
+      addChat({ sys: true, text: t('toast.joined', { name: peer.name }) });
+    }
     connectPeer(peer, false);
   });
-  socket.on('peer-left', ({ room, peerId }) => {
+  socket.on('peer-left', ({ room, peerId, rejoining }) => {
     if (!state.room) return;
     const gone = state.peers.get(peerId);
     const name = gone ? gone.name : '?';
     removePeer(peerId);
     state.room = room;
     renderRoom();
+    if (rejoining) return;
     toast(t('toast.left', { name }));
     addChat({ sys: true, text: t('toast.left', { name }) });
+  });
+  socket.on('peer-away', ({ peerId }) => { // caiu, mas tem um minuto para voltar
+    const peer = state.peers.get(peerId);
+    if (!peer) return;
+    peer.connected = false;
+    const li = document.querySelector(`.member[data-id="${peerId}"]`);
+    if (li) li.classList.add('connecting');
   });
   socket.on('signal', onSignal);
   socket.on('chat', addChat);
@@ -1369,9 +1494,19 @@
     if (state.room || state.searching) toast(t('toast.disconnected'), 5000);
   });
   socket.io.on('reconnect', () => {
-    if (state.room) leaveRoom({ silent: true });
-    if (state.searching) { state.searching = false; showScreen('screen-setup'); }
     sendHello();
+    if (state.room) {
+      // volta para a mesma sala: o servidor segurou o lugar por um minuto
+      const roomId = state.room.id;
+      for (const id of [...state.peers.keys()]) removePeer(id);
+      renderRoom();
+      socket.emit('rejoin', { roomId }, (res) => {
+        if (res && res.ok) return;
+        leaveRoom({ silent: true });
+        toast(t('toast.callLost'), 6000);
+      });
+    }
+    if (state.searching) { state.searching = false; showScreen('screen-setup'); }
     if (state.pendingId) socket.emit('watch-claim', { requestId: state.pendingId });
     toast(t('toast.reconnected'));
   });
@@ -1416,14 +1551,8 @@
   $('#mute-btn').addEventListener('click', toggleMute);
   $('#leave-btn').addEventListener('click', () => leaveRoom());
   $('#report-by-name').addEventListener('submit', (e) => { e.preventDefault(); reportByName($('#report-name-input').value); });
-  $('#chat-form').addEventListener('submit', (e) => {
-    e.preventDefault();
-    const input = $('#chat-input');
-    const text = input.value.trim();
-    if (!text) return;
-    socket.emit('chat', text);
-    input.value = '';
-  });
+  $('#chat-form').addEventListener('submit', (e) => { e.preventDefault(); sendChat($('#chat-input')); });
+  $('#panel-chat-form').addEventListener('submit', (e) => { e.preventDefault(); sendChat($('#panel-chat-input')); });
   $('#update-btn').addEventListener('click', reloadApp);
   $('#share-link').addEventListener('click', copySiteLink);
   $('#game-search').addEventListener('input', filterGames);

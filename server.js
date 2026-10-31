@@ -43,7 +43,11 @@ const isHttps = Boolean(process.env.SSL_KEY && process.env.SSL_CERT);
 const server = isHttps
   ? https.createServer({ key: fs.readFileSync(process.env.SSL_KEY), cert: fs.readFileSync(process.env.SSL_CERT) }, app)
   : http.createServer(app);
-const io = new Server(server, { cors: { origin: '*' } });
+// pingTimeout alto: celular em segundo plano demora a responder; não derruba a chamada por isso
+const io = new Server(server, { cors: { origin: '*' }, pingInterval: 25000, pingTimeout: 60000 });
+// quem caiu no meio da chamada tem esse tempo para reconectar e voltar à mesma sala
+const REJOIN_GRACE = Number(process.env.REJOIN_GRACE_MS) || 60 * 1000;
+const parked = new Map(); // `${conta}|${sala}` -> { id (socket antigo), timer }
 
 // ---- visitas: conta aberturas da página inicial e visitantes diferentes por dia ----
 const STATS_FILE = path.join(process.env.DATA_DIR || path.join(__dirname, 'data'), 'visits.json');
@@ -706,22 +710,65 @@ io.on('connection', (socket) => {
     io.to(room.id).emit('chat', { from: socket.id, name: m ? m.name : '?', text: msg, at: Date.now() });
   });
 
+  socket.on('rejoin', ({ roomId } = {}, ack) => {
+    if (frozen(ack)) return;
+    const k = socket.data.key;
+    const pk = `${k}|${roomId}`;
+    const p = k && parked.get(pk);
+    const fail = () => { if (typeof ack === 'function') ack({ error: 'gone' }); };
+    if (!p) return fail();
+    clearTimeout(p.timer); parked.delete(pk);
+    mm.leave(socket.id); // se por acaso já estava em fila/sala com o socket novo
+    const room = mm.replaceId(p.id, socket.id);
+    if (!room) return fail();
+    socket.join(room.id);
+    const pub = publicRoom(room);
+    const others = [...room.members.keys()].filter((id) => id !== socket.id);
+    const me = pub.members.find((m) => m.id === socket.id);
+    for (const id of others) {
+      const s = io.sockets.sockets.get(id);
+      if (!s) continue;
+      s.emit('peer-left', { room: pub, peerId: p.id, rejoining: true });
+      s.emit('peer-joined', { room: pub, peer: me, rejoining: true });
+    }
+    socket.emit('matched', { room: pub, you: socket.id, initiateWith: others });
+    if (typeof ack === 'function') ack({ ok: true });
+    broadcastStats();
+  });
+
   socket.on('disconnect', () => {
     online = Math.max(0, online - 1);
-    handleLeave(socket);
     const k = socket.data.key;
+    const room = mm.roomOf(socket.id);
+    if (room && k) {
+      // segura o lugar na sala por um tempo: celular em segundo plano, rede trocando etc.
+      const pk = `${k}|${room.id}`;
+      const prev = parked.get(pk);
+      if (prev) { clearTimeout(prev.timer); leaveById(prev.id); }
+      parked.set(pk, { id: socket.id, timer: setTimeout(() => { parked.delete(pk); leaveById(socket.id); }, REJOIN_GRACE) });
+      socket.leave(room.id);
+      for (const id of room.members.keys()) {
+        const s = id !== socket.id && io.sockets.sockets.get(id);
+        if (s) s.emit('peer-away', { peerId: socket.id });
+      }
+    } else handleLeave(socket);
     if (k) setTimeout(() => { if (!isOnline(k)) pushPresence(k); }, 500);
   });
 });
 
 function handleLeave(socket) {
-  const result = mm.leave(socket.id);
+  const room = mm.roomOf(socket.id);
+  if (room) socket.leave(room.id);
+  leaveById(socket.id);
+}
+
+function leaveById(id) {
+  const result = mm.leave(id);
   if (result) {
-    socket.leave(result.room.id);
     const pub = publicRoom(result.room);
-    for (const id of result.remaining) {
-      const s = io.sockets.sockets.get(id);
-      if (s) s.emit('peer-left', { room: pub, peerId: socket.id });
+    for (const other of result.remaining) {
+      const s = io.sockets.sockets.get(other);
+      if (s) s.emit('peer-left', { room: pub, peerId: id });
     }
   }
   broadcastStats();

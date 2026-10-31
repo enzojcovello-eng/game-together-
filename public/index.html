@@ -282,6 +282,7 @@
   <aside class="panel drawer" id="panel" hidden>
     <div class="panel-tabs" id="panel-tabs">
       <button type="button" class="tab active" data-tab="reports"><svg class="i"><use href="#i-flag"/></svg><span data-i18n="panel.reports">Denúncias</span></button>
+      <button type="button" class="tab" data-tab="chat"><svg class="i"><use href="#i-chat"/></svg><span data-i18n="panel.chat">Chat</span></button>
       <button type="button" class="tab" data-tab="friends"><svg class="i"><use href="#i-users"/></svg><span data-i18n="panel.friends">Amigos</span><span class="badge" id="friends-badge" hidden>0</span></button>
       <button type="button" class="tab" data-tab="profile"><svg class="i"><use href="#i-user"/></svg><span data-i18n="panel.profile">Perfil</span></button>
       <button type="button" class="tab" data-tab="logins"><svg class="i"><use href="#i-bell"/></svg><span data-i18n="panel.logins">Logins</span><span class="badge" id="logins-badge" hidden>0</span></button>
@@ -307,6 +308,14 @@
         <h3 data-i18n="reports.mine">Suas denúncias</h3>
         <ul class="my-reports" id="my-reports"></ul>
       </div>
+    </div>
+    <div class="panel-body" id="tab-chat" hidden>
+      <div class="chat-log" id="panel-chat-log"></div>
+      <p class="chat-empty" id="chat-empty" data-i18n="chat.empty">O chat abre quando você estiver numa chamada.</p>
+      <form class="chat-form" id="panel-chat-form">
+        <input type="text" id="panel-chat-input" maxlength="300" data-i18n-placeholder="room.chatPh" placeholder="Mensagem rápida">
+        <button type="submit" class="icon-btn" aria-label="Enviar"><svg class="i"><use href="#i-send"/></svg></button>
+      </form>
     </div>
     <div class="panel-body" id="tab-friends" hidden>
       <div id="friends-home">
