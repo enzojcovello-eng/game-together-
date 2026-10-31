@@ -194,36 +194,6 @@ inicial) vê uma faixa amarela "Tem uma versão nova" com o botão
 "Esta cópia do app está desatualizada" com o botão para baixar a versão
 nova aqui no GitHub.
 
-## Aparecer no Google e compartilhar o link
-
-O site já vem preparado: título e descrição para a busca, pré-visualização
-com imagem quando o link é colado no WhatsApp, Discord, Instagram ou X,
-`sitemap.xml`, `robots.txt` e um texto de apresentação na página inicial.
-O Google acha sites novos sozinho, mas demora. Para acelerar:
-
-1. Entre em https://search.google.com/search-console com a conta Google.
-2. Clique em "Adicionar propriedade", escolha "Prefixo do URL" e cole
-   `https://game-together.onrender.com/`.
-3. Na verificação, escolha "Tag HTML", copie o código `content="..."` e me
-   mande (eu coloco no site), ou use outro método da lista.
-4. Depois de verificado, vá em "Sitemaps" e envie `sitemap.xml`.
-
-Em alguns dias o site começa a aparecer. Um endereço próprio (por exemplo
-`gametogether.com.br`) rende mais nas buscas do que `onrender.com` e fica
-mais fácil de falar para os amigos:
-
-1. Registre o domínio em https://registro.br (cerca de R$ 40 por ano) ou em
-   outro registrador.
-2. No Render, abra o serviço, vá em "Settings" e em "Custom Domains" clique
-   em "Add Custom Domain" e digite o domínio. O Render mostra o que
-   cadastrar no DNS.
-3. No painel do registrador, crie os registros que o Render pediu (em geral
-   um `CNAME` para `www` e um `A` ou `ALIAS` para o domínio sem `www`).
-4. Espere a propagação (de minutos a algumas horas). O Render emite o
-   certificado HTTPS sozinho.
-5. Troque `game-together.onrender.com` pelo domínio novo em
-   `public/index.html`, `public/robots.txt` e `public/sitemap.xml` (ou me
-   peça), e cadastre o domínio novo no Search Console.
 
 ## Capas dos jogos
 
