@@ -93,7 +93,7 @@ quantidade de pessoas e uma plataforma compatível.
 | FIFA 26 (EA FC 26) | 3 | PC, PlayStation, Xbox, Switch | Sim |
 | Minecraft Dungeons | 4 | PC, PlayStation, Xbox, Switch | Sim |
 | Minecraft Dungeons II | 4 | PC, PlayStation, Xbox, Switch | Sim |
-| No Man's Sky | 7 | PC, PlayStation, Xbox, Switch | Sim |
+| No Man's Sky | 4 | PC, PlayStation, Xbox, Switch | Sim |
 | Subnautica 2 | 4 | PC, PlayStation, Xbox | Sim |
 | Overcooked! 2 | 4 | PC, PlayStation, Xbox, Switch | Sim |
 
@@ -333,7 +333,7 @@ call size and a compatible platform.
 | FIFA 26 (EA FC 26) | 3 | PC, PlayStation, Xbox, Switch | Yes |
 | Minecraft Dungeons | 4 | PC, PlayStation, Xbox, Switch | Yes |
 | Minecraft Dungeons II | 4 | PC, PlayStation, Xbox, Switch | Yes |
-| No Man's Sky | 7 | PC, PlayStation, Xbox, Switch | Yes |
+| No Man's Sky | 4 | PC, PlayStation, Xbox, Switch | Yes |
 | Subnautica 2 | 4 | PC, PlayStation, Xbox | Yes |
 | Overcooked! 2 | 4 | PC, PlayStation, Xbox, Switch | Yes |
 
