@@ -26,12 +26,17 @@
     <p class="lead">Página só para quem tem a chave de administração (variável <code>ADMIN_KEY</code> no servidor).</p>
     <div class="key"><input type="password" id="key" placeholder="Chave de administração"><button type="button" class="btn-primary" id="load">Entrar</button></div>
     <p class="hint" id="stats"></p>
-    <div class="rep" id="owner-box" hidden>
+    <div class="rep" id="title-box" hidden>
       <div class="body">
-        <strong>Título de dono</strong>
-        <div class="muted" id="owner-now"></div>
-        <div class="acts"><button type="button" class="btn-primary" id="owner-btn">Marcar minha conta como dono</button></div>
-        <div class="muted">Vale para a conta logada neste navegador (abra o site, entre com o seu nickname, e depois volte aqui). O título aparece ao lado do nickname para todo mundo.</div>
+        <strong>Títulos ao lado do nickname</strong>
+        <div class="muted">Digite o nickname da pessoa e o título (até 16 letras). Para tirar, envie com o título vazio.</div>
+        <div class="key" style="margin:10px 0">
+          <input type="text" id="title-name" placeholder="Nickname da pessoa" maxlength="20">
+          <input type="text" id="title-text" placeholder="Título (ex.: Dono, Mod, VIP)" maxlength="16" value="Dono">
+          <button type="button" class="btn-primary" id="title-btn">Dar título</button>
+        </div>
+        <div class="muted" id="title-msg"></div>
+        <ul class="muted" id="title-list" style="margin:8px 0 0;padding-left:18px"></ul>
       </div>
     </div>
     <h2 style="font-size:1.1rem;margin:18px 0 10px">Denúncias abertas</h2>
@@ -46,9 +51,10 @@
       if (!r.ok) { $('#list').innerHTML = '<p class="error">Chave inválida ou não configurada.</p>'; return; }
       try { sessionStorage.setItem('gt:admin', key()); } catch (_) {}
       const data = await r.json();
-      const o = await fetch('/api/admin/owner', { headers: { 'x-admin-key': key() } }).then((x) => x.json()).catch(() => ({}));
-      $('#owner-box').hidden = false;
-      $('#owner-now').textContent = o.owner ? `Dono atual: ${o.owner}` : 'Ninguém tem o título ainda.';
+      const tt = await fetch('/api/admin/titles', { headers: { 'x-admin-key': key() } }).then((x) => x.json()).catch(() => ({ titles: [] }));
+      $('#title-box').hidden = false;
+      $('#title-list').innerHTML = (tt.titles || []).length ? tt.titles.map((x) => `<li><strong>${esc(x.name)}</strong>: ${esc(x.title)} <button type="button" class="btn-ghost" data-rm="${esc(x.name)}">tirar</button></li>`).join('') : '<li>Ninguém tem título ainda.</li>';
+      $('#title-list').querySelectorAll('[data-rm]').forEach((b) => b.addEventListener('click', () => setTitle(b.dataset.rm, '')));
       $('#stats').textContent = `${data.stats.accounts} contas · ${data.stats.banned} banidas · ${data.reports.length} denúncias abertas`;
       const byTarget = new Map();
       for (const rep of data.reports) { if (!byTarget.has(rep.target)) byTarget.set(rep.target, []); byTarget.get(rep.target).push(rep); }
@@ -77,14 +83,13 @@
     }
     function esc(s) { return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
     $('#load').addEventListener('click', load);
-    $('#owner-btn').addEventListener('click', async () => {
-      let token = null; try { token = localStorage.getItem('gt:token'); } catch (_) {}
-      if (!token) { alert('Entre no site com o seu nickname primeiro, neste mesmo navegador.'); return; }
-      const r = await fetch('/api/admin/owner', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-admin-key': key() }, body: JSON.stringify({ token }) });
+    async function setTitle(name, title) {
+      const r = await fetch('/api/admin/title', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-admin-key': key() }, body: JSON.stringify({ name, title }) });
       const d = await r.json().catch(() => ({}));
-      alert(r.ok ? `Pronto: ${d.name} agora é o dono.` : 'Não deu: ' + (d.error || r.status));
+      $('#title-msg').textContent = r.ok ? (d.title ? `Pronto: ${d.name} agora tem o título "${d.title}".` : `Título de ${d.name} removido.`) : (d.error === 'unknown_user' ? 'Não achei ninguém com esse nickname.' : d.error === 'invalid_title' ? 'Título inválido: use só letras, números e espaços.' : 'Não deu: ' + (d.error || r.status));
       load();
-    });
+    }
+    $('#title-btn').addEventListener('click', () => setTitle($('#title-name').value.trim(), $('#title-text').value.trim()));
     $('#key').addEventListener('keydown', (e) => { if (e.key === 'Enter') load(); });
     if (key()) load();
   </script>

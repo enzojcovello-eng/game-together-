@@ -226,10 +226,11 @@ Ela só abre com a chave definida na variável de ambiente `ADMIN_KEY` do
 servidor (um texto longo e aleatório). Banir apaga a conta e bloqueia o
 nickname para sempre.
 
-Na mesma página, o botão "Marcar minha conta como dono" dá o título
-**Dono** à conta logada naquele navegador. O selo aparece ao lado do
-nickname para todo mundo (topo, chamada, amigos e perfil), acompanha a
-troca de nickname e só pode ser dado por quem tem a chave.
+Na mesma página dá para dar um **título** a qualquer pessoa: digite o
+nickname e o texto (por exemplo "Dono", "Mod" ou "VIP", até 16 letras).
+O selo aparece ao lado do nickname para todo mundo (topo, chamada, amigos e
+perfil), acompanha a troca de nickname e só pode ser dado ou tirado por
+quem tem a chave.
 
 ## Quantas pessoas visitaram
 
@@ -499,10 +500,11 @@ reported it and the buttons "Remover foto" (remove photo), "Banir nickname"
 server's `ADMIN_KEY` environment variable (a long random text). Banning
 deletes the account and blocks the nickname for good.
 
-On the same page, the "Marcar minha conta como dono" button gives the
-**Owner** title to the account signed in on that browser. The badge shows
-next to the nickname for everyone (top bar, call, friends and profile),
-follows a nickname change and can only be granted with the key.
+On the same page you can give anyone a **title**: type the nickname and
+the text (for example "Dono", "Mod" or "VIP", up to 16 letters). The badge
+shows next to the nickname for everyone (top bar, call, friends and
+profile), follows a nickname change and can only be given or removed with
+the key.
 
 ## How many people visited
 
