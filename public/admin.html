@@ -93,6 +93,16 @@
     const $ = (s) => document.querySelector(s);
     const key = () => $('#key').value.trim();
     const hdr = () => ({ 'x-admin-key': key() });
+    // print e áudio das denúncias: baixados com a chave no cabeçalho (nunca na URL) e mostrados como blob
+    async function loadMedia(root) {
+      for (const el of root.querySelectorAll('[data-src]')) {
+        const src = el.dataset.src; delete el.dataset.src;
+        try {
+          const r = await fetch(src, { headers: hdr() });
+          if (r.ok) el.src = URL.createObjectURL(await r.blob());
+        } catch (_) { /* sem prova disponível */ }
+      }
+    }
     try { $('#key').value = sessionStorage.getItem('gt:admin') || ''; } catch (_) {}
     const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
     const when = (ms) => new Date(ms).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
@@ -167,7 +177,7 @@
             <div class="names"><strong>${esc(f.targetName)}</strong>${f.targetTitle ? `<span class="title-tag">${esc(f.targetTitle)}</span>` : ''}${f.targetBan ? `<span class="banned-tag">banido · ${left(f.targetBan.until)}</span>` : ''}
               <div class="muted">${reps.length} denúncia(s)${f.targetExists ? '' : ' · conta já não existe'}</div></div>
           </div>
-          ${reps.map((r) => `<div class="item"><div class="meta">${esc(r.byName)} · ${r.reason === 'photo' ? 'foto' : r.reason === 'name' ? 'nickname' : 'outro'} · ${when(r.at)}</div><div class="note">${esc(r.note || '(sem relato)')}</div>${r.evidenceUrl ? `<img src="${r.evidenceUrl}?key=${encodeURIComponent(key())}" alt="print" data-zoom>` : '<div class="muted">sem print</div>'}${r.audioUrl ? `<div class="muted" style="margin-top:8px">Áudio dos últimos segundos da chamada:</div><audio controls preload="none" src="${r.audioUrl}?key=${encodeURIComponent(key())}" style="width:100%;margin-top:4px"></audio>` : ''}</div>`).join('')}
+          ${reps.map((r) => `<div class="item"><div class="meta">${esc(r.byName)} · ${r.reason === 'photo' ? 'foto' : r.reason === 'name' ? 'nickname' : 'outro'} · ${when(r.at)}</div><div class="note">${esc(r.note || '(sem relato)')}</div>${r.evidenceUrl ? `<img data-src="${esc(r.evidenceUrl)}" alt="print" data-zoom>` : '<div class="muted">sem print</div>'}${r.audioUrl ? `<div class="muted" style="margin-top:8px">Áudio dos últimos segundos da chamada:</div><audio controls data-src="${esc(r.audioUrl)}" style="width:100%;margin-top:4px"></audio>` : ''}</div>`).join('')}
           <div class="judge">
             <select data-f="hours">${DURATIONS.map(([v, l]) => `<option value="${v}">${l}</option>`).join('')}</select>
             <input type="text" data-f="reason" placeholder="Motivo que a pessoa vai ver" maxlength="300">
@@ -178,7 +188,8 @@
               <button type="button" class="btn-secondary" data-a="dismiss">Ignorar</button>
             </div>
           </div>`;
-        div.querySelectorAll('[data-zoom]').forEach((img) => img.addEventListener('click', () => { $('#zoom-img').src = img.src; $('#zoom').hidden = false; }));
+        loadMedia(div);
+        div.querySelectorAll('[data-zoom]').forEach((img) => img.addEventListener('click', () => { if (!img.src) return; $('#zoom-img').src = img.src; $('#zoom').hidden = false; }));
         div.querySelectorAll('[data-a]').forEach((b) => b.addEventListener('click', async () => {
           const body = { target, action: b.dataset.a };
           if (b.dataset.a === 'ban') {

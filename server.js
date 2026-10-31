@@ -44,7 +44,23 @@ const server = isHttps
   ? https.createServer({ key: fs.readFileSync(process.env.SSL_KEY), cert: fs.readFileSync(process.env.SSL_CERT) }, app)
   : http.createServer(app);
 // pingTimeout alto: celular em segundo plano demora a responder; não derruba a chamada por isso
-const io = new Server(server, { cors: { origin: '*' }, pingInterval: 25000, pingTimeout: 60000 });
+// sem CORS: o site é servido por este mesmo servidor, outros sites não abrem conexão aqui
+const io = new Server(server, {
+  pingInterval: 25000,
+  pingTimeout: 60000,
+  // só aceita conexão vinda do próprio site (WebSocket não passa pelo CORS, então conferimos a origem aqui)
+  allowRequest: (req, cb) => {
+    const origin = req.headers.origin;
+    if (!origin) return cb(null, true); // apps nativos/ferramentas sem origem: sem token nada funciona
+    let ok = false;
+    try {
+      const u = new URL(origin);
+      const host = String(req.headers.host || '').toLowerCase();
+      ok = u.host.toLowerCase() === host || (SITE_URL && origin.toLowerCase() === SITE_URL.toLowerCase()) || /^(localhost|127\.0\.0\.1)(:\d+)?$/.test(u.host);
+    } catch (_) { ok = false; }
+    cb(ok ? null : 'origin not allowed', ok);
+  },
+});
 // quem caiu no meio da chamada tem esse tempo para reconectar e voltar à mesma sala
 const REJOIN_GRACE = Number(process.env.REJOIN_GRACE_MS) || 60 * 1000;
 // quem procura 2 pessoas e não acha par nesse tempo entra numa chamada sozinho para esperar lá
@@ -107,6 +123,22 @@ if (siteHost) {
   });
 }
 
+// Atrás do proxy do host (Render), o IP real vem no cabeçalho X-Forwarded-For;
+// sem isso, o limite de tentativas e a contagem de visitas veriam um IP só para todo mundo.
+app.set('trust proxy', Number(process.env.TRUST_PROXY ?? 1));
+
+// Cabeçalhos de segurança: sem adivinhar tipo de arquivo, sem abrir dentro de outro site,
+// sem mandar a URL completa para fora, microfone só para esta origem, HTTPS sempre.
+app.use((req, res, next) => {
+  res.set('X-Content-Type-Options', 'nosniff');
+  res.set('X-Frame-Options', 'DENY');
+  res.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.set('Permissions-Policy', 'microphone=(self), camera=(), geolocation=(), payment=()');
+  if (isHttps || (SITE_URL && SITE_URL.startsWith('https://'))) res.set('Strict-Transport-Security', 'max-age=15552000; includeSubDomains');
+  if (req.path.startsWith('/api/')) res.set('Cache-Control', 'no-store');
+  next();
+});
+
 // Teclados de celular costumam colar um ponto no fim do link (".../." ou ".../api/stats."):
 // tira o ponto e segue para o endereço certo.
 app.use((req, res, next) => {
@@ -161,6 +193,18 @@ function tokenFrom(req) {
 }
 
 const claimsByIp = new Map();
+// limite simples por IP e por rota (janela de 1 minuto)
+const hits = new Map();
+function tooMany(req, route, max) {
+  const now = Date.now();
+  const k = `${route}|${req.ip}`;
+  const list = (hits.get(k) || []).filter((t) => now - t < 60 * 1000);
+  list.push(now);
+  hits.set(k, list);
+  if (hits.size > 5000) for (const [key, l] of hits) if (now - l[l.length - 1] > 60 * 1000) hits.delete(key);
+  return list.length > max;
+}
+
 function tooManyClaims(ip) {
   const now = Date.now();
   const list = (claimsByIp.get(ip) || []).filter((t) => now - t < 15 * 60 * 1000);
@@ -350,6 +394,7 @@ app.post('/api/profile/name', (req, res) => {
 // confere se existe alguém com esse nickname (para denunciar quem já saiu da chamada)
 app.get('/api/exists/:name', (req, res) => {
   if (!auth.ownerKey(tokenFrom(req))) return res.status(401).json({ error: 'not_logged_in' });
+  if (tooMany(req, 'exists', 30)) return res.status(429).json({ error: 'too_many_attempts' });
   const key = String(req.params.name || '').trim().replace(/\s+/g, ' ').toLowerCase();
   const exists = Boolean(key) && auth.exists(key);
   res.json({ exists, name: exists ? auth.nameOf(key) : null });
@@ -365,6 +410,7 @@ app.get('/api/my-reports', (req, res) => {
 app.post('/api/report', async (req, res) => {
   const by = auth.ownerKey(tokenFrom(req));
   if (!by) return res.status(401).json({ error: 'not_logged_in' });
+  if (tooMany(req, 'report', 10)) return res.status(429).json({ error: 'too_many_attempts' });
   if (denyIfBanned(by, res)) return;
   const { target, reason, note, image, audio } = req.body || {};
   const key = String(target || '').trim().toLowerCase();
@@ -403,7 +449,7 @@ app.post('/api/report', async (req, res) => {
 
 // ---- administração (ADMIN_KEY) ----
 function isAdmin(req) {
-  const k = req.headers['x-admin-key'] || req.query.key;
+  const k = req.headers['x-admin-key'];
   return Boolean(ADMIN_KEY) && typeof k === 'string' && k.length === ADMIN_KEY.length && crypto.timingSafeEqual(Buffer.from(k), Buffer.from(ADMIN_KEY));
 }
 app.get('/api/admin/reports', (req, res) => {
@@ -574,6 +620,16 @@ io.on('connection', (socket) => {
 
   const me = () => socket.data.key || null;
   const myName = () => (socket.data.key ? auth.nameOf(socket.data.key) : null);
+  // no máximo N eventos desse tipo por 10 s nesta conexão (contra spam)
+  const buckets = new Map();
+  const flood = (kind, max, ack) => {
+    const now = Date.now();
+    const list = (buckets.get(kind) || []).filter((t) => now - t < 10 * 1000);
+    list.push(now); buckets.set(kind, list);
+    if (list.length <= max) return false;
+    if (typeof ack === 'function') ack({ error: 'too_many_attempts' });
+    return true;
+  };
   const frozen = (ack) => { // conta banida: nada passa
     const k = socket.data.key;
     if (!k || !auth.isBanned(k)) return false;
@@ -620,7 +676,7 @@ io.on('connection', (socket) => {
   socket.on('friend-request', ({ to } = {}, ack) => {
     const k = me(); const target = keyOf(to);
     if (!k) return ack && ack({ error: 'not_logged_in' });
-    if (frozen(ack)) return;
+    if (frozen(ack) || flood('friend-request', 10, ack)) return;
     if (!auth.exists(target)) return ack && ack({ error: 'unknown_user' });
     // só quem está na mesma chamada (ou já pediu sua amizade) pode ser adicionado
     const room = mm.roomOf(socket.id);
@@ -657,7 +713,7 @@ io.on('connection', (socket) => {
   // mensagem direta: para amigos e também para qualquer nickname que exista
   socket.on('dm', ({ to, text } = {}, ack) => {
     const k = me(); if (!k) return ack && ack({ error: 'not_logged_in' });
-    if (frozen(ack)) return;
+    if (frozen(ack) || flood('dm', 20, ack)) return;
     const target = keyOf(to);
     if (!auth.exists(target)) return ack && ack({ error: 'unknown_user' });
     const fresh = !social.areFriends(k, target) && social.thread(k, target).length === 0;
@@ -673,7 +729,7 @@ io.on('connection', (socket) => {
   socket.on('invite', ({ to } = {}, ack) => {
     const k = me(); const target = keyOf(to);
     if (!k) return ack && ack({ error: 'not_logged_in' });
-    if (frozen(ack)) return;
+    if (frozen(ack) || flood('invite', 10, ack)) return;
     if (!social.areFriends(k, target)) return ack && ack({ error: 'not_friends' });
     if (!isOnline(target)) return ack && ack({ error: 'offline' });
     let room = mm.roomOf(socket.id);
@@ -747,7 +803,7 @@ io.on('connection', (socket) => {
 
   socket.on('chat', (text) => {
     const room = mm.roomOf(socket.id);
-    if (!room || frozen()) return;
+    if (!room || frozen() || flood('chat', 20)) return;
     const msg = String(text || '').trim().slice(0, 300);
     if (!msg) return;
     const m = room.members.get(socket.id);
