@@ -351,6 +351,21 @@
       ],
       "crossplay": true,
       "cover": "covers/among-us.jpg"
+    },
+    {
+      "id": "palworld",
+      "name": "Palworld",
+      "short": "Palworld",
+      "emoji": "🐾",
+      "color": "#2f8fd8",
+      "maxPlayers": 3,
+      "platforms": [
+        "pc",
+        "playstation",
+        "xbox"
+      ],
+      "crossplay": true,
+      "cover": "covers/palworld.jpg"
     }
   ]
 }
