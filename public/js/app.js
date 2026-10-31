@@ -19,7 +19,7 @@
     pendingName: '',
     requests: [],
     social: { me: null, friends: [], requests: [], dms: {} },
-    profile: { avatar: null, avatarKind: null, owner: false },
+    profile: { avatar: null, avatarKind: null, title: null },
     dmWith: null,
     unread: {},
     panelTab: 'chat',
@@ -215,11 +215,11 @@
   function avatarInner(name, url) {
     return url ? `<img src="${escapeHtml(url)}" alt="" loading="lazy">` : escapeHtml((name || '?').slice(0, 1).toUpperCase());
   }
-  const ownerBadge = (isOwner) => (isOwner ? `<span class="owner" title="${t('owner.title')}">${icon('i-crown')}${t('owner.badge')}</span>` : '');
+  const ownerBadge = (title) => (title ? `<span class="owner">${icon('i-crown')}${escapeHtml(title)}</span>` : '');
   function renderUser() {
     $('#user-pill').hidden = !state.token;
     $('#panel-btn').hidden = !state.token;
-    $('#user-name').innerHTML = escapeHtml(state.name) + ownerBadge(state.profile.owner);
+    $('#user-name').innerHTML = escapeHtml(state.name) + ownerBadge(state.profile.title);
     $('#user-avatar').innerHTML = avatarInner(state.name, state.profile.avatar);
     renderProfile();
   }
@@ -230,14 +230,14 @@
     // nome "cru" de uma recuperação (tudo minúsculo) não apaga as maiúsculas guardadas aqui
     const raw = p.name && p.name === p.name.toLowerCase() && state.name && state.name.toLowerCase() === p.name && state.name !== p.name;
     if (p.name && state.token && !raw) { state.name = p.name; store.set('gt:name', p.name); }
-    state.profile = { avatar: p.avatar || null, avatarKind: p.avatarKind || (p.avatar ? (p.avatar.startsWith('/avatars/') ? 'upload' : 'cover') : null), owner: Boolean(p.owner) };
+    state.profile = { avatar: p.avatar || null, avatarKind: p.avatarKind || (p.avatar ? (p.avatar.startsWith('/avatars/') ? 'upload' : 'cover') : null), title: p.title || null };
     if (p.removed) { store.set('gt:avatar', null); toast(t('profile.photoRemoved'), 6000); }
     renderUser();
     if (state.room) renderRoom();
   }
   function renderProfile() {
     $('#profile-avatar').innerHTML = avatarInner(state.name, state.profile.avatar);
-    $('#profile-name').innerHTML = escapeHtml(state.name) + ownerBadge(state.profile.owner);
+    $('#profile-name').innerHTML = escapeHtml(state.name) + ownerBadge(state.profile.title);
     const grid = $('#avatar-covers');
     if (state.config && !grid.childElementCount) {
       grid.innerHTML = state.config.games.map((g) => `<button type="button" data-id="${g.id}" title="${escapeHtml(g.name)}"><img src="${coverOf(g)}" alt="${escapeHtml(g.name)}" loading="lazy"></button>`).join('');
@@ -548,7 +548,7 @@
       li.className = 'friend' + (f.online ? ' is-online' : '');
       const unread = state.unread[f.key] || 0;
       li.innerHTML = `<span class="avatar">${avatarInner(f.name, f.avatar)}<span class="st"></span></span>
-        <span class="info"><span class="name">${escapeHtml(f.name)}</span><span class="sub">${ownerBadge(f.owner)}${f.online ? t('friends.online') : t('friends.offline')}</span></span>
+        <span class="info"><span class="name">${escapeHtml(f.name)}</span><span class="sub">${ownerBadge(f.title)}${f.online ? t('friends.online') : t('friends.offline')}</span></span>
         ${unread ? `<span class="unread">${unread}</span>` : ''}
         <span class="acts">
           <button type="button" class="icon-btn" data-act="dm" title="${t('friends.message')}">${icon('i-chat')}</button>
@@ -866,7 +866,7 @@
         <span class="avatar">${avatarInner(m.name, isMe ? state.profile.avatar : m.avatar)}</span>
         <span class="info">
           <span class="name">${escapeHtml(m.name)}${isMe ? ` <span class="muted">(${t('room.you')})</span>` : ''}</span>
-          <span class="plat">${ownerBadge(isMe ? state.profile.owner : m.owner)}${m.platform ? platformHtml(m.platform) : icon('i-globe') + `<span>${room.private ? t('friends.title').toLowerCase() : t('room.anyPlatform')}</span>`}</span>
+          <span class="plat">${ownerBadge(isMe ? state.profile.title : m.title)}${m.platform ? platformHtml(m.platform) : icon('i-globe') + `<span>${room.private ? t('friends.title').toLowerCase() : t('room.anyPlatform')}</span>`}</span>
         </span>
         ${isMe ? '' : `<button type="button" class="report" title="${t('report.btn')}">${icon('i-flag')}</button>`}
         ${canAdd ? `<button type="button" class="add">${icon('i-plus')}${t('friends.add')}</button>` : ''}
@@ -1200,7 +1200,7 @@
           const me = await api('/api/me');
           // depois de uma recuperação o servidor devolve o nome em minúsculas: mantém as maiúsculas guardadas
           setUser(name && name.toLowerCase() === String(me.name).toLowerCase() ? name : me.name, token);
-          setProfile({ name: me.name, avatar: me.avatar, avatarKind: me.avatarKind, owner: me.owner });
+          setProfile({ name: me.name, avatar: me.avatar, avatarKind: me.avatarKind, title: me.title });
           setRequests(me.pending);
           showScreen('screen-home');
           return;
