@@ -91,6 +91,8 @@ quantidade de pessoas e uma plataforma compatível.
 | Brawl Stars | 3 | Celular | Sim |
 | FIFA 27 (EA FC 27) | 3 | PC, PlayStation, Xbox, Switch | Sim |
 | FIFA 26 (EA FC 26) | 3 | PC, PlayStation, Xbox, Switch | Sim |
+| Minecraft Dungeons | 4 | PC, PlayStation, Xbox, Switch | Sim |
+| Minecraft Dungeons II | 4 | PC, PlayStation, Xbox, Switch | Sim |
 
 Cada cartão de jogo mostra quantas pessoas estão em chamada e quantas estão
 procurando naquele jogo agora. No topo da tela inicial aparece o total.
@@ -227,6 +229,8 @@ ilustração. Formato bom: vertical, 600 x 800 pixels ou maior.
 | Brawl Stars | `brawl-stars.jpg` |
 | FIFA 27 | `fifa-27.jpg` |
 | FIFA 26 | `fifa-26.jpg` |
+| Minecraft Dungeons | `minecraft-dungeons.jpg` |
+| Minecraft Dungeons II | `minecraft-dungeons-2.jpg` |
 
 ---
 
@@ -321,6 +325,8 @@ call size and a compatible platform.
 | Brawl Stars | 3 | Mobile | Yes |
 | FIFA 27 (EA FC 27) | 3 | PC, PlayStation, Xbox, Switch | Yes |
 | FIFA 26 (EA FC 26) | 3 | PC, PlayStation, Xbox, Switch | Yes |
+| Minecraft Dungeons | 4 | PC, PlayStation, Xbox, Switch | Yes |
+| Minecraft Dungeons II | 4 | PC, PlayStation, Xbox, Switch | Yes |
 
 Each game card shows how many people are on a call and how many are
 searching in that game right now. The home screen shows the total at the top.
@@ -459,6 +465,8 @@ larger.
 | Brawl Stars | `brawl-stars.jpg` |
 | FIFA 27 | `fifa-27.jpg` |
 | FIFA 26 | `fifa-26.jpg` |
+| Minecraft Dungeons | `minecraft-dungeons.jpg` |
+| Minecraft Dungeons II | `minecraft-dungeons-2.jpg` |
 
 ## License
 
