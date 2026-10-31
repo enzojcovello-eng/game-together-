@@ -281,7 +281,7 @@ app.post('/api/profile/avatar', async (req, res) => {
   if (!m) return res.status(400).json({ error: 'bad_image' });
   const buf = Buffer.from(m[2], 'base64');
   if (buf.length > 4 * 1024 * 1024) return res.status(400).json({ error: 'too_large' });
-  const result = await moderation.processAvatar(buf);
+  const result = await moderation.checkAvatar(buf);
   if (!result.ok) return res.status(result.error === 'moderation_unavailable' ? 503 : 400).json({ error: result.error });
   fs.mkdirSync(AVATAR_DIR, { recursive: true });
   fs.writeFileSync(path.join(AVATAR_DIR, `${key}.jpg`), result.jpeg);
