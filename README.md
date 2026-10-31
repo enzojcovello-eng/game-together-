@@ -123,6 +123,12 @@ conversas. O nickname fica livre para qualquer pessoa usar.
 
 ### A chamada continua em segundo plano
 
+Durante a chamada a tela não apaga sozinha (o site pede isso ao celular),
+porque com a tela apagada alguns celulares cortam o microfone. Se você
+apagar a tela de propósito, o que acontece depende do aparelho: vários
+mantêm a chamada, outros cortam o microfone e ele volta quando a tela
+acende de novo.
+
 Dá para trocar de app ou de aba durante a chamada: o microfone e o som
 continuam. O app mantém a sessão de áudio ativa, mostra a chamada nos
 controles de mídia do sistema (com botões de desligar e mutar onde o
@@ -448,6 +454,12 @@ your nickname, just deny.
 and the conversations. The nickname becomes free for anyone to use.
 
 ### The call keeps going in the background
+
+During a call the screen does not turn off by itself (the site asks the
+phone for that), because with the screen off some phones cut the
+microphone. If you turn the screen off on purpose, what happens depends on
+the device: many keep the call going, others cut the microphone and it
+comes back when the screen turns on again.
 
 You can switch apps or tabs during a call: the microphone and the sound
 keep working. The app keeps the audio session alive, shows the call in the

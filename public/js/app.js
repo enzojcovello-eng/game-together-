@@ -966,6 +966,7 @@
     keepAliveStart();
     try {
       await getMic();
+      keepAlivePlay();
     } catch (err) {
       btn.disabled = false;
       if (err && err.message === 'insecure') return setError('#setup-error', t('setup.insecure'));
@@ -1022,6 +1023,7 @@
     recStart();
     keepAliveStart();
     mediaSessionStart(room);
+    wakeLockOn();
   }
 
   function renderRoom() {
@@ -1076,6 +1078,7 @@
     const audio = document.createElement('audio');
     audio.autoplay = true;
     audio.setAttribute('playsinline', '');
+    audio.addEventListener('pause', () => { if (state.peers.get(member.id) === peer && audio.srcObject) setTimeout(() => audio.play().catch(() => {}), 300); });
     $('#audio-sink').appendChild(audio);
     const peer = { pc, audio, name: member.name, platform: member.platform, connected: false, meter: null, pending: [] };
     state.peers.set(member.id, peer);
@@ -1149,6 +1152,7 @@
     recStop();
     keepAliveStop();
     mediaSessionStop();
+    wakeLockOff();
     state.room = null;
     state.me = null;
     socket.emit('leave');
@@ -1288,17 +1292,36 @@
     return URL.createObjectURL(new Blob([buf], { type: 'audio/wav' }));
   }
   function keepAliveStart() {
-    if (keepAlive) return;
+    if (keepAlive) { keepAlivePlay(); return; }
     try {
-      keepAlive = new Audio(silentWav());
-      keepAlive.loop = true; keepAlive.volume = 0.01; keepAlive.setAttribute('playsinline', '');
-      keepAlive.play().catch(() => {});
+      const el = new Audio(silentWav());
+      el.loop = true; el.volume = 0.01; el.setAttribute('playsinline', '');
+      // o sistema pausa esse áudio ao ligar o microfone ou ao trocar a saída de som: liga de novo
+      el.addEventListener('pause', () => { if (keepAlive === el && (state.room || state.searching)) setTimeout(keepAlivePlay, 300); });
+      keepAlive = el;
+      keepAlivePlay();
     } catch (_) { keepAlive = null; }
   }
+  function keepAlivePlay() { if (keepAlive && keepAlive.paused) keepAlive.play().catch(() => {}); }
   function keepAliveStop() {
     if (!keepAlive) return;
-    try { keepAlive.pause(); keepAlive.src = ''; } catch (_) {}
-    keepAlive = null;
+    const el = keepAlive; keepAlive = null;
+    try { el.pause(); el.src = ''; } catch (_) {}
+  }
+
+  // tela ligada durante a chamada: se ela apaga sozinha, o celular pode cortar o microfone
+  let wakeLock = null;
+  async function wakeLockOn() {
+    if (!('wakeLock' in navigator) || wakeLock || !state.room || document.visibilityState !== 'visible') return;
+    try {
+      wakeLock = await navigator.wakeLock.request('screen');
+      wakeLock.addEventListener('release', () => { wakeLock = null; });
+    } catch (_) { wakeLock = null; }
+  }
+  function wakeLockOff() {
+    if (!wakeLock) return;
+    const w = wakeLock; wakeLock = null;
+    try { w.release().catch(() => {}); } catch (_) {}
   }
   function mediaSessionStart(room) {
     if (!('mediaSession' in navigator)) return;
@@ -1357,7 +1380,8 @@
     if (!state.room) return;
     if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume().catch(() => {});
     for (const p of state.peers.values()) if (p.audio && p.audio.paused && p.audio.srcObject) p.audio.play().catch(() => {});
-    if (keepAlive && keepAlive.paused) keepAlive.play().catch(() => {});
+    keepAlivePlay();
+    wakeLockOn();
     recoverMic();
   }
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') resumeAudio(); });
