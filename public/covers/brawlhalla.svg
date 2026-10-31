@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 800" width="600" height="800">
+<defs><linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0b1b3a"/><stop offset="1" stop-color="#2a7de1"/></linearGradient></defs>
+<rect width="600" height="800" fill="url(#bg)"/>
+<path d="M300,300 L340,420 L300,560 L260,420 Z" fill="#e9eef7"/><rect x="250" y="400" width="100" height="22" rx="6" fill="#ffd166"/><rect x="288" y="422" width="24" height="110" rx="8" fill="#8a5a2b"/><circle cx="300" cy="545" r="16" fill="#ffd166"/><path d="M150,620 Q300,540 450,620" stroke="#ffffff" stroke-width="10" fill="none" opacity="0.6"/>
+<text x="300" y="118" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-weight="900" font-size="54" fill="#ffffff" letter-spacing="2">BRAWL</text>
+<text x="300" y="176" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-weight="900" font-size="54" fill="#ffd166" letter-spacing="2">HALLA</text>
+</svg>

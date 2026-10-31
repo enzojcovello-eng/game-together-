@@ -113,10 +113,12 @@ quantidade de pessoas e uma plataforma compatível.
 | No Man's Sky | 4 | PC, PlayStation, Xbox, Switch | Sim |
 | Subnautica 2 | 4 | PC, PlayStation, Xbox | Sim |
 | Overcooked! 2 | 4 | PC, PlayStation, Xbox, Switch | Sim |
-| Among Us | 5 | PC, PlayStation, Xbox, Switch, Celular | Sim |
+| Among Us | 10 | PC, PlayStation, Xbox, Switch, Celular | Sim |
 | Palworld | 3 | PC, PlayStation, Xbox | Sim |
 | Overwatch 2 | 4 | PC, PlayStation, Xbox, Switch | Sim |
 | Riders Republic | 4 | PC, PlayStation, Xbox | Sim |
+| Brawlhalla | 2 | PC, PlayStation, Xbox, Switch, Celular | Sim |
+| Don't Starve Together | 4 | PC, PlayStation, Xbox, Switch | Não: cada plataforma só encontra a própria |
 
 Cada cartão de jogo mostra quantas pessoas estão em chamada e quantas estão
 procurando naquele jogo agora. No topo da tela inicial aparece o total.
@@ -139,6 +141,14 @@ sem ser você, é só recusar.
 
 **Sair** apaga tudo: a conta em todos os aparelhos, os amigos e as
 conversas. O nickname fica livre para qualquer pessoa usar.
+
+### Chamada minimizada: voltar ao menu sem desligar
+
+Tocar no logo durante a chamada não desliga nada: a chamada vira uma
+barra no pé da tela, com o jogo, quantas pessoas estão nela, o botão de
+mutar, "Voltar" e "Sair". O microfone continua aberto e você ouve todo
+mundo enquanto navega pelo menu, pelos amigos ou pelo perfil. Para voltar
+à tela da chamada, toque na barra. Procurar outra chamada encerra a atual.
 
 ### A chamada continua em segundo plano
 
@@ -401,6 +411,8 @@ ilustração. Formato bom: vertical, 600 x 800 pixels ou maior.
 | Palworld | `palworld.jpg` |
 | Overwatch 2 | `overwatch-2.jpg` |
 | Riders Republic | `riders-republic.jpg` |
+| Brawlhalla | `brawlhalla.jpg` (ainda sem capa enviada: usa um desenho) |
+| Don't Starve Together | `dont-starve-together.jpg` (ainda sem capa enviada: usa um desenho) |
 
 ---
 
@@ -516,10 +528,12 @@ call size and a compatible platform.
 | No Man's Sky | 4 | PC, PlayStation, Xbox, Switch | Yes |
 | Subnautica 2 | 4 | PC, PlayStation, Xbox | Yes |
 | Overcooked! 2 | 4 | PC, PlayStation, Xbox, Switch | Yes |
-| Among Us | 5 | PC, PlayStation, Xbox, Switch, Mobile | Yes |
+| Among Us | 10 | PC, PlayStation, Xbox, Switch, Mobile | Yes |
 | Palworld | 3 | PC, PlayStation, Xbox | Yes |
 | Overwatch 2 | 4 | PC, PlayStation, Xbox, Switch | Yes |
 | Riders Republic | 4 | PC, PlayStation, Xbox | Yes |
+| Brawlhalla | 2 | PC, PlayStation, Xbox, Switch, Mobile | Yes |
+| Don't Starve Together | 4 | PC, PlayStation, Xbox, Switch | No: each platform only finds its own |
 
 Each game card shows how many people are on a call and how many are
 searching in that game right now. The home screen shows the total at the top.
@@ -543,6 +557,15 @@ your nickname, just deny.
 
 **Log out** deletes everything: the account on every device, the friends
 and the conversations. The nickname becomes free for anyone to use.
+
+### Minimized call: back to the menu without hanging up
+
+Tapping the logo during a call hangs up nothing: the call becomes a bar at
+the bottom of the screen, with the game, how many people are in it, the
+mute button, "Back" and "Leave". The microphone stays open and you keep
+hearing everyone while you browse the menu, friends or profile. To return
+to the call screen, tap the bar. Searching for another call ends the
+current one.
 
 ### The call keeps going in the background
 
@@ -807,6 +830,8 @@ larger.
 | Palworld | `palworld.jpg` |
 | Overwatch 2 | `overwatch-2.jpg` |
 | Riders Republic | `riders-republic.jpg` |
+| Brawlhalla | `brawlhalla.jpg` (no cover sent yet: uses a drawing) |
+| Don't Starve Together | `dont-starve-together.jpg` (no cover sent yet: uses a drawing) |
 
 ## License
 

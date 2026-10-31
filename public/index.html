@@ -107,6 +107,16 @@
   </header>
 
   <!-- BOAS-VINDAS: bonequinho com a placa; ao tocar, a placa amassa como papel e cai -->
+  <!-- CHAMADA MINIMIZADA: barra no pé da tela enquanto a pessoa navega pelo menu -->
+  <div class="mini-call" id="mini-call" hidden>
+    <button type="button" class="mini-main" id="mini-open">
+      <img class="mini-cover" id="mini-cover" alt="">
+      <span class="mini-text"><strong id="mini-title"></strong><span class="muted" id="mini-sub"></span></span>
+    </button>
+    <button type="button" class="icon-btn" id="mini-mute" data-i18n-title="room.mute" title="Mutar"><svg class="i"><use id="mini-mic-icon" href="#i-mic"/></svg></button>
+    <button type="button" class="btn-secondary small" id="mini-back" data-i18n="mini.back">Voltar</button>
+    <button type="button" class="icon-btn danger" id="mini-leave" data-i18n-title="room.leave" title="Sair"><svg class="i"><use href="#i-hangup"/></svg></button>
+  </div>
   <!-- servidor dormindo (página guardada pelo PWA): espera e tenta de novo sozinho -->
   <div class="waking" id="waking" hidden>
     <div class="ring"></div>
