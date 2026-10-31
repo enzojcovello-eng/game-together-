@@ -120,6 +120,25 @@ sem ser você, é só recusar.
 **Sair** apaga tudo: a conta em todos os aparelhos, os amigos e as
 conversas. O nickname fica livre para qualquer pessoa usar.
 
+### A chamada continua em segundo plano
+
+Dá para trocar de app ou de aba durante a chamada: o microfone e o som
+continuam. O app mantém a sessão de áudio ativa, mostra a chamada nos
+controles de mídia do sistema (com botões de desligar e mutar onde o
+sistema oferece) e, quando você volta, confere o microfone; se o sistema
+tiver cortado, ele é pedido de novo sozinho e a conversa segue.
+
+Se a conexão com o servidor cair (rede trocando, celular em segundo plano
+por um tempo), a sala segura o seu lugar por 1 minuto. Voltou nesse tempo,
+você reaparece na mesma chamada sem ninguém precisar fazer nada; os outros
+veem você como "reconectando" enquanto isso. Passou de 1 minuto, o lugar é
+liberado e o app avisa que a chamada acabou.
+
+No iPhone depende da versão do iOS: nas mais novas, o Safari e o app
+instalado mantêm a chamada; em versões antigas o sistema corta o microfone
+em segundo plano e ele volta quando você abre o app de novo. No Android a
+chamada continua e aparece uma notificação de microfone em uso.
+
 ### Caiu com alguém com quem não quer falar?
 
 É só sair da chamada. Ninguém é avisado, não tem denúncia nem bloqueio para
@@ -425,6 +444,25 @@ your nickname, just deny.
 
 **Log out** deletes everything: the account on every device, the friends
 and the conversations. The nickname becomes free for anyone to use.
+
+### The call keeps going in the background
+
+You can switch apps or tabs during a call: the microphone and the sound
+keep working. The app keeps the audio session alive, shows the call in the
+system media controls (with hang up and mute buttons where the system
+offers them) and, when you come back, checks the microphone; if the system
+cut it, it is requested again by itself and the conversation goes on.
+
+If the connection to the server drops (network switching, phone in the
+background for a while), the room holds your seat for 1 minute. Come back
+within that time and you reappear on the same call with nobody having to
+do anything; the others see you as "reconnecting" meanwhile. After 1
+minute the seat is freed and the app tells you the call ended.
+
+On iPhone it depends on the iOS version: newer ones keep the call going in
+Safari and in the installed app; older ones cut the microphone in the
+background and it comes back when you open the app again. On Android the
+call continues and a microphone-in-use notification shows.
 
 ### Landed with someone you do not want to talk to?
 
