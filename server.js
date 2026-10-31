@@ -135,7 +135,9 @@ const social = new Social({ dataDir: process.env.DATA_DIR });
 const reports = new Reports({ dataDir: process.env.DATA_DIR });
 const ADMIN_KEY = process.env.ADMIN_KEY || '';
 if (!ADMIN_KEY) console.warn('Aviso: defina ADMIN_KEY para abrir a página de administração (/admin).');
-moderation.warmUp();
+// O detector de fotos é pesado (uns 250 MB de memória). Por padrão carrega só
+// quando a primeira foto for enviada; MODERATION_WARMUP=1 carrega ao ligar.
+if (process.env.MODERATION_WARMUP === '1') moderation.warmUp();
 if (!process.env.SESSION_SECRET) console.warn('Aviso: defina SESSION_SECRET para as contas sobreviverem a reinícios do servidor.');
 let online = 0;
 
