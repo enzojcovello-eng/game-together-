@@ -352,15 +352,12 @@
       list.appendChild(li);
     }
   }
-  let approving = false;
   async function approveRequest(id) {
-    approving = true;
     try {
       await api(`/api/requests/${id}/approve`, { method: 'POST' });
-      // a conta foi para o outro aparelho: este sai
-      if (state.token) logout({ reason: 'req.approved' });
+      setRequests(state.requests.filter((r) => r.id !== id));
+      toast(t('req.approved'), 5000);
     } catch (err) { toast(errText(err)); refreshRequests(); }
-    approving = false;
   }
   async function denyRequest(id) {
     try {
@@ -969,7 +966,7 @@
     { label: t('invite.decline'), onClick: () => socket.emit('invite-decline', { id: inv.id }) },
   ]));
   socket.on('invite-declined', ({ name }) => toast(t('invite.declined', { name })));
-  socket.on('account-transferred', () => { if (state.token) logout({ reason: approving ? 'req.approved' : 'auth.transferred' }); });
+  socket.on('account-deleted', () => { if (state.token) logout({ reason: 'auth.deleted' }); });
   socket.on('claim-update', ({ requestId, status }) => {
     if (requestId !== state.pendingId) return;
     if (status === 'approved') checkPending();

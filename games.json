@@ -210,6 +210,51 @@
       ],
       "crossplay": true,
       "cover": "covers/helldivers-2.jpg"
+    },
+    {
+      "id": "brawl-stars",
+      "name": "Brawl Stars",
+      "short": "Brawl Stars",
+      "emoji": "⭐",
+      "color": "#ffc400",
+      "maxPlayers": 3,
+      "platforms": [
+        "mobile"
+      ],
+      "crossplay": true,
+      "cover": "covers/brawl-stars.jpg"
+    },
+    {
+      "id": "fifa-27",
+      "name": "FIFA 27 (EA FC 27)",
+      "short": "FIFA 27",
+      "emoji": "⚽",
+      "color": "#00c853",
+      "maxPlayers": 3,
+      "platforms": [
+        "pc",
+        "playstation",
+        "xbox",
+        "switch"
+      ],
+      "crossplay": true,
+      "cover": "covers/fifa-27.jpg"
+    },
+    {
+      "id": "fifa-26",
+      "name": "FIFA 26 (EA FC 26)",
+      "short": "FIFA 26",
+      "emoji": "⚽",
+      "color": "#1565c0",
+      "maxPlayers": 3,
+      "platforms": [
+        "pc",
+        "playstation",
+        "xbox",
+        "switch"
+      ],
+      "crossplay": true,
+      "cover": "covers/fifa-26.jpg"
     }
   ]
 }
