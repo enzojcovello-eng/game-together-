@@ -20,6 +20,7 @@
     requests: [],
     social: { me: null, friends: [], requests: [], dms: {} },
     profile: { avatar: null, avatarKind: null, title: null },
+    ban: null, // { until, reason } enquanto a conta estiver congelada
     dmWith: null,
     unread: {},
     panelTab: 'chat',
@@ -258,12 +259,11 @@
       $('#avatar-picker').hidden = true;
     } catch (err) { setError('#avatar-error', errText(err)); }
   }
-  function readImage(file) {
+  function readImage(file, max = 512) {
     return new Promise((resolve, reject) => {
       const img = new Image();
       const url = URL.createObjectURL(file);
       img.onload = () => {
-        const max = 512;
         const scale = Math.min(1, max / Math.max(img.width, img.height));
         const c = document.createElement('canvas');
         c.width = Math.round(img.width * scale); c.height = Math.round(img.height * scale);
@@ -321,11 +321,75 @@
       if (state.room) renderRoom();
     } catch (err) { setError('#rename-error', errText(err)); }
   }
+  let reportTarget = null;
+  let reportImage = null;
   function reportUser(name) {
-    toast(t('report.confirm', { name }), 15000, [
-      { label: t('report.yes'), primary: true, onClick: () => api('/api/report', { method: 'POST', body: { target: name, reason: 'other' } }).then(() => toast(t('report.sent'), 4000)).catch((err) => toast(errText(err))) },
-      { label: t('friends.cancel'), onClick: () => {} },
-    ]);
+    reportTarget = name;
+    reportImage = null;
+    $('#report-who').textContent = name;
+    $('#report-note').value = '';
+    $('#report-file-name').textContent = '';
+    setError('#report-error', '');
+    $('#report-backdrop').hidden = false;
+    $('#report-note').focus();
+  }
+  function closeReport() { $('#report-backdrop').hidden = true; reportTarget = null; reportImage = null; }
+  async function sendReport(e) {
+    e.preventDefault();
+    const note = $('#report-note').value.trim();
+    if (note.length < 10) return setError('#report-error', t('report.short'));
+    const btn = $('#report-send');
+    btn.disabled = true;
+    try {
+      await api('/api/report', { method: 'POST', body: { target: reportTarget, reason: 'other', note, image: reportImage || undefined } });
+      closeReport();
+      toast(t('report.sent'), 4000);
+    } catch (err) { setError('#report-error', errText(err)); }
+    btn.disabled = false;
+  }
+  async function pickReportImage(file) {
+    if (!file) return;
+    try {
+      reportImage = await readImage(file, 1280);
+      $('#report-file-name').textContent = file.name;
+    } catch (_) { setError('#report-error', t('err.bad_image')); }
+  }
+
+  // ---------- conta congelada (banimento) ----------
+  let banTimer = null;
+  function fmtLeft(ms) {
+    const s = Math.max(0, Math.round(ms / 1000));
+    const d = Math.floor(s / 86400), h = Math.floor((s % 86400) / 3600), m = Math.floor((s % 3600) / 60), sec = s % 60;
+    if (d) return `${d}d ${h}h ${m}min`;
+    if (h) return `${h}h ${m}min ${sec}s`;
+    return `${m}min ${sec}s`;
+  }
+  function setBan(ban) {
+    state.ban = ban || null;
+    clearInterval(banTimer);
+    const ov = $('#ban-overlay');
+    if (!state.ban) { ov.hidden = true; document.body.classList.remove('banned'); return; }
+    if (state.room) leaveRoom({ silent: true });
+    if (state.searching) { state.searching = false; socket.emit('cancel'); }
+    closePanel(); closeReport();
+    $('#ban-reason').textContent = state.ban.reason ? t('ban.reason', { reason: state.ban.reason }) : t('ban.noReason');
+    ov.hidden = false;
+    document.body.classList.add('banned');
+    const tick = () => {
+      if (!state.ban.until) { $('#ban-left').textContent = t('ban.forever'); return; }
+      const left = state.ban.until - Date.now();
+      $('#ban-left').textContent = fmtLeft(left);
+      if (left <= 0) { clearInterval(banTimer); checkBanOver(); }
+    };
+    tick();
+    banTimer = setInterval(tick, 1000);
+  }
+  async function checkBanOver() {
+    try {
+      const me = await api('/api/me');
+      if (!me.ban) { setBan(null); toast(t('ban.over'), 5000); showScreen('screen-home'); }
+      else setBan(me.ban);
+    } catch (_) { setTimeout(checkBanOver, 5000); }
   }
 
   async function onAuthSubmit(e) {
@@ -349,8 +413,11 @@
       btn.disabled = false;
     }
   }
+  // o api() devolve só o código; para 'banned' o servidor manda também o prazo
+  
 
   function confirmLogout() {
+    if (state.ban) return;
     toast(t('logout.confirm'), 20000, [
       { label: t('logout.yes'), primary: true, onClick: () => logout() },
       { label: t('logout.no'), onClick: () => {} },
@@ -789,6 +856,7 @@
   async function onMatchmake(e) {
     e.preventDefault();
     setError('#setup-error', '');
+    if (state.ban) return setBan(state.ban);
     state.mode = $('input[name="mode"]:checked').value;
     if (!state.token) return logout({ reason: 'auth.expired' });
     const needsPlatform = !$('#platform-field').hidden;
@@ -816,6 +884,7 @@
     }, (res) => {
       btn.disabled = false;
       if (res && res.error === 'not_logged_in') return logout({ reason: 'auth.expired' });
+      if (res && res.error === 'banned') return setBan(res.ban || { until: null, reason: '' });
       if (!res || res.error) return setError('#setup-error', t(res && res.error ? `err.${res.error}` : 'err.generic'));
       if (res.status === 'waiting') {
         state.searching = true;
@@ -1102,6 +1171,8 @@
   socket.on('room-update', ({ room }) => { if (state.room && room && room.id === state.room.id) { state.room = room; renderRoom(); } });
   socket.on('profile', (p) => { setProfile(p); maybeReupload(); });
   socket.on('token', ({ token }) => { if (token && state.token) { state.token = token; store.set('gt:token', token); } });
+  socket.on('banned', (ban) => setBan(ban || { until: null, reason: '' }));
+  socket.on('unbanned', () => { setBan(null); toast(t('ban.over'), 5000); showScreen('screen-home'); });
 
   // conta
   socket.on('login-request', onLoginRequest);
@@ -1148,6 +1219,9 @@
   $('#rename-cancel').addEventListener('click', () => { $('#rename-form').hidden = true; });
   $('#rename-form').addEventListener('submit', (e) => { e.preventDefault(); renameAccount($('#rename-input').value.trim()); });
   $('#avatar-none').addEventListener('click', () => chooseCover(null));
+  $('#report-form').addEventListener('submit', sendReport);
+  $('#report-cancel').addEventListener('click', closeReport);
+  $('#report-file').addEventListener('change', (e) => { pickReportImage(e.target.files[0]); e.target.value = ''; });
   $('#avatar-file').addEventListener('change', (e) => { uploadAvatar(e.target.files[0]); e.target.value = ''; });
   $('#dm-call').addEventListener('click', () => { if (state.dmWith) callFriend(state.dmWith); });
   $('#dm-form').addEventListener('submit', (e) => {
@@ -1219,6 +1293,7 @@
           setProfile({ name: me.name, avatar: me.avatar, avatarKind: me.avatarKind, title: me.title });
           setRequests(me.pending);
           showScreen('screen-home');
+          if (me.ban) setBan(me.ban);
           return;
         } catch (err) {
           if (err.message === 'not_logged_in') {

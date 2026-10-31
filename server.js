@@ -18,6 +18,7 @@ const pkg = require('./package.json');
 const PORT = process.env.PORT || 3000;
 const DATA_DIR = process.env.DATA_DIR || path.join(__dirname, 'data');
 const AVATAR_DIR = path.join(DATA_DIR, 'avatars');
+const EVIDENCE_DIR = path.join(DATA_DIR, 'evidence');
 
 // Versão do app: muda a cada publicação. O cliente compara com a que carregou
 // e avisa para atualizar. BUILD vem do Render (commit) ou da hora de início.
@@ -122,6 +123,7 @@ app.get(['/', '/index.html'], (req, _res, next) => {
 app.use('/avatars', express.static(AVATAR_DIR, { maxAge: '7d', immutable: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/api/profile/avatar', express.json({ limit: '6mb' }));
+app.use('/api/report', express.json({ limit: '6mb' }));
 app.use(express.json({ limit: '200kb' }));
 app.get('/api/config', (_req, res) => res.json(resolveConfig()));
 app.get('/api/version', (_req, res) => res.json(VERSION));
@@ -161,6 +163,8 @@ function tooManyClaims(ip) {
 
 app.post('/api/claim', (req, res) => {
   if (tooManyClaims(req.ip)) return res.status(429).json({ error: 'too_many_attempts' });
+  const wanted = String((req.body || {}).name || '').trim().replace(/\s+/g, ' ').toLowerCase();
+  if (auth.exists(wanted) && auth.isBanned(wanted)) return res.status(403).json({ error: 'banned', ban: banInfo(wanted) });
   const r = auth.claim((req.body || {}).name);
   if (r.error) return res.status(400).json({ error: r.error });
   if (r.status === 'pending') {
@@ -185,7 +189,7 @@ app.get('/api/me', (req, res) => {
   if (!user) return res.status(401).json({ error: 'not_logged_in' });
   auth.touch(token);
   const key = auth.ownerKey(token);
-  res.json({ name: user.name, recovered: user.recovered, devices: auth.devicesOf(token), pending: auth.pendingFor(token) || [], avatar: avatarUrl(key), avatarKind: (auth.avatarOf(key) || {}).type || null, title: auth.titleOf(key) });
+  res.json({ name: user.name, recovered: user.recovered, devices: auth.devicesOf(token), pending: auth.pendingFor(token) || [], avatar: avatarUrl(key), avatarKind: (auth.avatarOf(key) || {}).type || null, title: auth.titleOf(key), ban: banInfo(key) });
 });
 
 app.get('/api/requests', (req, res) => {
@@ -197,6 +201,7 @@ app.get('/api/requests', (req, res) => {
 app.post('/api/requests/:id/approve', (req, res) => {
   const token = tokenFrom(req);
   const key = auth.ownerKey(token);
+  if (key && denyIfBanned(key, res)) return;
   const r = auth.approve(token, req.params.id);
   if (r.error) return res.status(r.error === 'not_logged_in' ? 401 : 404).json({ error: r.error });
   io.to(claimRoom(req.params.id)).emit('claim-update', { requestId: req.params.id, status: 'approved' });
@@ -217,6 +222,7 @@ app.post('/api/requests/:id/deny', (req, res) => {
 app.post('/api/logout', (req, res) => {
   const token = tokenFrom(req);
   const key = auth.ownerKey(token);
+  if (key && denyIfBanned(key, res)) return;
   if (key) {
     const affected = social.erase(key);
     auth.logout(token);
@@ -238,6 +244,17 @@ function avatarUrl(key) {
 function profileOf(key) {
   return { key, name: auth.nameOf(key) || key, avatar: avatarUrl(key), title: auth.titleOf(key) };
 }
+function banInfo(key) {
+  const b = auth.banOf(key);
+  return b ? { until: b.until, reason: b.reason, at: b.at } : null;
+}
+/** Conta congelada: nada de chamada, chat, mensagens, perfil ou sair. */
+function denyIfBanned(key, res) {
+  const b = banInfo(key);
+  if (!b) return false;
+  res.status(403).json({ error: 'banned', ban: b });
+  return true;
+}
 function removeUploadedAvatar(key) {
   try { fs.unlinkSync(path.join(AVATAR_DIR, `${key}.jpg`)); } catch (_) { /* já não existia */ }
   auth.setAvatarByKey(key, null);
@@ -258,6 +275,7 @@ app.post('/api/profile/avatar/cover', (req, res) => {
   const token = tokenFrom(req);
   const key = auth.ownerKey(token);
   if (!key) return res.status(401).json({ error: 'not_logged_in' });
+  if (denyIfBanned(key, res)) return;
   const id = (req.body || {}).id;
   if (id === null || id === '') { removeUploadedAvatar(key); pushProfile(key); return res.json(profileOf(key)); }
   if (!config.games.some((g) => g.id === id)) return res.status(400).json({ error: 'unknown_game' });
@@ -273,6 +291,7 @@ app.post('/api/profile/avatar', async (req, res) => {
   const token = tokenFrom(req);
   const key = auth.ownerKey(token);
   if (!key) return res.status(401).json({ error: 'not_logged_in' });
+  if (denyIfBanned(key, res)) return;
   const last = uploadsByKey.get(key) || 0;
   if (Date.now() - last < 15 * 1000) return res.status(429).json({ error: 'too_many_attempts' });
   uploadsByKey.set(key, Date.now());
@@ -293,6 +312,8 @@ app.post('/api/profile/avatar', async (req, res) => {
 // trocar nickname mantendo amigos, conversas e foto
 app.post('/api/profile/name', (req, res) => {
   const token = tokenFrom(req);
+  const who = auth.ownerKey(token);
+  if (who && denyIfBanned(who, res)) return;
   const r = auth.rename(token, (req.body || {}).name);
   if (r.error) return res.status(r.error === 'not_logged_in' ? 401 : 400).json({ error: r.error });
   if (!r.same) {
@@ -317,14 +338,30 @@ app.post('/api/profile/name', (req, res) => {
   res.json({ ...profileOf(r.newKey), name: r.name, token: auth.refreshToken(token) || undefined, titleCert: auth.titleCert(r.newKey) });
 });
 
-// denúncia de foto ou nome
-app.post('/api/report', (req, res) => {
+// denúncia com relato obrigatório e print opcional (guardado só para a administração)
+app.post('/api/report', async (req, res) => {
   const by = auth.ownerKey(tokenFrom(req));
   if (!by) return res.status(401).json({ error: 'not_logged_in' });
-  const { target, reason, note } = req.body || {};
+  if (denyIfBanned(by, res)) return;
+  const { target, reason, note, image } = req.body || {};
   const key = String(target || '').trim().toLowerCase();
   if (!auth.exists(key)) return res.status(404).json({ error: 'unknown_user' });
-  const r = reports.report(by, key, reason, note);
+  let evidence = null;
+  if (image) {
+    const m = /^data:image\/(jpeg|jpg|png);base64,(.+)$/i.exec(String(image));
+    if (!m) return res.status(400).json({ error: 'bad_image' });
+    const buf = Buffer.from(m[2], 'base64');
+    if (buf.length > 4 * 1024 * 1024) return res.status(400).json({ error: 'too_large' });
+    try {
+      const Jimp = require('jimp');
+      const img = await Jimp.read(buf);
+      if (img.bitmap.width > 1280 || img.bitmap.height > 1280) img.scaleToFit(1280, 1280);
+      evidence = `${crypto.randomBytes(8).toString('hex')}.jpg`;
+      fs.mkdirSync(EVIDENCE_DIR, { recursive: true });
+      fs.writeFileSync(path.join(EVIDENCE_DIR, evidence), await img.quality(80).getBufferAsync(Jimp.MIME_JPEG));
+    } catch (_) { return res.status(400).json({ error: 'bad_image' }); }
+  }
+  const r = reports.report(by, key, reason, note, evidence);
   if (r.error) return res.status(400).json(r);
   if (r.autoHide && (auth.avatarOf(key) || {}).type === 'upload') { removeUploadedAvatar(key); pushProfile(key, { removed: true }); }
   res.json({ ok: true });
@@ -337,9 +374,28 @@ function isAdmin(req) {
 }
 app.get('/api/admin/reports', (req, res) => {
   if (!isAdmin(req)) return res.status(401).json({ error: 'admin_key' });
-  const list = reports.open().map((r) => ({ ...r, byName: auth.nameOf(r.by) || r.by, target: r.target, targetName: auth.nameOf(r.target) || r.target, targetAvatar: avatarUrl(r.target), targetExists: auth.exists(r.target) }));
-  res.json({ reports: list, stats: { accounts: auth.users.size, banned: auth.banned.size } });
+  const list = reports.open().map((r) => ({
+    ...r, byName: auth.nameOf(r.by) || r.by, targetName: auth.nameOf(r.target) || r.target, targetAvatar: avatarUrl(r.target),
+    targetTitle: auth.titleOf(r.target), targetExists: auth.exists(r.target), targetBan: banInfo(r.target),
+    evidenceUrl: r.evidence ? `/api/admin/evidence/${r.evidence}` : null,
+  }));
+  res.json({ reports: list, bans: auth.allBans(), stats: { accounts: auth.users.size, banned: auth.allBans().length } });
 });
+app.get('/api/admin/evidence/:file', (req, res) => {
+  if (!isAdmin(req)) return res.status(401).json({ error: 'admin_key' });
+  const file = String(req.params.file || '');
+  if (!/^[a-f0-9]{16}\.jpg$/.test(file)) return res.status(404).end();
+  res.sendFile(path.join(EVIDENCE_DIR, file), (err) => { if (err) res.status(404).end(); });
+});
+/** Congela a conta: avisa todos os aparelhos e tira a pessoa da chamada. */
+function applyBan(key) {
+  const b = banInfo(key);
+  for (const sid of io.sockets.adapter.rooms.get(acctRoom(key)) || []) {
+    const sock = io.sockets.sockets.get(sid);
+    if (sock) handleLeave(sock);
+  }
+  io.to(acctRoom(key)).emit('banned', b);
+}
 // títulos ao lado do nickname ("Dono", "Mod"...), dados pela administração
 app.get('/api/admin/titles', (req, res) => {
   if (!isAdmin(req)) return res.status(401).json({ error: 'admin_key' });
@@ -360,12 +416,17 @@ app.post('/api/admin/action', (req, res) => {
   const key = String(target || '').toLowerCase();
   if (action === 'remove_photo') { removeUploadedAvatar(key); pushProfile(key, { removed: true }); reports.resolve(key, 'photo_removed'); }
   else if (action === 'ban') {
-    const affected = social.erase(key);
-    auth.ban(key);
-    io.to(acctRoom(key)).emit('account-deleted');
-    io.in(acctRoom(key)).socketsLeave(acctRoom(key));
-    for (const f of affected) pushSocial(f);
+    const hours = req.body.hours === null || req.body.hours === 'forever' ? null : Number(req.body.hours);
+    if (hours !== null && !(hours > 0 && hours <= 24 * 3650)) return res.status(400).json({ error: 'bad_hours' });
+    const r = auth.banFor(key, hours, req.body.reason);
+    if (r.error) return res.status(404).json(r);
+    if (req.body.removePhoto && (auth.avatarOf(key) || {}).type === 'upload') { removeUploadedAvatar(key); pushProfile(key, { removed: true }); }
+    applyBan(key);
     reports.resolve(key, 'banned');
+    return res.json({ ok: true, ban: banInfo(key) });
+  } else if (action === 'unban') {
+    auth.unban(key);
+    io.to(acctRoom(key)).emit('unbanned');
   } else if (action === 'dismiss') reports.resolve(key, 'dismissed');
   else return res.status(400).json({ error: 'unknown_action' });
   res.json({ ok: true });
@@ -441,6 +502,12 @@ io.on('connection', (socket) => {
 
   const me = () => socket.data.key || null;
   const myName = () => (socket.data.key ? auth.nameOf(socket.data.key) : null);
+  const frozen = (ack) => { // conta banida: nada passa
+    const k = socket.data.key;
+    if (!k || !auth.isBanned(k)) return false;
+    if (typeof ack === 'function') ack({ error: 'banned', ban: banInfo(k) });
+    return true;
+  };
 
   // o aparelho se identifica; se o servidor perdeu os dados, devolve a cópia
   socket.on('hello', ({ token, name, snapshot, titleCert } = {}) => {
@@ -464,6 +531,8 @@ io.on('connection', (socket) => {
     socket.join(acctRoom(key));
     socket.emit('login-requests', { requests: auth.pendingFor(token) || [] });
     socket.emit('profile', { ...profileOf(key), titleCert: auth.titleCert(key) });
+    const ban = banInfo(key);
+    if (ban) socket.emit('banned', ban);
     pushSocial(key);
     pushPresence(key);
     for (const f of relinked) pushSocial(f);
@@ -479,6 +548,7 @@ io.on('connection', (socket) => {
   socket.on('friend-request', ({ to } = {}, ack) => {
     const k = me(); const target = keyOf(to);
     if (!k) return ack && ack({ error: 'not_logged_in' });
+    if (frozen(ack)) return;
     if (!auth.exists(target)) return ack && ack({ error: 'unknown_user' });
     // só quem está na mesma chamada (ou já pediu sua amizade) pode ser adicionado
     const room = mm.roomOf(socket.id);
@@ -494,6 +564,7 @@ io.on('connection', (socket) => {
 
   socket.on('friend-accept', ({ from } = {}, ack) => {
     const k = me(); if (!k) return;
+    if (frozen(ack)) return;
     const r = social.accept(k, keyOf(from));
     if (r.ok) { pushSocial(k); pushSocial(keyOf(from)); io.to(acctRoom(keyOf(from))).emit('friend-accepted', { name: myName() }); }
     ack && ack(r);
@@ -513,6 +584,7 @@ io.on('connection', (socket) => {
 
   socket.on('dm', ({ to, text } = {}, ack) => {
     const k = me(); if (!k) return ack && ack({ error: 'not_logged_in' });
+    if (frozen(ack)) return;
     const target = keyOf(to);
     const r = social.send(k, target, text);
     if (r.error) return ack && ack(r);
@@ -525,6 +597,7 @@ io.on('connection', (socket) => {
   socket.on('invite', ({ to } = {}, ack) => {
     const k = me(); const target = keyOf(to);
     if (!k) return ack && ack({ error: 'not_logged_in' });
+    if (frozen(ack)) return;
     if (!social.areFriends(k, target)) return ack && ack({ error: 'not_friends' });
     if (!isOnline(target)) return ack && ack({ error: 'offline' });
     let room = mm.roomOf(socket.id);
@@ -543,6 +616,7 @@ io.on('connection', (socket) => {
 
   socket.on('invite-accept', ({ id } = {}, ack) => {
     const k = me(); const inv = invites.get(id);
+    if (frozen(ack)) return;
     if (!k || !inv || inv.to !== k) return ack && ack({ error: 'unknown_invite' });
     invites.delete(id);
     const r = mm.joinById(inv.roomId, socket.id, myName());
@@ -567,6 +641,8 @@ io.on('connection', (socket) => {
       return;
     }
     auth.touch(req.token);
+    const k = auth.ownerKey(req.token);
+    if (auth.isBanned(k)) { if (typeof ack === 'function') ack({ error: 'banned', ban: banInfo(k) }); return; }
     const result = mm.find(socket.id, { ...req, name: user.name });
     if (result.error) {
       if (typeof ack === 'function') ack({ error: result.error });
@@ -593,7 +669,7 @@ io.on('connection', (socket) => {
 
   socket.on('chat', (text) => {
     const room = mm.roomOf(socket.id);
-    if (!room) return;
+    if (!room || frozen()) return;
     const msg = String(text || '').trim().slice(0, 300);
     if (!msg) return;
     const m = room.members.get(socket.id);

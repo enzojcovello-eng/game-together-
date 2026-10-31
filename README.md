@@ -162,13 +162,19 @@ automática no servidor antes de aparecer: fotos com nudez ou conteúdo
 sexual são recusadas na hora. Trocar o nickname mantém amigos, conversas e
 foto; o nickname antigo fica livre.
 
-### Denúncias
+### Denúncias e suspensão
 
 Em qualquer cartão de pessoa (na chamada ou na lista de amigos) tem uma
-bandeirinha para denunciar foto ou nickname impróprio. Com três denúncias
-de pessoas diferentes, a foto enviada sai do ar sozinha. Tudo fica
-registrado para quem administra o site decidir (remover a foto, ignorar ou
-banir o nickname).
+bandeirinha para denunciar. Abre um formulário: você conta o que aconteceu
+(obrigatório) e pode anexar um print. A denúncia vai para a administração
+junto com o nickname e a foto de perfil da pessoa. Com três denúncias de
+pessoas diferentes, a foto enviada sai do ar sozinha.
+
+Quem administra julga cada caso e pode suspender a conta por um tempo (de
+1 hora a 30 dias) ou para sempre, com um motivo. Durante a suspensão a tela
+da pessoa fica travada com o motivo e a contagem regressiva: ela não entra
+em chamada, não fala no chat, não manda mensagem e não consegue sair da
+conta. Quando o tempo acaba, o site volta ao normal sozinho.
 
 ### Amigos
 
@@ -220,11 +226,13 @@ nova aqui no GitHub.
 
 ## Administração das denúncias
 
-A página `/admin.html` lista as denúncias abertas, com a foto denunciada,
-quem denunciou e os botões "Remover foto", "Banir nickname" e "Ignorar".
-Ela só abre com a chave definida na variável de ambiente `ADMIN_KEY` do
-servidor (um texto longo e aleatório). Banir apaga a conta e bloqueia o
-nickname para sempre.
+A página `/admin.html` lista as denúncias abertas agrupadas por pessoa:
+foto de perfil, nickname, cada relato com o print anexado (toque para
+ampliar) e quem denunciou. Para cada caso: escolha o tempo (1 hora a 30
+dias ou para sempre), escreva o motivo e toque em "Banir"; ou "Só remover a
+foto"; ou "Ignorar". Embaixo fica a lista de banidos com "desbanir". Ela só
+abre com a chave definida na variável de ambiente `ADMIN_KEY` do servidor
+(um texto longo e aleatório).
 
 Na mesma página dá para dar um **título** a qualquer pessoa: digite o
 nickname e o texto (por exemplo "Dono", "Mod" ou "VIP", até 16 letras).
@@ -444,13 +452,19 @@ through an automatic check on the server before it shows up: photos with
 nudity or sexual content are refused on the spot. Changing the nickname
 keeps friends, conversations and photo; the old nickname becomes free.
 
-### Reports
+### Reports and suspensions
 
 Every person card (on a call or in the friends list) has a small flag to
-report an inappropriate photo or nickname. With three reports from
-different people, the uploaded photo goes offline by itself. Everything is
-logged for whoever runs the site to decide (remove the photo, dismiss or
-ban the nickname).
+report. It opens a form: you tell what happened (required) and can attach
+a screenshot. The report reaches the administration together with the
+person's nickname and profile photo. With three reports from different
+people, the uploaded photo goes offline by itself.
+
+Whoever runs the site judges each case and can suspend the account for a
+while (from 1 hour to 30 days) or forever, with a reason. During the
+suspension the person's screen is frozen with the reason and a countdown:
+no calls, no chat, no messages and no logging out. When the time is up,
+the site goes back to normal by itself.
 
 ### Friends
 
@@ -500,11 +514,13 @@ app is outdated" with a button to download the new version here on GitHub.
 
 ## Managing reports
 
-The `/admin.html` page lists open reports with the reported photo, who
-reported it and the buttons "Remover foto" (remove photo), "Banir nickname"
-(ban) and "Ignorar" (dismiss). It only opens with the key set in the
-server's `ADMIN_KEY` environment variable (a long random text). Banning
-deletes the account and blocks the nickname for good.
+The `/admin.html` page lists open reports grouped by person: profile
+photo, nickname, each report with its attached screenshot (tap to zoom) and
+who reported. For each case: pick the time (1 hour to 30 days or forever),
+write the reason and tap "Banir" (suspend); or "Só remover a foto" (remove
+the photo only); or "Ignorar" (dismiss). Below is the list of suspended
+accounts with "desbanir" (lift). It only opens with the key set in the
+server's `ADMIN_KEY` environment variable (a long random text).
 
 On the same page you can give anyone a **title**: type the nickname and
 the text (for example "Dono", "Mod" or "VIP", up to 16 letters). The badge

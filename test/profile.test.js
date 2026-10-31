@@ -50,11 +50,11 @@ assert.strictEqual(auth.rename(enzo.token, 'ENZO_pro').same, true);
 assert.strictEqual(auth.nameOf('enzo_pro'), 'ENZO_pro');
 
 // denúncias: 3 pessoas diferentes derrubam a foto
-assert.strictEqual(reports.report('ana', 'ana', 'photo').error, 'invalid');
-assert.deepStrictEqual(reports.report('ana', 'enzo_pro', 'photo').distinct, 1);
-assert.deepStrictEqual(reports.report('ana', 'enzo_pro', 'photo').distinct, 1, 'a mesma pessoa não conta duas vezes');
-reports.report('bia', 'enzo_pro', 'name');
-const third = reports.report('caio', 'enzo_pro', 'other', 'foto ofensiva');
+assert.strictEqual(reports.report('ana', 'ana', 'photo', 'relato qualquer aqui').error, 'invalid');
+assert.deepStrictEqual(reports.report('ana', 'enzo_pro', 'photo', 'foto de perfil imprópria').distinct, 1);
+assert.deepStrictEqual(reports.report('ana', 'enzo_pro', 'photo', 'foto de perfil imprópria mesmo').distinct, 1, 'a mesma pessoa não conta duas vezes');
+reports.report('bia', 'enzo_pro', 'name', 'nickname ofensivo demais');
+const third = reports.report('caio', 'enzo_pro', 'other', 'foto ofensiva e xingamentos');
 assert.strictEqual(third.distinct, AUTO_HIDE_AT);
 assert.strictEqual(third.autoHide, true);
 assert.strictEqual(reports.open().length, 3);
@@ -102,3 +102,37 @@ assert.strictEqual(auth.titleOf('enzo_pro'), 'Mod', 'banir não mexe no título'
 
 fs.rmSync(dir, { recursive: true, force: true });
 console.log('perfil: todos os testes passaram');
+
+// ---- banimento com prazo (conta congelada) e denúncia com relato ----
+{
+  const dir2 = fs.mkdtempSync(path.join(os.tmpdir(), 'gt-ban-'));
+  let c2 = 9_000_000;
+  const a2 = new Auth({ dataDir: dir2, now: () => c2, secret: 's' });
+  const r2 = new Reports({ dataDir: dir2, now: () => c2 });
+  c2 += 1000; const u = a2.claim('Bagunceiro');
+  assert.strictEqual(a2.banFor('ninguem', 1, 'x').error, 'unknown_user');
+  const b = a2.banFor('bagunceiro', 2, 'Xingou no chat');
+  assert.strictEqual(b.ok, true);
+  assert.strictEqual(a2.isBanned('bagunceiro'), true);
+  assert.deepStrictEqual(a2.verify(u.token), { name: 'Bagunceiro', recovered: false }, 'a conta continua existindo (congelada)');
+  assert.strictEqual(a2.banOf('bagunceiro').reason, 'Xingou no chat');
+  c2 += 2 * 60 * 60 * 1000 + 1;
+  assert.strictEqual(a2.isBanned('bagunceiro'), false, 'acabou o prazo: libera sozinho');
+  a2.banFor('bagunceiro', null, 'para sempre');
+  c2 += 365 * 24 * 60 * 60 * 1000;
+  assert.strictEqual(a2.isBanned('bagunceiro'), true, 'para sempre não vence');
+  assert.strictEqual(new Auth({ dataDir: dir2, now: () => c2, secret: 's' }).isBanned('bagunceiro'), true, 'persiste');
+  assert.strictEqual(a2.unban('bagunceiro'), true);
+  assert.strictEqual(a2.isBanned('bagunceiro'), false);
+  // denúncia precisa de relato; a mesma pessoa atualiza em vez de duplicar; print fica guardado
+  assert.strictEqual(r2.report('ana', 'bagunceiro', 'other', 'curto').error, 'note_required');
+  const d1 = r2.report('ana', 'bagunceiro', 'name', 'Ficou xingando todo mundo na chamada', 'abc.jpg');
+  assert.ok(d1.ok && d1.id);
+  const d2 = r2.report('ana', 'bagunceiro', 'name', 'Atualizei: xingou e ameaçou', null);
+  assert.strictEqual(d2.id, d1.id, 'mesma denúncia atualizada');
+  assert.strictEqual(r2.byId(d1.id).note, 'Atualizei: xingou e ameaçou');
+  assert.strictEqual(r2.byId(d1.id).evidence, 'abc.jpg', 'print continua');
+  assert.strictEqual(r2.open().length, 1);
+  fs.rmSync(dir2, { recursive: true, force: true });
+}
+console.log('banimento: todos os testes passaram');
