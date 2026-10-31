@@ -601,11 +601,14 @@
       panel.hidden = !state.panelOpen;
       $('#panel-backdrop').hidden = !state.panelOpen;
     }
+    $('#chat-empty').hidden = Boolean(state.room);
+    $('#panel-chat-form').hidden = !state.room;
   }
   function setPanelTab(tab) {
     state.panelTab = tab;
     $$('#panel-tabs .tab').forEach((b) => b.classList.toggle('active', b.dataset.tab === tab));
     $('#tab-reports').hidden = tab !== 'reports';
+    $('#tab-chat').hidden = tab !== 'chat';
     $('#tab-friends').hidden = tab !== 'friends';
     $('#tab-profile').hidden = tab !== 'profile';
     $('#tab-logins').hidden = tab !== 'logins';
@@ -1006,7 +1009,7 @@
     state.searching = false;
     state.room = room;
     state.me = me;
-    if (!rejoin) { $('#chat-log').innerHTML = ''; state.clip = null; $('#clip-btn').classList.remove('rec-on'); }
+    if (!rejoin) { $('#chat-log').innerHTML = ''; $('#panel-chat-log').innerHTML = ''; state.clip = null; $('#clip-btn').classList.remove('rec-on'); }
     rememberPeople(room);
     renderRoom();
     setPanelTab(state.requests.length ? 'logins' : 'reports');
@@ -1363,13 +1366,21 @@
   setInterval(() => { if (state.room && document.visibilityState === 'visible') resumeAudio(); }, 5000);
 
   // ---------- chat da chamada ----------
+  // a mesma conversa aparece na caixa da tela da chamada e na aba Chat do painel
   function addChat({ name, text, sys }) {
-    const log = $('#chat-log');
-    const div = document.createElement('div');
-    div.className = 'msg' + (sys ? ' sys' : '');
-    div.innerHTML = sys ? escapeHtml(text) : `<b>${escapeHtml(name)}:</b> ${escapeHtml(text)}`;
-    log.appendChild(div);
-    log.scrollTop = log.scrollHeight;
+    for (const log of [$('#chat-log'), $('#panel-chat-log')]) {
+      const div = document.createElement('div');
+      div.className = 'msg' + (sys ? ' sys' : '');
+      div.innerHTML = sys ? escapeHtml(text) : `<b>${escapeHtml(name)}:</b> ${escapeHtml(text)}`;
+      log.appendChild(div);
+      log.scrollTop = log.scrollHeight;
+    }
+  }
+  function sendChat(input) {
+    const text = input.value.trim();
+    if (!text || !state.room) return;
+    socket.emit('chat', text);
+    input.value = '';
   }
 
   // ---------- atualização ----------
@@ -1540,14 +1551,8 @@
   $('#mute-btn').addEventListener('click', toggleMute);
   $('#leave-btn').addEventListener('click', () => leaveRoom());
   $('#report-by-name').addEventListener('submit', (e) => { e.preventDefault(); reportByName($('#report-name-input').value); });
-  $('#chat-form').addEventListener('submit', (e) => {
-    e.preventDefault();
-    const input = $('#chat-input');
-    const text = input.value.trim();
-    if (!text) return;
-    socket.emit('chat', text);
-    input.value = '';
-  });
+  $('#chat-form').addEventListener('submit', (e) => { e.preventDefault(); sendChat($('#chat-input')); });
+  $('#panel-chat-form').addEventListener('submit', (e) => { e.preventDefault(); sendChat($('#panel-chat-input')); });
   $('#update-btn').addEventListener('click', reloadApp);
   $('#share-link').addEventListener('click', copySiteLink);
   $('#game-search').addEventListener('input', filterGames);
