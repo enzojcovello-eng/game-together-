@@ -107,14 +107,13 @@
   </header>
 
   <!-- BOAS-VINDAS: bonequinho com a placa; ao tocar, a placa amassa como papel e cai -->
+  <!-- BOAS-VINDAS: a imagem ocupa a tela; ao tocar, amassa até virar uma bolinha de papel e cai -->
   <div class="splash" id="splash" hidden role="dialog" aria-label="Boas-vindas">
-    <div class="splash-glow"></div>
-    <div class="splash-scene" id="splash-scene">
-      <div class="splash-sign" id="splash-sign">
-        <img class="paper" id="splash-photo" src="media/welcome.jpg" alt="Seja bem-vindo!" width="245" height="225" decoding="async">
-      </div>
-      <p class="splash-hint" data-i18n="splash.tap">Toque na tela para entrar</p>
+    <div class="splash-paper" id="splash-paper">
+      <img class="splash-img" id="splash-photo" src="media/welcome.jpg" alt="" width="736" height="1308" decoding="async">
+      <span class="splash-word" id="splash-word" data-i18n="splash.text">Boas-vindas</span>
     </div>
+    <p class="splash-hint" data-i18n="splash.tap">Toque na tela para entrar</p>
   </div>
   <div class="update-banner announce" id="announce-banner" hidden>
     <svg class="i"><use href="#i-crown"/></svg>

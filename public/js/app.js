@@ -1719,7 +1719,7 @@
       leaving = true;
       el.classList.add('leaving');
       playTone('join');
-      setTimeout(() => { el.hidden = true; el.classList.remove('leaving'); document.body.classList.remove('splash-open'); }, 1300);
+      setTimeout(() => { el.hidden = true; el.classList.remove('leaving'); document.body.classList.remove('splash-open'); }, 2100);
     };
     el.addEventListener('pointerdown', dismiss);
     window.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ' || e.key === 'Escape') dismiss(); }, { once: true });
