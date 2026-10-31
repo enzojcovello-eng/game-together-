@@ -341,7 +341,7 @@
       "short": "Among Us",
       "emoji": "🛸",
       "color": "#d9262c",
-      "maxPlayers": 5,
+      "maxPlayers": 10,
       "platforms": [
         "pc",
         "playstation",
@@ -397,6 +397,69 @@
       ],
       "crossplay": true,
       "cover": "covers/riders-republic.jpg"
+    },
+    {
+      "id": "brawlhalla",
+      "name": "Brawlhalla",
+      "short": "Brawlhalla",
+      "emoji": "⚔️",
+      "color": "#2a7de1",
+      "maxPlayers": 2,
+      "platforms": [
+        "pc",
+        "playstation",
+        "xbox",
+        "switch",
+        "mobile"
+      ],
+      "crossplay": true,
+      "cover": "covers/brawlhalla.svg"
+    },
+    {
+      "id": "dont-starve-together",
+      "name": "Don't Starve Together",
+      "short": "Don't Starve",
+      "emoji": "🔥",
+      "color": "#c8a24a",
+      "maxPlayers": 4,
+      "platforms": [
+        "pc",
+        "playstation",
+        "xbox",
+        "switch"
+      ],
+      "crossplay": false,
+      "cover": "covers/dont-starve-together.svg"
+    },
+    {
+      "id": "counter-strike-2",
+      "name": "Counter-Strike 2",
+      "short": "CS2",
+      "emoji": "🔫",
+      "color": "#f28c28",
+      "maxPlayers": 5,
+      "platforms": [
+        "pc"
+      ],
+      "crossplay": true,
+      "cover": "covers/counter-strike-2.jpg"
+    },
+    {
+      "id": "stardew-valley",
+      "name": "Stardew Valley",
+      "short": "Stardew",
+      "emoji": "🌾",
+      "color": "#5aa64a",
+      "maxPlayers": 3,
+      "platforms": [
+        "pc",
+        "playstation",
+        "xbox",
+        "switch",
+        "mobile"
+      ],
+      "crossplay": false,
+      "cover": "covers/stardew-valley.jpg"
     }
   ]
 }

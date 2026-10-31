@@ -46,7 +46,23 @@ permissão do microfone; toque em **Permitir**.
 
 ### PC (Windows, Mac ou Linux)
 
-Abra o link no navegador e pronto. Para ter como app com ícone próprio:
+**Windows, do jeito mais fácil: um .exe.** Baixe e abra:
+
+- Instalador: <https://github.com/enzojcovello-eng/game-together-/releases/latest/download/GameTogether-Setup.exe>
+  (cria atalho na área de trabalho e no menu Iniciar)
+- Versão portátil, sem instalar nada: <https://github.com/enzojcovello-eng/game-together-/releases/latest/download/GameTogether-Portable.exe>
+
+O app é o site numa janela própria, com ícone na barra de tarefas e o
+microfone já liberado; como o conteúdo vem do site, ele se atualiza
+sozinho, sem baixar de novo. Se o servidor estiver dormindo, o app mostra
+"Acordando o servidor" e entra sozinho quando ele responde.
+
+> ⚠️ Na primeira vez o Windows pode mostrar um aviso azul (SmartScreen),
+> porque o app não tem assinatura paga. Clique em **Mais informações** e
+> depois em **Executar assim mesmo**. O código do app está nesta mesma
+> página, na pasta `desktop`.
+
+Ou abra o link no navegador e pronto. Para ter como app com ícone próprio:
 
 - **Chrome ou Edge**: clique no ícone de instalar na barra de endereço
   (um monitor com uma seta) ou vá no menu ⋮ e em **Instalar Game Together**.
@@ -97,10 +113,14 @@ quantidade de pessoas e uma plataforma compatível.
 | No Man's Sky | 4 | PC, PlayStation, Xbox, Switch | Sim |
 | Subnautica 2 | 4 | PC, PlayStation, Xbox | Sim |
 | Overcooked! 2 | 4 | PC, PlayStation, Xbox, Switch | Sim |
-| Among Us | 5 | PC, PlayStation, Xbox, Switch, Celular | Sim |
+| Among Us | 10 | PC, PlayStation, Xbox, Switch, Celular | Sim |
 | Palworld | 3 | PC, PlayStation, Xbox | Sim |
 | Overwatch 2 | 4 | PC, PlayStation, Xbox, Switch | Sim |
 | Riders Republic | 4 | PC, PlayStation, Xbox | Sim |
+| Brawlhalla | 2 | PC, PlayStation, Xbox, Switch, Celular | Sim |
+| Don't Starve Together | 4 | PC, PlayStation, Xbox, Switch | Não: cada plataforma só encontra a própria |
+| Counter-Strike 2 | 5 | PC | Só PC |
+| Stardew Valley | 3 | PC, PlayStation, Xbox, Switch, Celular | Não: cada plataforma só encontra a própria |
 
 Cada cartão de jogo mostra quantas pessoas estão em chamada e quantas estão
 procurando naquele jogo agora. No topo da tela inicial aparece o total.
@@ -123,6 +143,14 @@ sem ser você, é só recusar.
 
 **Sair** apaga tudo: a conta em todos os aparelhos, os amigos e as
 conversas. O nickname fica livre para qualquer pessoa usar.
+
+### Chamada minimizada: voltar ao menu sem desligar
+
+Tocar no logo durante a chamada não desliga nada: a chamada vira uma
+barra no pé da tela, com o jogo, quantas pessoas estão nela, o botão de
+mutar, "Voltar" e "Sair". O microfone continua aberto e você ouve todo
+mundo enquanto navega pelo menu, pelos amigos ou pelo perfil. Para voltar
+à tela da chamada, toque na barra. Procurar outra chamada encerra a atual.
 
 ### A chamada continua em segundo plano
 
@@ -329,6 +357,17 @@ nenhuma atualização, reinício ou perda de dados tira; na página de
 administração ele aparece marcado como fixo, sem botão "tirar". Para mudar
 ou tirar, edite a variável e reinicie.
 
+## App para Windows: como o .exe é gerado
+
+A pasta `desktop` tem o app (Electron): `main.js` abre o site numa janela,
+libera o microfone e mostra a tela de espera quando o servidor não
+responde. O GitHub compila o instalador e a versão portátil sozinho (ação
+"App para Windows", em Actions) toda vez que algo nessa pasta muda na
+`main`, e publica os dois arquivos na página de Releases, na release
+"Game Together para Windows". Para gerar de novo à mão: Actions → App para
+Windows → Run workflow. Para mudar o endereço que o app abre, edite `SITE`
+no `main.js`.
+
 ## Quantas pessoas visitaram
 
 O endereço [gametogether.com.br/api/stats](https://gametogether.com.br/api/stats) mostra, em texto
@@ -374,6 +413,10 @@ ilustração. Formato bom: vertical, 600 x 800 pixels ou maior.
 | Palworld | `palworld.jpg` |
 | Overwatch 2 | `overwatch-2.jpg` |
 | Riders Republic | `riders-republic.jpg` |
+| Brawlhalla | `brawlhalla.jpg` (ainda sem capa enviada: usa um desenho) |
+| Don't Starve Together | `dont-starve-together.jpg` (ainda sem capa enviada: usa um desenho) |
+| Counter-Strike 2 | `counter-strike-2.jpg` |
+| Stardew Valley | `stardew-valley.jpg` |
 
 ---
 
@@ -422,8 +465,23 @@ microphone permission; tap **Allow**.
 
 ### PC (Windows, Mac or Linux)
 
-Open the link in your browser and you are done. To have it as an app with
-its own icon:
+**Windows, the easy way: an .exe.** Download and open:
+
+- Installer: <https://github.com/enzojcovello-eng/game-together-/releases/latest/download/GameTogether-Setup.exe>
+  (creates a desktop and Start menu shortcut)
+- Portable version, nothing to install: <https://github.com/enzojcovello-eng/game-together-/releases/latest/download/GameTogether-Portable.exe>
+
+The app is the site in its own window, with a taskbar icon and the
+microphone already allowed; since the content comes from the site, it
+updates by itself, no new download. If the server is asleep the app shows
+"Waking up the server" and gets in by itself once it answers.
+
+> ⚠️ The first time, Windows may show a blue warning (SmartScreen) because
+> the app has no paid signature. Click **More info** and then **Run
+> anyway**. The app's code is on this same page, in the `desktop` folder.
+
+Or open the link in your browser and you are done. To have it as an app
+with its own icon:
 
 - **Chrome or Edge**: click the install icon in the address bar (a monitor
   with an arrow) or open the ⋮ menu and choose **Install Game Together**.
@@ -474,10 +532,14 @@ call size and a compatible platform.
 | No Man's Sky | 4 | PC, PlayStation, Xbox, Switch | Yes |
 | Subnautica 2 | 4 | PC, PlayStation, Xbox | Yes |
 | Overcooked! 2 | 4 | PC, PlayStation, Xbox, Switch | Yes |
-| Among Us | 5 | PC, PlayStation, Xbox, Switch, Mobile | Yes |
+| Among Us | 10 | PC, PlayStation, Xbox, Switch, Mobile | Yes |
 | Palworld | 3 | PC, PlayStation, Xbox | Yes |
 | Overwatch 2 | 4 | PC, PlayStation, Xbox, Switch | Yes |
 | Riders Republic | 4 | PC, PlayStation, Xbox | Yes |
+| Brawlhalla | 2 | PC, PlayStation, Xbox, Switch, Mobile | Yes |
+| Don't Starve Together | 4 | PC, PlayStation, Xbox, Switch | No: each platform only finds its own |
+| Counter-Strike 2 | 5 | PC | PC only |
+| Stardew Valley | 3 | PC, PlayStation, Xbox, Switch, Mobile | No: each platform only finds its own |
 
 Each game card shows how many people are on a call and how many are
 searching in that game right now. The home screen shows the total at the top.
@@ -501,6 +563,15 @@ your nickname, just deny.
 
 **Log out** deletes everything: the account on every device, the friends
 and the conversations. The nickname becomes free for anyone to use.
+
+### Minimized call: back to the menu without hanging up
+
+Tapping the logo during a call hangs up nothing: the call becomes a bar at
+the bottom of the screen, with the game, how many people are in it, the
+mute button, "Back" and "Leave". The microphone stays open and you keep
+hearing everyone while you browse the menu, friends or profile. To return
+to the call screen, tap the bar. Searching for another call ends the
+current one.
 
 ### The call keeps going in the background
 
@@ -707,6 +778,17 @@ configuration, so no update, restart or data loss removes it; on the admin
 page it shows as fixed, without a "tirar" button. To change or remove it,
 edit the variable and restart.
 
+## Windows app: how the .exe is made
+
+The `desktop` folder holds the app (Electron): `main.js` opens the site in
+a window, allows the microphone and shows the waiting screen when the
+server does not answer. GitHub builds the installer and the portable
+version by itself (the "App para Windows" action, under Actions) whenever
+something in that folder changes on `main`, and publishes both files on
+the Releases page, in the "Game Together para Windows" release. To build
+again by hand: Actions → App para Windows → Run workflow. To change the
+address the app opens, edit `SITE` in `main.js`.
+
 ## How many people visited
 
 The address [gametogether.com.br/api/stats](https://gametogether.com.br/api/stats) shows, in plain
@@ -754,6 +836,10 @@ larger.
 | Palworld | `palworld.jpg` |
 | Overwatch 2 | `overwatch-2.jpg` |
 | Riders Republic | `riders-republic.jpg` |
+| Brawlhalla | `brawlhalla.jpg` (no cover sent yet: uses a drawing) |
+| Don't Starve Together | `dont-starve-together.jpg` (no cover sent yet: uses a drawing) |
+| Counter-Strike 2 | `counter-strike-2.jpg` |
+| Stardew Valley | `stardew-valley.jpg` |
 
 ## License
 

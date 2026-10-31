@@ -251,12 +251,14 @@ main { max-width: 1040px; margin: 0 auto; padding: 24px 20px 48px; padding-botto
 /* ---------- painel: chat e logins ---------- */
 .panel { background: var(--bg-2); border: 1px solid var(--border); border-radius: var(--radius); display: flex; flex-direction: column; overflow: hidden; }
 .panel.inline { margin-bottom: 8px; }
-.panel.drawer { position: fixed; z-index: 40; right: 16px; bottom: 16px; width: min(380px, calc(100vw - 32px)); max-height: min(70vh, 560px); box-shadow: 0 24px 50px rgba(0, 0, 0, 0.5); }
+.panel.drawer { position: fixed; z-index: 40; right: 16px; bottom: 16px; width: min(440px, calc(100vw - 32px)); max-height: min(78vh, 640px); box-shadow: 0 24px 50px rgba(0, 0, 0, 0.5); }
+/* o conteúdo de cada aba rola dentro da gaveta (perfil com muitas capas, listas longas) */
+.panel.drawer .panel-body { overflow-y: auto; min-height: 0; }
 .panel-backdrop { position: fixed; inset: 0; z-index: 35; background: rgba(0, 0, 0, 0.35); }
-.panel-tabs { display: flex; align-items: center; gap: 4px; padding: 8px; border-bottom: 1px solid var(--border); overflow-x: auto; scrollbar-width: none; }
+.panel-tabs { display: flex; align-items: center; gap: 4px; padding: 8px; border-bottom: 1px solid var(--border); flex-wrap: wrap; flex: none; }
 .panel-tabs::-webkit-scrollbar { display: none; }
 .panel-tabs .tab { white-space: nowrap; flex: none; }
-.panel-tabs .tab { position: relative; display: inline-flex; align-items: center; gap: 6px; padding: 7px 12px; border-radius: 9px; border: 0; background: transparent; color: var(--muted); font-weight: 600; font-size: 0.9rem; }
+.panel-tabs .tab { position: relative; display: inline-flex; align-items: center; gap: 6px; padding: 7px 10px; border-radius: 9px; border: 0; background: transparent; color: var(--muted); font-weight: 600; font-size: 0.9rem; }
 .panel-tabs .tab .i { width: 16px; height: 16px; }
 .panel-tabs .tab.active { background: var(--card-2); color: var(--text); }
 .panel-tabs .tab .badge { position: static; margin-left: 2px; }
@@ -431,3 +433,28 @@ body.banned { overflow: hidden; }
 .auth-why { margin: 0 0 10px; padding: 10px 14px; border-radius: var(--radius-sm); background: rgba(255, 196, 0, 0.12); border: 1px solid rgba(255, 196, 0, 0.4); font-weight: 600; }
 #auth-back { margin-top: 10px; display: inline-flex; align-items: center; gap: 6px; }
 
+
+/* servidor dormindo: aviso por cima da página guardada */
+.waking { position: fixed; inset: 0; z-index: 55; background: rgba(21, 19, 15, 0.96); display: grid; place-items: center; text-align: center; padding: 24px; }
+.waking p { margin: 6px 0; color: var(--muted); max-width: 420px; line-height: 1.5; }
+.waking strong { color: var(--text); font-size: 1.1rem; }
+.waking .ring { width: 44px; height: 44px; margin-bottom: 12px; border-radius: 50%; border: 4px solid var(--border); border-top-color: var(--accent); animation: spin 1s linear infinite; }
+
+/* chamada minimizada */
+.mini-call { position: fixed; left: 12px; right: 12px; bottom: calc(12px + env(safe-area-inset-bottom)); z-index: 40; display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: 16px; background: var(--card-2); border: 1px solid var(--border-strong); box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5); animation: mini-in .25s ease-out; }
+.mini-main { flex: 1; min-width: 0; display: flex; align-items: center; gap: 10px; background: none; border: 0; color: var(--text); text-align: left; padding: 2px; cursor: pointer; }
+.mini-cover { width: 40px; height: 54px; object-fit: cover; border-radius: 8px; flex: none; }
+.mini-text { display: flex; flex-direction: column; min-width: 0; }
+.mini-text strong { font-size: 0.95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mini-text .muted { font-size: 0.8rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mini-call .live-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--ok); margin-right: 6px; animation: pulse 1.4s ease-in-out infinite; }
+.mini-call .icon-btn.active { background: var(--accent); color: var(--accent-ink); }
+body.mini-open main { padding-bottom: 96px; }
+@keyframes mini-in { from { transform: translateY(20px); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
+@media (min-width: 720px) { .mini-call { left: 50%; right: auto; transform: translateX(-50%); width: min(560px, calc(100vw - 24px)); } }
+
+/* com a chamada minimizada, o aviso sobe para não cobrir a barra */
+body.mini-open .toast { bottom: calc(104px + env(safe-area-inset-bottom)); }
+
+.game-card .tag.single { background: rgba(166, 158, 143, 0.25); color: var(--text); }

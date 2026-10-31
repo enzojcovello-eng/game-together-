@@ -108,12 +108,15 @@
       alone: joinNames(game.platforms.filter((p) => !grouped.has(p))) || '—',
     };
   }
+  const singlePlatform = (game) => Array.isArray(game.platforms) && game.platforms.length === 1;
   function crossplayTag(game) {
+    if (singlePlatform(game)) return { cls: 'single', text: t('game.onlyOn', { p: platformName(game.platforms[0]) }) };
     if (fullCrossplay(game)) return { cls: '', text: t('game.crossplay') };
     if (partialCrossplay(game)) return { cls: 'partial', text: t('game.partial') };
     return { cls: 'nocross', text: t('game.noCrossplay') };
   }
   function crossplayLong(game) {
+    if (singlePlatform(game)) return t('game.onlyOnLong', { p: platformName(game.platforms[0]) });
     if (fullCrossplay(game)) return t('game.crossplayLong');
     if (partialCrossplay(game)) return t('game.partialLong', crossplayVars(game));
     return t('game.noCrossplayLong');
@@ -141,6 +144,34 @@
     $$('.screen').forEach((s) => s.classList.toggle('active', s.id === id));
     window.scrollTo({ top: 0 });
     placePanel();
+    renderMini();
+  }
+
+  // ---------- chamada minimizada ----------
+  // Fora da tela da chamada, mas ainda nela: barra no pé da tela, microfone aberto.
+  function renderMini() {
+    const bar = $('#mini-call');
+    const minimized = Boolean(state.room) && !$('#screen-room').classList.contains('active');
+    bar.hidden = !minimized;
+    document.body.classList.toggle('mini-open', minimized);
+    if (!minimized) return;
+    const room = state.room;
+    const g = gameById(room.gameId) || { name: room.gameName, cover: 'icons/icon-512.png' };
+    $('#mini-cover').src = room.private ? 'icons/icon-192.png' : coverOf(g);
+    $('#mini-title').textContent = room.private ? t('friends.title') : g.name;
+    const n = room.members.length;
+    $('#mini-sub').innerHTML = `<span class="live-dot"></span>${n > 1 ? t('mini.people', { n }) : t('mini.alone')}`;
+    $('#mini-mic-icon').setAttribute('href', state.muted ? '#i-mic-off' : '#i-mic');
+    $('#mini-mute').classList.toggle('active', state.muted);
+  }
+  function minimizeCall() {
+    if (!state.room) return;
+    showScreen('screen-home');
+    toast(t('mini.tip'), 3500);
+  }
+  function restoreCall() {
+    if (!state.room) return;
+    showScreen('screen-room');
   }
 
   let toastTimer = null;
@@ -1011,6 +1042,7 @@
     e.preventDefault();
     setError('#setup-error', '');
     if (state.ban) return setBan(state.ban);
+    if (state.room) leaveRoom({ silent: true }); // procurar outra chamada encerra a minimizada
     state.mode = $('input[name="mode"]:checked').value;
     if (!state.token) return askNickname('matchmake');
     const needsPlatform = !$('#platform-field').hidden;
@@ -1129,6 +1161,7 @@
       list.appendChild(li);
     }
     if (!$('#tab-reports').hidden) renderReportsTab();
+    renderMini();
     $('#mute-btn .ctrl-label').textContent = state.muted ? t('room.unmute') : t('room.mute');
     $('#mute-icon').setAttribute('href', state.muted ? '#i-mic-off' : '#i-mic');
     $('#mute-btn').classList.toggle('active', state.muted);
@@ -1556,6 +1589,13 @@
   }
 
   // ---------- socket ----------
+  if (typeof io === 'undefined') {
+    // o script do Socket.IO não veio (servidor dormindo, página guardada de antes): avisa e recarrega quando ele responder
+    const el = document.getElementById('waking'); if (el) el.hidden = false;
+    const tryAgain = () => fetch('/api/version', { cache: 'no-store' }).then((r) => { if (r.ok) location.reload(); else setTimeout(tryAgain, 5000); }).catch(() => setTimeout(tryAgain, 5000));
+    setTimeout(tryAgain, 3000);
+    return;
+  }
   const socket = io({ transports: ['websocket', 'polling'] });
   if (/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) { window.__gtSocket = socket; window.__gtState = state; } // só para testes locais
   socket.on('version', onServerVersion);
@@ -1594,7 +1634,11 @@
     if (li) li.classList.add('connecting');
   });
   socket.on('signal', onSignal);
-  socket.on('chat', addChat);
+  socket.on('chat', (m) => {
+    addChat(m);
+    // minimizada: a mensagem aparece como aviso, já que o chat não está na tela
+    if (state.room && !$('#screen-room').classList.contains('active') && m.from !== state.me) toast(`${m.name}: ${m.text}`, 4000);
+  });
   socket.on('room-update', ({ room }) => { if (state.room && room && room.id === state.room.id) { state.room = room; rememberPeople(room); renderRoom(); } });
   socket.on('profile', (p) => { setProfile(p); maybeReupload(); });
   socket.on('token', ({ token }) => { if (token && state.token) { state.token = token; store.set('gt:token', token); } });
@@ -1685,11 +1729,15 @@
   $('#setup-back').addEventListener('click', () => { state.game = null; showScreen('screen-home'); });
   $('#brand-link').addEventListener('click', (e) => {
     e.preventDefault();
-    if (state.room) leaveRoom();
     if (state.searching) cancelSearch();
     state.game = null;
+    if (state.room) { minimizeCall(); return; } // a chamada continua, minimizada
     showScreen('screen-home');
   });
+  $('#mini-open').addEventListener('click', restoreCall);
+  $('#mini-back').addEventListener('click', restoreCall);
+  $('#mini-mute').addEventListener('click', () => { toggleMute(); renderMini(); });
+  $('#mini-leave').addEventListener('click', () => leaveRoom());
   $('#cancel-btn').addEventListener('click', cancelSearch);
   $('#mute-btn').addEventListener('click', toggleMute);
   $('#leave-btn').addEventListener('click', () => leaveRoom());
@@ -1709,9 +1757,18 @@
   window.addEventListener('beforeunload', () => { if (state.room) socket.emit('leave'); });
 
   // ---------- boot ----------
-  fetch('/api/config')
-    .then((r) => r.json())
+  // Depois da primeira visita o navegador guarda a página (PWA) e a mostra mesmo com o
+  // servidor dormindo. Se a configuração não vier, mostra "acordando" e tenta de novo.
+  function showWaking(on) {
+    const el = $('#waking');
+    if (el) el.hidden = !on;
+  }
+  let bootTries = 0;
+  function boot() {
+  fetch('/api/config', { cache: 'no-store' })
+    .then((r) => { if (!r.ok) throw new Error('config ' + r.status); return r.json(); })
     .then(async (cfg) => {
+      showWaking(false);
       state.config = cfg;
       loadedVersion = { version: cfg.version, build: cfg.build };
       $('#about-games').textContent = cfg.games.map((g) => g.name).join(', ') + '.';
@@ -1756,5 +1813,12 @@
       renderUser();
       showScreen('screen-home');
     })
-    .catch((err) => { console.error('boot', err); toast('Config error'); });
+    .catch((err) => {
+      console.error('boot', err);
+      bootTries += 1;
+      showWaking(true);
+      setTimeout(boot, bootTries < 12 ? 5000 : 15000);
+    });
+  }
+  boot();
 })();
