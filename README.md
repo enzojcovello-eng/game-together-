@@ -373,7 +373,7 @@ ilustração. Formato bom: vertical, 600 x 800 pixels ou maior.
 | Among Us | `among-us.jpg` |
 | Palworld | `palworld.jpg` |
 | Overwatch 2 | `overwatch-2.jpg` |
-| Riders Republic | `riders-republic.jpg` (ainda sem capa enviada: usa um desenho) |
+| Riders Republic | `riders-republic.jpg` |
 
 ---
 
@@ -753,7 +753,7 @@ larger.
 | Among Us | `among-us.jpg` |
 | Palworld | `palworld.jpg` |
 | Overwatch 2 | `overwatch-2.jpg` |
-| Riders Republic | `riders-republic.jpg` (no cover sent yet: uses a drawing) |
+| Riders Republic | `riders-republic.jpg` |
 
 ## License
 
