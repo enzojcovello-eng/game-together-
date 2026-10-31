@@ -294,7 +294,7 @@
       "short": "NMS",
       "emoji": "🪐",
       "color": "#5a2a9a",
-      "maxPlayers": 7,
+      "maxPlayers": 4,
       "platforms": [
         "pc",
         "playstation",
