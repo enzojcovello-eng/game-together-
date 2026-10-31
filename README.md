@@ -69,7 +69,7 @@ em branco, espere um pouco e recarregue.
    crossplay, a sua plataforma. Em jogo com crossplay não precisa escolher:
    você cai com gente de qualquer plataforma.
 4. Clique em **Matchmake**.
-   - **2 pessoas**: você e mais 1. Fica procurando até aparecer alguém com a mesma escolha.
+   - **2 pessoas**: você e mais 1. Se ninguém com a mesma escolha aparecer em 5 segundos, você entra numa chamada sozinho e espera lá; quem procurar a mesma coisa cai direto com você.
    - **3 ou mais**: você entra numa sala aberta (ou cria uma) e as pessoas vão entrando até o limite do jogo.
 5. Na chamada: mute, sair, lista de quem está falando, o chat de texto da chamada (numa caixa na tela e também na aba Chat do painel) e o painel com Denúncias, Chat, Amigos, Perfil e Logins.
 
@@ -127,8 +127,12 @@ conversas. O nickname fica livre para qualquer pessoa usar.
 > sai da aba: no PC e no celular ele desliga, a não ser que o site continue
 > aberto em segundo plano. Troque de aba ou de app sem fechar o site.
 
-Durante a chamada a tela não apaga sozinha (o site pede isso ao celular),
-porque com a tela apagada alguns celulares cortam o microfone. Se você
+Durante a chamada a tela não apaga sozinha: o site pede isso ao celular
+e, onde o navegador não aceita o pedido (iPhone mais antigo), usa o mesmo
+truque dos apps de chamada, um vídeo invisível tocando. Com a tela apagada
+alguns celulares cortam o microfone, por isso o cuidado. Quando alguém
+entra ou sai da chamada toca um som curto (duas notas subindo na entrada,
+descendo na saída). Se você
 apagar a tela de propósito, o que acontece depende do aparelho: vários
 mantêm a chamada, outros cortam o microfone e ele volta quando a tela
 acende de novo.
@@ -418,7 +422,7 @@ blank screen, wait a bit and reload.
    your platform. Crossplay games skip that step: you match people on any
    platform.
 4. Click **Matchmake**.
-   - **2 people**: you and 1 more. It keeps searching until someone with the same choice shows up.
+   - **2 people**: you and 1 more. If nobody with the same choice shows up in 5 seconds, you enter a call alone and wait there; whoever searches for the same thing lands with you.
    - **3 or more**: you join an open room (or create one) and people keep joining until the game's limit.
 5. On the call: mute, leave, a list of who is speaking, the call text chat (in a box on the screen and also in the panel's Chat tab) and the panel with Reports, Chat, Friends, Profile and Logins.
 
@@ -478,9 +482,12 @@ and the conversations. The nickname becomes free for anyone to use.
 > stays open in the background. Switch tabs or apps without closing the
 > site.
 
-During a call the screen does not turn off by itself (the site asks the
-phone for that), because with the screen off some phones cut the
-microphone. If you turn the screen off on purpose, what happens depends on
+During a call the screen does not turn off by itself: the site asks the
+phone for that and, where the browser refuses (older iPhones), uses the
+same trick call apps use, an invisible playing video. With the screen off
+some phones cut the microphone, hence the care. When someone joins or
+leaves the call a short sound plays (two notes going up on join, down on
+leave). If you turn the screen off on purpose, what happens depends on
 the device: many keep the call going, others cut the microphone and it
 comes back when the screen turns on again.
 

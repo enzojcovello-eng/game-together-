@@ -848,6 +848,8 @@
   async function acceptInvite(id) {
     try { await getMic(); applyMute(); } catch (err) { return toast(t(err && err.message === 'insecure' ? 'setup.insecure' : 'setup.micDenied'), 5000); }
     keepAliveStart();
+    ensureAudioCtx();
+    awakeVideoStart();
     socket.emit('invite-accept', { id }, (r) => {
       if (!r || r.error) toast(r && r.error ? t(`err.${r.error}`) : t('err.generic'));
     });
@@ -1004,6 +1006,8 @@
     const btn = $('#matchmake-btn');
     btn.disabled = true;
     keepAliveStart();
+    ensureAudioCtx();
+    awakeVideoStart();
     try {
       await getMic();
       keepAlivePlay();
@@ -1041,12 +1045,14 @@
     state.searching = false;
     socket.emit('cancel');
     keepAliveStop();
+    wakeLockOff();
     showScreen('screen-setup');
   }
 
   // ---------- sala / chamada ----------
   function enterRoom(room, me, initiateWith) {
     const rejoin = Boolean(state.room && state.room.id === room.id);
+    const solo = !rejoin && !room.private && room.members.length === 1;
     state.searching = false;
     state.room = room;
     state.me = me;
@@ -1064,6 +1070,8 @@
     keepAliveStart();
     mediaSessionStart(room);
     wakeLockOn();
+    if (solo) toast(t('room.solo'), 7000);
+    if (!rejoin && room.members.length > 1) playTone('join');
   }
 
   function renderRoom() {
@@ -1351,17 +1359,64 @@
 
   // tela ligada durante a chamada: se ela apaga sozinha, o celular pode cortar o microfone
   let wakeLock = null;
+  // Plano B para a tela: um vídeo minúsculo em loop (o que apps de chamada usam quando o
+  // navegador não tem Wake Lock, caso do iPhone antigo). Precisa começar num toque.
+  let awakeVideo = null;
+  function awakeVideoStart() {
+    try {
+      if (!awakeVideo) {
+        awakeVideo = document.createElement('video');
+        awakeVideo.src = 'media/awake.mp4';
+        awakeVideo.loop = true; awakeVideo.setAttribute('playsinline', ''); awakeVideo.setAttribute('title', 'keep awake');
+        awakeVideo.style.cssText = 'position:fixed;width:1px;height:1px;opacity:0;pointer-events:none;bottom:0;right:0';
+        document.body.appendChild(awakeVideo);
+      }
+      awakeVideo.play().catch(() => {});
+    } catch (_) {}
+  }
+  function awakeVideoStop() { if (awakeVideo) { try { awakeVideo.pause(); } catch (_) {} } }
   async function wakeLockOn() {
-    if (!('wakeLock' in navigator) || wakeLock || !state.room || document.visibilityState !== 'visible') return;
+    if (!(state.room || state.searching) || document.visibilityState !== 'visible') return;
+    if (!('wakeLock' in navigator)) { awakeVideoStart(); return; }
+    if (wakeLock) return;
     try {
       wakeLock = await navigator.wakeLock.request('screen');
       wakeLock.addEventListener('release', () => { wakeLock = null; });
-    } catch (_) { wakeLock = null; }
+      awakeVideoStop(); // o navegador segura a tela: o vídeo não precisa tocar
+    } catch (_) { wakeLock = null; awakeVideoStart(); }
   }
   function wakeLockOff() {
+    awakeVideoStop();
     if (!wakeLock) return;
     const w = wakeLock; wakeLock = null;
     try { w.release().catch(() => {}); } catch (_) {}
+  }
+
+  // ---------- sons de entrada e saída ----------
+  function ensureAudioCtx() {
+    try {
+      audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+      if (audioCtx.state === 'suspended') audioCtx.resume().catch(() => {});
+    } catch (_) {}
+    return audioCtx;
+  }
+  function playTone(kind) {
+    const ctx = ensureAudioCtx();
+    if (!ctx) return;
+    const notes = kind === 'join' ? [523, 784] : [784, 523];
+    const t0 = ctx.currentTime + 0.01;
+    notes.forEach((freq, i) => {
+      try {
+        const osc = ctx.createOscillator(); const gain = ctx.createGain();
+        osc.type = 'sine'; osc.frequency.value = freq;
+        const start = t0 + i * 0.13;
+        gain.gain.setValueAtTime(0.0001, start);
+        gain.gain.exponentialRampToValueAtTime(0.18, start + 0.015);
+        gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.12);
+        osc.connect(gain).connect(ctx.destination);
+        osc.start(start); osc.stop(start + 0.13);
+      } catch (_) {}
+    });
   }
   function mediaSessionStart(room) {
     if (!('mediaSession' in navigator)) return;
@@ -1499,6 +1554,7 @@
     renderRoom();
     rememberPeople(room);
     if (!rejoining) {
+      playTone('join');
       toast(t('toast.joined', { name: peer.name }));
       addChat({ sys: true, text: t('toast.joined', { name: peer.name }) });
     }
@@ -1512,6 +1568,7 @@
     state.room = room;
     renderRoom();
     if (rejoining) return;
+    playTone('leave');
     toast(t('toast.left', { name }));
     addChat({ sys: true, text: t('toast.left', { name }) });
   });

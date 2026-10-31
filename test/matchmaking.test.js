@@ -121,4 +121,25 @@ assert.strictEqual(mm.stats().games.friends.inCall, 4);
   const left = m2.leave('s9');
   assert.deepStrictEqual(left.remaining, ['s2']);
 }
+// sem par: abre chamada sozinho; o próximo com a mesma escolha entra nela
+{
+  const m3 = new Matchmaker(config);
+  const req = { gameId: 'rocket-league', lang: 'pt-BR', mode: 'duo', platform: 'pc' };
+  assert.strictEqual(m3.find('p1', { name: 'A', ...req }).status, 'waiting');
+  assert.ok(m3.isQueued('p1'));
+  const solo = m3.openSolo('p1');
+  assert.strictEqual(solo.status, 'matched');
+  assert.deepStrictEqual(solo.joined, ['p1']);
+  assert.strictEqual(solo.room.max, 2);
+  assert.ok(!m3.isQueued('p1'));
+  assert.strictEqual(m3.openSolo('p1'), null, 'já está em sala: nada a abrir');
+  const j = m3.find('p2', { name: 'B', ...req });
+  assert.strictEqual(j.status, 'matched');
+  assert.strictEqual(j.room.id, solo.room.id, 'entrou na chamada de quem esperava');
+  assert.deepStrictEqual(j.joined, ['p2']);
+  assert.strictEqual(m3.find('p3', { name: 'C', ...req }).status, 'waiting', 'sala cheia: o terceiro espera');
+  assert.strictEqual(m3.find('p4', { name: 'D', ...req, lang: 'en-US' }).status, 'waiting', 'escolha diferente não entra');
+  m3.leave('p1');
+  assert.strictEqual(m3.openSolo('p1'), null);
+}
 console.log('matchmaking: todos os testes passaram');
