@@ -96,6 +96,7 @@ quantidade de pessoas e uma plataforma compatível.
 | No Man's Sky | 4 | PC, PlayStation, Xbox, Switch | Sim |
 | Subnautica 2 | 4 | PC, PlayStation, Xbox | Sim |
 | Overcooked! 2 | 4 | PC, PlayStation, Xbox, Switch | Sim |
+| Among Us | 5 | PC, PlayStation, Xbox, Switch, Celular | Sim |
 
 Cada cartão de jogo mostra quantas pessoas estão em chamada e quantas estão
 procurando naquele jogo agora. No topo da tela inicial aparece o total.
@@ -237,6 +238,7 @@ ilustração. Formato bom: vertical, 600 x 800 pixels ou maior.
 | No Man's Sky | `no-mans-sky.jpg` |
 | Subnautica 2 | `subnautica-2.jpg` |
 | Overcooked | `overcooked.jpg` |
+| Among Us | `among-us.jpg` |
 
 ---
 
@@ -336,6 +338,7 @@ call size and a compatible platform.
 | No Man's Sky | 4 | PC, PlayStation, Xbox, Switch | Yes |
 | Subnautica 2 | 4 | PC, PlayStation, Xbox | Yes |
 | Overcooked! 2 | 4 | PC, PlayStation, Xbox, Switch | Yes |
+| Among Us | 5 | PC, PlayStation, Xbox, Switch, Mobile | Yes |
 
 Each game card shows how many people are on a call and how many are
 searching in that game right now. The home screen shows the total at the top.
@@ -479,6 +482,7 @@ larger.
 | No Man's Sky | `no-mans-sky.jpg` |
 | Subnautica 2 | `subnautica-2.jpg` |
 | Overcooked | `overcooked.jpg` |
+| Among Us | `among-us.jpg` |
 
 ## License
 
