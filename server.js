@@ -40,11 +40,49 @@ const server = isHttps
   : http.createServer(app);
 const io = new Server(server, { cors: { origin: '*' } });
 
+// ---- visitas: conta aberturas da página inicial e visitantes diferentes por dia ----
+const STATS_FILE = path.join(process.env.DATA_DIR || path.join(__dirname, 'data'), 'visits.json');
+let visits = { total: 0, days: {} };
+try { visits = JSON.parse(fs.readFileSync(STATS_FILE, 'utf8')); } catch (_) { /* começa do zero */ }
+function saveVisits() {
+  try { fs.mkdirSync(path.dirname(STATS_FILE), { recursive: true }); fs.writeFileSync(STATS_FILE, JSON.stringify(visits)); } catch (_) { /* sem disco */ }
+}
+function countVisit(req) {
+  const day = new Date().toISOString().slice(0, 10);
+  const who = crypto.createHash('sha256').update(`${req.ip}|${req.headers['user-agent'] || ''}|${day}`).digest('hex').slice(0, 16);
+  const d = visits.days[day] || (visits.days[day] = { visits: 0, visitors: [] });
+  d.visits += 1;
+  visits.total += 1;
+  if (!d.visitors.includes(who)) d.visitors.push(who);
+  // guarda só os últimos 90 dias
+  for (const k of Object.keys(visits.days)) if (k < new Date(Date.now() - 90 * 864e5).toISOString().slice(0, 10)) delete visits.days[k];
+  saveVisits();
+}
+function visitSummary() {
+  const day = new Date().toISOString().slice(0, 10);
+  const today = visits.days[day] || { visits: 0, visitors: [] };
+  const last7 = Object.entries(visits.days).filter(([k]) => k >= new Date(Date.now() - 7 * 864e5).toISOString().slice(0, 10));
+  return {
+    visitsToday: today.visits,
+    visitorsToday: today.visitors.length,
+    visitsLast7Days: last7.reduce((a, [, v]) => a + v.visits, 0),
+    visitorsLast7Days: last7.reduce((a, [, v]) => a + v.visitors.length, 0),
+    visitsTotal: visits.total,
+    byDay: Object.fromEntries(Object.entries(visits.days).sort().map(([k, v]) => [k, { visits: v.visits, visitors: v.visitors.length }])),
+  };
+}
+app.get(['/', '/index.html'], (req, _res, next) => {
+  // só aberturas de verdade da página (não as buscas internas do service worker)
+  const mode = req.headers['sec-fetch-mode'];
+  if (!mode || mode === 'navigate') countVisit(req);
+  next();
+});
+
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json({ limit: '200kb' }));
 app.get('/api/config', (_req, res) => res.json(resolveConfig()));
 app.get('/api/version', (_req, res) => res.json(VERSION));
-app.get('/api/stats', (_req, res) => res.json({ ...mm.stats(), online }));
+app.get('/api/stats', (_req, res) => res.json({ online, ...mm.stats(), accounts: auth.users.size, ...visitSummary() }));
 
 const mm = new Matchmaker(config);
 // DATA_DIR: pasta das contas e amigos. SESSION_SECRET: assina os tokens
