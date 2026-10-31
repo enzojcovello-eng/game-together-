@@ -94,6 +94,17 @@ if (siteHost) {
   });
 }
 
+// Teclados de celular costumam colar um ponto no fim do link (".../." ou ".../api/stats."):
+// tira o ponto e segue para o endereço certo.
+app.use((req, res, next) => {
+  if (req.method === 'GET' && /\.+$/.test(req.path) && req.path !== '/') {
+    const clean = req.path.replace(/\.+$/, '') || '/';
+    const q = req.originalUrl.includes('?') ? req.originalUrl.slice(req.originalUrl.indexOf('?')) : '';
+    return res.redirect(302, clean + q);
+  }
+  next();
+});
+
 app.get(['/', '/index.html'], (req, _res, next) => {
   // só aberturas de verdade da página (não as buscas internas do service worker)
   const mode = req.headers['sec-fetch-mode'];
