@@ -427,3 +427,11 @@ body.banned { overflow: hidden; }
 .update-banner.announce .i { color: #ffc400; }
 .update-banner.announce > span { flex: 1; min-width: 0; }
 #direct-form { margin-bottom: 4px; }
+
+/* boas-vindas no topo da tela inicial */
+.welcome { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px 20px; margin: 0 0 16px; }
+.welcome h2 { margin: 0 0 6px; font-size: 1.25rem; }
+.welcome p { margin: 0; color: var(--muted); line-height: 1.5; }
+.welcome .btn-primary { margin-top: 12px; }
+.auth-why { margin: 0 0 10px; padding: 10px 14px; border-radius: var(--radius-sm); background: rgba(255, 196, 0, 0.12); border: 1px solid rgba(255, 196, 0, 0.4); font-weight: 600; }
+#auth-back { margin-top: 10px; display: inline-flex; align-items: center; gap: 6px; }

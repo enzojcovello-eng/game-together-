@@ -26,6 +26,7 @@
     dmWith: null,
     unread: {},
     panelTab: 'reports',
+    afterAuth: null, // o que fazer depois de criar o nickname ('matchmake' = seguir para a chamada)
     recent: [],   // pessoas que passaram por chamadas nesta sessão (para denunciar depois)
     myReports: [],
     panelOpen: false,
@@ -73,6 +74,7 @@
     renderGameGrid();
     renderStats();
     renderPending();
+    renderUser();
     renderRequests();
     if (state.game) renderSetupTexts();
     if (state.room) renderRoom();
@@ -224,6 +226,9 @@
   function renderUser() {
     $('#user-pill').hidden = !state.token;
     $('#panel-btn').hidden = !state.token;
+    $('#welcome-title').textContent = state.token ? t('welcome.back', { name: state.name }) : t('welcome.title');
+    $('#welcome-text').textContent = state.token ? t('welcome.textBack') : t('welcome.text');
+    $('#welcome-cta').hidden = Boolean(state.token);
     $('#user-name').innerHTML = escapeHtml(state.name) + ownerBadge(state.profile.title);
     $('#user-avatar').innerHTML = avatarInner(state.name, state.profile.avatar);
     renderProfile();
@@ -419,6 +424,13 @@
     } catch (_) { setTimeout(checkBanOver, 5000); }
   }
 
+  // sem nickname ainda: a tela do nickname aparece só agora, na hora de entrar na chamada
+  function askNickname(next) {
+    state.afterAuth = next || null;
+    $('#auth-why').hidden = next !== 'matchmake';
+    showScreen('screen-auth');
+    $('#auth-name').focus();
+  }
   async function onAuthSubmit(e) {
     e.preventDefault();
     setError('#auth-error', '');
@@ -432,7 +444,10 @@
       } else {
         setUser(r.name, r.token);
         toast(t('auth.welcome', { name: r.name }));
-        showScreen('screen-home');
+        $('#auth-why').hidden = true;
+        const next = state.afterAuth; state.afterAuth = null;
+        if (state.game) { showScreen('screen-setup'); if (next === 'matchmake') $('#setup-form').requestSubmit(); }
+        else showScreen('screen-home');
       }
     } catch (err) {
       setError('#auth-error', errText(err));
@@ -468,7 +483,7 @@
     renderRequests();
     closePanel();
     if (!silent) toast(reason ? t(reason) : t('auth.loggedOut'), reason ? 6000 : 2800);
-    showScreen('screen-auth');
+    showScreen('screen-home');
   }
 
   // ---------- pedido de login (quem está esperando) ----------
@@ -521,6 +536,7 @@
     if (state.pendingId) api(`/api/claim/${state.pendingId}`, { method: 'DELETE' }).catch(() => {});
     clearPending();
     showScreen('screen-auth');
+    $('#auth-name').focus();
   }
 
   // ---------- pedidos de login (quem está com a conta) ----------
@@ -998,7 +1014,7 @@
     setError('#setup-error', '');
     if (state.ban) return setBan(state.ban);
     state.mode = $('input[name="mode"]:checked').value;
-    if (!state.token) return logout({ reason: 'auth.expired' });
+    if (!state.token) return askNickname('matchmake');
     const needsPlatform = !$('#platform-field').hidden;
     if (needsPlatform && !state.platform) return setError('#setup-error', t('setup.needPlatform'));
     if (needsPlatform) store.set(`gt:platform:${state.game.id}`, state.platform);
@@ -1641,6 +1657,8 @@
 
   // ---------- eventos da interface ----------
   $('#auth-form').addEventListener('submit', onAuthSubmit);
+  $('#welcome-cta').addEventListener('click', () => askNickname(null));
+  $('#auth-back').addEventListener('click', () => { state.afterAuth = null; $('#auth-why').hidden = true; showScreen(state.game ? 'screen-setup' : 'screen-home'); });
   $('#pending-cancel').addEventListener('click', cancelPending);
   $('#logout-btn').addEventListener('click', confirmLogout);
   $('#dm-back').addEventListener('click', closeDm);
@@ -1669,7 +1687,6 @@
   $('#setup-back').addEventListener('click', () => { state.game = null; showScreen('screen-home'); });
   $('#brand-link').addEventListener('click', (e) => {
     e.preventDefault();
-    if (!state.token) return;
     if (state.room) leaveRoom();
     if (state.searching) cancelSearch();
     state.game = null;
@@ -1738,7 +1755,8 @@
           } else { renderUser(); showScreen('screen-home'); return; }
         }
       }
-      showScreen('screen-auth');
+      renderUser();
+      showScreen('screen-home');
     })
     .catch((err) => { console.error('boot', err); toast('Config error'); });
 })();
