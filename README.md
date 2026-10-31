@@ -123,6 +123,10 @@ conversas. O nickname fica livre para qualquer pessoa usar.
 
 ### A chamada continua em segundo plano
 
+> ⚠️ Para o microfone não desligar quando a tela do celular apaga ou você
+> sai da aba: no PC e no celular ele desliga, a não ser que o site continue
+> aberto em segundo plano. Troque de aba ou de app sem fechar o site.
+
 Durante a chamada a tela não apaga sozinha (o site pede isso ao celular),
 porque com a tela apagada alguns celulares cortam o microfone. Se você
 apagar a tela de propósito, o que acontece depende do aparelho: vários
@@ -454,6 +458,11 @@ your nickname, just deny.
 and the conversations. The nickname becomes free for anyone to use.
 
 ### The call keeps going in the background
+
+> ⚠️ So the microphone does not turn off when the phone screen goes dark or
+> you leave the tab: on PC and on the phone it turns off unless the site
+> stays open in the background. Switch tabs or apps without closing the
+> site.
 
 During a call the screen does not turn off by itself (the site asks the
 phone for that), because with the screen off some phones cut the
