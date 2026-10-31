@@ -71,7 +71,7 @@ em branco, espere um pouco e recarregue.
 4. Clique em **Matchmake**.
    - **2 pessoas**: você e mais 1. Fica procurando até aparecer alguém com a mesma escolha.
    - **3 ou mais**: você entra numa sala aberta (ou cria uma) e as pessoas vão entrando até o limite do jogo.
-5. Na chamada: mute, sair, lista de quem está falando e um chat rápido de texto.
+5. Na chamada: mute, sair, lista de quem está falando e o painel com Denúncias, Amigos, Perfil e Logins.
 
 Você só cai com quem escolheu o mesmo jogo, o mesmo idioma, a mesma
 quantidade de pessoas e uma plataforma compatível.
@@ -112,7 +112,7 @@ tocar em **Sair**.
 Você pode usar a mesma conta no celular, no PC e onde mais quiser. Quando
 digitar o seu nickname num aparelho novo, ele fica esperando e os aparelhos
 que já estão na conta recebem um aviso: **Permitir** ou **Recusar**. Se não
-viu o aviso, o pedido fica na aba **Logins**, dentro do botão de chat no
+viu o aviso, o pedido fica na aba **Logins**, dentro do botão do painel no
 topo. Ao permitir, o aparelho novo entra junto e todos continuam logados,
 com os mesmos amigos e conversas. Se alguém tentar entrar com o seu nickname
 sem ser você, é só recusar.
@@ -155,7 +155,7 @@ tela de busca.
 
 ### Perfil: foto e nickname
 
-No botão de chat no topo, a aba **Perfil** deixa trocar a foto e o
+No botão do painel no topo, a aba **Perfil** deixa trocar a foto e o
 nickname. A foto pode ser uma capa de jogo da galeria, uma foto sua (JPG ou
 PNG, até 4 MB) ou nenhuma. Toda foto enviada passa por uma checagem
 automática no servidor antes de aparecer: fotos com nudez ou conteúdo
@@ -164,8 +164,11 @@ foto; o nickname antigo fica livre.
 
 ### Denúncias e suspensão
 
-Em qualquer cartão de pessoa (na chamada ou na lista de amigos) tem uma
-bandeirinha para denunciar. Abre um formulário: você conta o que aconteceu
+A aba **Denúncias** (a primeira do painel, no topo e na chamada) mostra
+quem está na chamada agora, quem já esteve numa chamada com você e um campo
+para digitar o nickname de outra pessoa. Cada uma tem o botão "Denunciar".
+Os cartões de pessoa (na chamada ou na lista de amigos) também têm a
+bandeirinha. Abre um formulário: você conta o que aconteceu
 (obrigatório) e pode anexar um print ou um áudio gravado no seu aparelho
 (m4a, mp3, ogg ou webm, até 6 MB). Na chamada tem também o botão
 **Últimos 30s**: ele guarda o trecho mais recente do áudio da chamada, e
@@ -178,13 +181,15 @@ pessoas diferentes, a foto enviada sai do ar sozinha.
 Quem administra julga cada caso e pode suspender a conta por um tempo (de
 1 hora a 30 dias) ou para sempre, com um motivo. Durante a suspensão a tela
 da pessoa fica travada com o motivo e a contagem regressiva: ela não entra
-em chamada, não fala no chat, não manda mensagem e não consegue sair da
-conta. Quando o tempo acaba, o site volta ao normal sozinho.
+em chamada, não manda mensagem e não consegue sair da conta. Quando o
+tempo acaba, o site volta ao normal sozinho. Na aba Denúncias você vê as
+suas denúncias com a situação de cada uma: em análise, resolvida ou
+arquivada.
 
 ### Amigos
 
 Numa chamada, toque em **+ amigo** ao lado de alguém. A pessoa recebe o
-pedido e aceita ou recusa. Na aba **Amigos** (botão de chat no topo) você
+pedido e aceita ou recusa. Na aba **Amigos** (botão do painel no topo) você
 vê quem está online, manda mensagem privada e toca em **Chamar** para abrir
 uma chamada só de amigos (até 5). Quem é chamado recebe o aviso e entra com
 um toque. Dá para chamar um amigo para a chamada em que você já está.
@@ -246,6 +251,13 @@ perfil) e acompanha a troca de nickname. Ele só sai de duas formas: a
 pessoa tocar em **Sair** da conta, ou quem tem a chave tirar na página de
 administração. Reinício do servidor, atualização do site ou banimento não
 mexem nele (o aparelho guarda um comprovante assinado e devolve sozinho).
+
+Para um título que não dependa de nada disso, use a variável de ambiente
+`TITLES` do servidor, por exemplo `seunick=Dono` (vários separados por
+vírgula: `seunick=Dono,amigo=Mod`). Esse título vem da configuração, então
+nenhuma atualização, reinício ou perda de dados tira; na página de
+administração ele aparece marcado como fixo, sem botão "tirar". Para mudar
+ou tirar, edite a variável e reinicie.
 
 ## Quantas pessoas visitaram
 
@@ -363,7 +375,7 @@ blank screen, wait a bit and reload.
 4. Click **Matchmake**.
    - **2 people**: you and 1 more. It keeps searching until someone with the same choice shows up.
    - **3 or more**: you join an open room (or create one) and people keep joining until the game's limit.
-5. On the call: mute, leave, a list of who is speaking and a quick text chat.
+5. On the call: mute, leave, a list of who is speaking and the panel with Reports, Friends, Profile and Logins.
 
 You only match people who picked the same game, the same language, the same
 call size and a compatible platform.
@@ -405,7 +417,7 @@ tap **Log out**.
 You can use the same account on your phone, your PC and anywhere else. When
 you type your nickname on a new device, it waits and the devices already on
 the account get a notice: **Allow** or **Deny**. If you missed the notice,
-the request stays in the **Logins** tab, inside the chat button at the top.
+the request stays in the **Logins** tab, inside the panel button at the top.
 When you allow it, the new device joins and everyone stays logged in, with
 the same friends and conversations. If someone else tries to enter with
 your nickname, just deny.
@@ -450,7 +462,7 @@ screen itself.
 
 ### Profile: photo and nickname
 
-In the chat button at the top, the **Profile** tab lets you change your
+In the panel button at the top, the **Profile** tab lets you change your
 photo and nickname. The photo can be a game cover from the gallery, a photo
 of yours (JPG or PNG, up to 4 MB) or none. Every uploaded photo goes
 through an automatic check on the server before it shows up: photos with
@@ -459,8 +471,11 @@ keeps friends, conversations and photo; the old nickname becomes free.
 
 ### Reports and suspensions
 
-Every person card (on a call or in the friends list) has a small flag to
-report. It opens a form: you tell what happened (required) and can attach
+The **Reports** tab (the first one in the panel, at the top and on a
+call) shows who is on the call now, who has been on a call with you, and a
+field to type someone else's nickname. Each one has a "Report" button.
+Person cards (on a call or in the friends list) also have the small flag.
+It opens a form: you tell what happened (required) and can attach
 a screenshot or an audio file recorded on your device (m4a, mp3, ogg or
 webm, up to 6 MB). On a call there is also the **Last 30s** button: it keeps the
 most recent stretch of the call audio, and that clip goes along with the
@@ -473,8 +488,9 @@ people, the uploaded photo goes offline by itself.
 Whoever runs the site judges each case and can suspend the account for a
 while (from 1 hour to 30 days) or forever, with a reason. During the
 suspension the person's screen is frozen with the reason and a countdown:
-no calls, no chat, no messages and no logging out. When the time is up,
-the site goes back to normal by itself.
+no calls, no messages and no logging out. When the time is up, the site
+goes back to normal by itself. In the Reports tab you see your own reports
+with their status: under review, resolved or archived.
 
 ### Friends
 
@@ -539,6 +555,13 @@ profile) and follows a nickname change. It only goes away in two cases:
 the person taps **Log out**, or whoever has the key removes it on the admin
 page. Server restarts, site updates or bans do not touch it (the device
 keeps a signed receipt and sends it back by itself).
+
+For a title that depends on none of that, use the server's `TITLES`
+environment variable, for example `yournick=Dono` (several separated by
+commas: `yournick=Dono,friend=Mod`). That title comes from the
+configuration, so no update, restart or data loss removes it; on the admin
+page it shows as fixed, without a "tirar" button. To change or remove it,
+edit the variable and restart.
 
 ## How many people visited
 

@@ -397,3 +397,20 @@ body.banned { overflow: hidden; }
   .panel-tabs { gap: 2px; padding: 6px; }
   .panel-tabs .tab { padding: 7px 9px; font-size: 0.84rem; gap: 4px; }
 }
+
+/* aba de denúncias */
+#tab-reports { padding: 12px 14px; overflow-y: auto; }
+#tab-reports h3 { margin: 12px 0 6px; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); }
+#tab-reports > .hint:first-child { margin-top: 0; }
+.btn-secondary.small { padding: 6px 12px; font-size: 0.85rem; }
+.report-person { color: #ff7b72; border-color: rgba(255, 123, 114, 0.4); display: inline-flex; align-items: center; gap: 6px; }
+.report-person .i { width: 14px; height: 14px; }
+.report-by-name { display: flex; gap: 8px; }
+.report-by-name input { flex: 1; min-width: 0; }
+.my-reports { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.my-report { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 10px; background: var(--card-2); font-size: 0.9rem; }
+.my-report .who { font-weight: 600; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.my-report .when { color: var(--muted); font-size: 0.8rem; }
+.my-report .status { font-size: 0.75rem; font-weight: 700; padding: 2px 8px; border-radius: 999px; background: rgba(255, 196, 0, 0.15); color: #ffc400; }
+.my-report.done .status { background: rgba(80, 200, 120, 0.15); color: #5ac878; }
+.my-report.dismissed .status { background: var(--border); color: var(--muted); }

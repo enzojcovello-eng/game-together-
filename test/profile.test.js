@@ -136,3 +136,30 @@ console.log('perfil: todos os testes passaram');
   fs.rmSync(dir2, { recursive: true, force: true });
 }
 console.log('banimento: todos os testes passaram');
+
+// títulos fixos pela variável TITLES: não somem e não podem ser tirados pela administração
+{
+  const a = new Auth({ dataDir: fs.mkdtempSync(path.join(os.tmpdir(), 'gt-fixed-')), now: () => clock, secret: 's' });
+  a.loadFixedTitles(' Enzo = Dono , outro=Mod ,semigual, =vazio');
+  a.claim('Enzo', 'dev-1');
+  assert.strictEqual(a.titleOf('enzo'), 'Dono');
+  assert.strictEqual(a.titleOf('outro'), 'Mod');
+  assert.ok(a.titleCert('enzo'));
+  assert.ok(a.allTitles().find((x) => x.key === 'enzo' && x.fixed));
+  a.setTitle('Enzo', '');
+  assert.strictEqual(a.titleOf('enzo'), 'Dono', 'o fixo continua depois de "tirar"');
+  const b = new Auth({ dataDir: fs.mkdtempSync(path.join(os.tmpdir(), 'gt-fixed2-')), now: () => clock, secret: 's' });
+  b.loadFixedTitles('enzo=Dono');
+  b.claim('Enzo', 'dev-1');
+  assert.strictEqual(b.titleOf('enzo'), 'Dono', 'sobrevive a um servidor novo sem dados');
+}
+
+// denúncias enviadas por uma pessoa aparecem em byReporter com a situação
+{
+  const r = new Reports({ file: path.join(os.tmpdir(), `gt-rep-${Date.now()}.json`), now: () => ++clock });
+  r.report('ana', 'bia', 'other', 'xingou muito na chamada');
+  r.report('ana', 'caio', 'other', 'ficou gritando o tempo todo');
+  r.resolve('bia', 'banned');
+  assert.deepStrictEqual(r.byReporter('ana').map((x) => [x.target, x.status]), [['caio', 'open'], ['bia', 'banned']]);
+  assert.strictEqual(r.byReporter('bia').length, 0);
+}

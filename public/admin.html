@@ -52,7 +52,7 @@
 
     <div class="rep" id="title-box" hidden>
       <strong>Títulos ao lado do nickname</strong>
-      <div class="muted">Digite o nickname da pessoa e o título (até 16 letras). Para tirar, use o botão ao lado da pessoa.</div>
+      <div class="muted">Digite o nickname da pessoa e o título (até 16 letras). Para tirar, use o botão ao lado da pessoa. Para um título que nunca suma (nem em atualização do site), use a variável <code>TITLES</code> no servidor, por exemplo <code>katabosta=Dono</code>.</div>
       <div class="title-form">
         <input type="text" id="title-name" placeholder="Nickname da pessoa" maxlength="20">
         <input type="text" id="title-text" placeholder="Título (ex.: Dono, Mod, VIP)" maxlength="16" value="Dono">
@@ -98,7 +98,7 @@
     async function loadTitles() {
       const tt = await fetch('/api/admin/titles', { headers: hdr() }).then((x) => x.json()).catch(() => ({ titles: [] }));
       $('#title-box').hidden = false;
-      $('#title-list').innerHTML = (tt.titles || []).length ? tt.titles.map((x) => `<li><span class="w"><strong>${esc(x.name)}</strong><span class="title-tag">${esc(x.title)}</span></span><button type="button" class="rm" data-rm="${esc(x.name)}">tirar</button></li>`).join('') : '<li class="muted">Ninguém tem título ainda.</li>';
+      $('#title-list').innerHTML = (tt.titles || []).length ? tt.titles.map((x) => `<li><span class="w"><strong>${esc(x.name)}</strong><span class="title-tag">${esc(x.title)}</span>${x.fixed ? '<span class="muted"> · fixo pela variável TITLES</span>' : ''}</span>${x.fixed ? '' : `<button type="button" class="rm" data-rm="${esc(x.name)}">tirar</button>`}</li>`).join('') : '<li class="muted">Ninguém tem título ainda.</li>';
       $('#title-list').querySelectorAll('[data-rm]').forEach((b) => b.addEventListener('click', () => setTitle(b.dataset.rm, '')));
     }
 
