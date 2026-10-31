@@ -544,8 +544,7 @@
     const grid = $('#game-grid');
     if (!state.config) return;
     grid.innerHTML = '';
-    // a lista vem duas vezes para a faixa girar sem emenda
-    for (const g of [...state.config.games, ...state.config.games]) {
+    for (const g of state.config.games) {
       const tag = crossplayTag(g);
       const b = document.createElement('button');
       b.type = 'button';
@@ -560,43 +559,6 @@
       grid.appendChild(b);
     }
     renderStats();
-    startStrip();
-  }
-
-  // Faixa dos jogos: gira devagar sozinha; para quando a pessoa encosta ou passa o mouse
-  let stripRaf = 0;
-  let stripPausedUntil = 0;
-  function startStrip() {
-    const strip = $('#game-strip');
-    if (!strip || strip.dataset.ready) { if (strip) strip.scrollLeft = 0; return; }
-    strip.dataset.ready = '1';
-    const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const pause = (ms) => { stripPausedUntil = Date.now() + ms; };
-    // mouse em cima: para enquanto estiver lá (em celular não existe mouse, então o toque manda)
-    strip.addEventListener('pointerenter', (e) => { if (e.pointerType === 'mouse') pause(60 * 60 * 1000); });
-    strip.addEventListener('pointerleave', (e) => { if (e.pointerType === 'mouse') pause(1500); });
-    strip.addEventListener('pointerdown', () => pause(6000));
-    strip.addEventListener('touchstart', () => pause(6000), { passive: true });
-    strip.addEventListener('wheel', () => pause(6000), { passive: true });
-    let last = 0;
-    let pos = 0; // posição com decimais (scrollLeft arredonda e não acumularia)
-    let wasPaused = true;
-    const SPEED = 18; // pixels por segundo
-    const tick = (now) => {
-      stripRaf = requestAnimationFrame(tick);
-      const paused = reduce || !$('#screen-home').classList.contains('active') || Date.now() < stripPausedUntil;
-      if (paused) { last = now; wasPaused = true; return; }
-      if (wasPaused) { pos = strip.scrollLeft; wasPaused = false; } // retoma de onde a pessoa deixou
-      const dt = last ? Math.min(50, now - last) : 0;
-      last = now;
-      const half = $('#game-grid').scrollWidth / 2;
-      if (half <= strip.clientWidth) return; // tudo cabe na tela: não precisa girar
-      pos += (SPEED * dt) / 1000;
-      if (pos >= half) pos -= half;
-      strip.scrollLeft = pos;
-    };
-    cancelAnimationFrame(stripRaf);
-    stripRaf = requestAnimationFrame(tick);
   }
 
   // ---------- configuração ----------
