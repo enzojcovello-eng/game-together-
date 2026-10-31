@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 800" width="600" height="800">
+<defs><filter id="grain"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/><feComponentTransfer><feFuncA type="table" tableValues="0 0 0.18"/></feComponentTransfer></filter><linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5fd4ff"/><stop offset="0.4" stop-color="#0d6fa8"/><stop offset="1" stop-color="#021a33"/></linearGradient><linearGradient id="shade" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#010d1a" stop-opacity="0"/><stop offset="1" stop-color="#010d1a" stop-opacity="0.85"/></linearGradient></defs>
+<rect width="600" height="800" fill="url(#bg)"/>
+     <g stroke="#bff3ff" stroke-width="4" opacity="0.35" fill="none"><path d="M60 0 L140 300"/><path d="M200 0 L260 260"/><path d="M420 0 L380 320"/><path d="M540 0 L470 280"/></g>
+     <g fill="#ffffff" opacity="0.5"><circle cx="0" cy="200" r="2"/><circle cx="131" cy="271" r="3"/><circle cx="262" cy="342" r="4"/><circle cx="393" cy="413" r="5"/><circle cx="524" cy="484" r="2"/><circle cx="55" cy="555" r="3"/><circle cx="186" cy="626" r="4"/><circle cx="317" cy="697" r="5"/><circle cx="448" cy="218" r="2"/><circle cx="579" cy="289" r="3"/><circle cx="110" cy="360" r="4"/><circle cx="241" cy="431" r="5"/><circle cx="372" cy="502" r="2"/><circle cx="503" cy="573" r="3"/><circle cx="34" cy="644" r="4"/><circle cx="165" cy="715" r="5"/><circle cx="296" cy="236" r="2"/><circle cx="427" cy="307" r="3"/><circle cx="558" cy="378" r="4"/><circle cx="89" cy="449" r="5"/><circle cx="220" cy="520" r="2"/><circle cx="351" cy="591" r="3"/><circle cx="482" cy="662" r="4"/><circle cx="13" cy="733" r="5"/><circle cx="144" cy="254" r="2"/></g>
+     <path d="M80 520 q60 -120 170 -110 q100 10 150 90 q40 60 110 70 q-70 40 -130 10 q-40 -20 -70 -10 q-60 20 -130 -10 q-70 -30 -100 -40 z" fill="#0a3550"/>
+     <circle cx="300" cy="470" r="14" fill="#9fe8ff"/>
+     <path d="M0 700 Q100 640 200 690 T400 680 T600 700 V800 H0Z" fill="#06293f"/>
+     <g fill="#2fd18f"><path d="M120 700 q10 -60 -5 -110 q20 50 10 110z"/><path d="M460 700 q-12 -70 8 -120 q-20 60 -2 120z"/></g>
+<rect width="600" height="800" filter="url(#grain)" opacity="0.6"/>
+<rect x="0" y="540" width="600" height="260" fill="url(#shade)"/>
+<text x="40" y="680" font-family="Impact, 'Arial Black', 'Helvetica Neue', Arial, sans-serif" font-size="58" font-weight="900" fill="#fff" letter-spacing="-1">SUBNAUTICA</text>
+<text x="40" y="740" font-family="Impact, 'Arial Black', 'Helvetica Neue', Arial, sans-serif" font-size="58" font-weight="900" fill="#fff" letter-spacing="-1">2</text>
+<text x="40" y="780" font-family="Arial, Helvetica, sans-serif" font-size="20" fill="#ffffffaa" letter-spacing="4">SOBREVIVÊNCIA · OCEANO</text>
+</svg>

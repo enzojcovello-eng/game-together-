@@ -334,6 +334,23 @@
       ],
       "crossplay": true,
       "cover": "covers/overcooked.jpg"
+    },
+    {
+      "id": "among-us",
+      "name": "Among Us",
+      "short": "Among Us",
+      "emoji": "🛸",
+      "color": "#d9262c",
+      "maxPlayers": 5,
+      "platforms": [
+        "pc",
+        "playstation",
+        "xbox",
+        "switch",
+        "mobile"
+      ],
+      "crossplay": true,
+      "cover": "covers/among-us.svg"
     }
   ]
 }
