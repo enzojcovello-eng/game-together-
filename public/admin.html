@@ -17,6 +17,16 @@
     .rep .acts button { padding: 7px 10px; font-size: 0.85rem; }
     .rep .danger { border-color: var(--danger); color: var(--danger); }
     .muted { font-size: 0.85rem; }
+    .title-form { display: flex; flex-direction: column; gap: 8px; margin: 10px 0; }
+    .title-form input { padding: 11px 12px; border-radius: 10px; border: 1px solid var(--border-strong); background: var(--bg-2); color: var(--text); width: 100%; }
+    .title-form .btn-primary { width: 100%; }
+    .titled { list-style: none; margin: 10px 0 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+    .titled li { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 10px; background: var(--bg-2); border: 1px solid var(--border); }
+    .titled .who { flex: 1; min-width: 0; }
+    .titled .who strong { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .titled .badge-title { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 999px; background: var(--warn); color: var(--accent-ink); font-weight: 800; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.04em; }
+    .rm { border: 0; border-radius: 999px; padding: 7px 14px; background: var(--danger); color: #fff; font-weight: 700; font-size: 0.85rem; cursor: pointer; }
+    .rm:hover { filter: brightness(1.1); }
   </style>
 </head>
 <body>
@@ -30,13 +40,13 @@
       <div class="body">
         <strong>Títulos ao lado do nickname</strong>
         <div class="muted">Digite o nickname da pessoa e o título (até 16 letras). Para tirar, envie com o título vazio.</div>
-        <div class="key" style="margin:10px 0">
+        <div class="title-form">
           <input type="text" id="title-name" placeholder="Nickname da pessoa" maxlength="20">
           <input type="text" id="title-text" placeholder="Título (ex.: Dono, Mod, VIP)" maxlength="16" value="Dono">
           <button type="button" class="btn-primary" id="title-btn">Dar título</button>
         </div>
         <div class="muted" id="title-msg"></div>
-        <ul class="muted" id="title-list" style="margin:8px 0 0;padding-left:18px"></ul>
+        <ul class="titled" id="title-list"></ul>
       </div>
     </div>
     <h2 style="font-size:1.1rem;margin:18px 0 10px">Denúncias abertas</h2>
@@ -53,7 +63,7 @@
       const data = await r.json();
       const tt = await fetch('/api/admin/titles', { headers: { 'x-admin-key': key() } }).then((x) => x.json()).catch(() => ({ titles: [] }));
       $('#title-box').hidden = false;
-      $('#title-list').innerHTML = (tt.titles || []).length ? tt.titles.map((x) => `<li><strong>${esc(x.name)}</strong>: ${esc(x.title)} <button type="button" class="btn-ghost" data-rm="${esc(x.name)}">tirar</button></li>`).join('') : '<li>Ninguém tem título ainda.</li>';
+      $('#title-list').innerHTML = (tt.titles || []).length ? tt.titles.map((x) => `<li><span class="who"><strong>${esc(x.name)}</strong><span class="badge-title">${esc(x.title)}</span></span><button type="button" class="rm" data-rm="${esc(x.name)}">tirar</button></li>`).join('') : '<li class="muted">Ninguém tem título ainda.</li>';
       $('#title-list').querySelectorAll('[data-rm]').forEach((b) => b.addEventListener('click', () => setTitle(b.dataset.rm, '')));
       $('#stats').textContent = `${data.stats.accounts} contas · ${data.stats.banned} banidas · ${data.reports.length} denúncias abertas`;
       const byTarget = new Map();
