@@ -413,8 +413,8 @@ ilustração. Formato bom: vertical, 600 x 800 pixels ou maior.
 | Palworld | `palworld.jpg` |
 | Overwatch 2 | `overwatch-2.jpg` |
 | Riders Republic | `riders-republic.jpg` |
-| Brawlhalla | `brawlhalla.jpg` (ainda sem capa enviada: usa um desenho) |
-| Don't Starve Together | `dont-starve-together.jpg` (ainda sem capa enviada: usa um desenho) |
+| Brawlhalla | `brawlhalla.jpg` |
+| Don't Starve Together | `dont-starve-together.jpg` |
 | Counter-Strike 2 | `counter-strike-2.jpg` |
 | Stardew Valley | `stardew-valley.jpg` |
 
@@ -836,8 +836,8 @@ larger.
 | Palworld | `palworld.jpg` |
 | Overwatch 2 | `overwatch-2.jpg` |
 | Riders Republic | `riders-republic.jpg` |
-| Brawlhalla | `brawlhalla.jpg` (no cover sent yet: uses a drawing) |
-| Don't Starve Together | `dont-starve-together.jpg` (no cover sent yet: uses a drawing) |
+| Brawlhalla | `brawlhalla.jpg` |
+| Don't Starve Together | `dont-starve-together.jpg` |
 | Counter-Strike 2 | `counter-strike-2.jpg` |
 | Stardew Valley | `stardew-valley.jpg` |
 

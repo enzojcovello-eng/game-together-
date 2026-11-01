@@ -413,7 +413,7 @@
         "mobile"
       ],
       "crossplay": true,
-      "cover": "covers/brawlhalla.svg"
+      "cover": "covers/brawlhalla.jpg"
     },
     {
       "id": "dont-starve-together",
@@ -429,7 +429,7 @@
         "switch"
       ],
       "crossplay": false,
-      "cover": "covers/dont-starve-together.svg"
+      "cover": "covers/dont-starve-together.jpg"
     },
     {
       "id": "counter-strike-2",
