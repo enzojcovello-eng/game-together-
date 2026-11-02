@@ -460,6 +460,32 @@
       ],
       "crossplay": false,
       "cover": "covers/stardew-valley.jpg"
+    },
+    {
+      "id": "peak",
+      "name": "PEAK",
+      "short": "PEAK",
+      "emoji": "⛰️",
+      "color": "#c76bd8",
+      "maxPlayers": 4,
+      "platforms": [
+        "pc"
+      ],
+      "crossplay": true,
+      "cover": "covers/peak.jpg"
+    },
+    {
+      "id": "gamble-with-your-friends",
+      "name": "Gamble With Your Friends",
+      "short": "Gamble",
+      "emoji": "🎰",
+      "color": "#3a9bdc",
+      "maxPlayers": 4,
+      "platforms": [
+        "pc"
+      ],
+      "crossplay": true,
+      "cover": "covers/gamble-with-your-friends.jpg"
     }
   ]
 }
