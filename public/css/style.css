@@ -458,3 +458,27 @@ body.mini-open main { padding-bottom: 96px; }
 body.mini-open .toast { bottom: calc(104px + env(safe-area-inset-bottom)); }
 
 .game-card .tag.single { background: rgba(166, 158, 143, 0.25); color: var(--text); }
+
+/* configurações */
+.settings-title { font-size: 1.6rem; margin: 8px 0 16px; }
+.settings-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px 20px; margin-bottom: 14px; }
+.settings-card h2 { font-size: 1.1rem; margin: 0 0 10px; }
+.settings-card h3 { font-size: 0.95rem; margin: 18px 0 6px; }
+.settings-card ol, .settings-card ul { margin: 8px 0; padding-left: 22px; color: var(--muted); line-height: 1.55; }
+.settings-card li { margin: 4px 0; }
+.settings-card li b, .settings-card .hint b { color: var(--text); }
+.lang-switch.big { display: flex; gap: 8px; }
+.lang-switch.big button { flex: 1; padding: 12px; font-size: 1rem; }
+.device-tabs { display: flex; gap: 6px; margin: 12px 0; flex-wrap: wrap; }
+.device-tabs .tab { padding: 8px 14px; border-radius: 999px; border: 1px solid var(--border-strong); background: transparent; color: var(--muted); font-weight: 600; }
+.device-tabs .tab.active { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.dl-row { display: flex; gap: 8px; flex-wrap: wrap; margin: 8px 0; }
+.dl-row .btn-primary, .dl-row .btn-secondary, #install-now, #install-now-pc { display: inline-flex; align-items: center; gap: 8px; text-decoration: none; }
+#install-now, #install-now-pc { margin: 6px 0 10px; }
+.ok-note { color: var(--ok); font-weight: 600; }
+
+/* topo em telas estreitas: o botão de criar nickname vira só ícone para caber a engrenagem e o idioma */
+@media (max-width: 520px) {
+  #login-btn span { display: none; }
+  #login-btn { padding: 8px 10px; }
+}

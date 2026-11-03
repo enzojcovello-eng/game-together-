@@ -23,6 +23,9 @@ adicione (em português ou em inglês, tanto faz):
 
 ## Como acessar e instalar
 
+(Esse mesmo passo a passo está dentro do app: toque na engrenagem no topo,
+em **Configurações**, e veja "Instalar o app" para o seu aparelho.)
+
 Não tem download na loja. O app é o próprio site: você abre o link e, se
 quiser, adiciona na tela inicial. Fica com ícone e abre em tela cheia, como
 um app normal.
@@ -447,6 +450,9 @@ add (in English or Portuguese, either is fine):
 👉 [Suggest a game](https://github.com/enzojcovello-eng/game-together-/issues/new?title=Game%20suggestion%3A%20)
 
 ## How to access and install
+
+(This same step by step is inside the app: tap the gear at the top, under
+**Settings**, and see "Install the app" for your device.)
 
 There is no store download. The app is the site itself: open the link and,
 if you want, add it to your home screen. It gets an icon and opens full

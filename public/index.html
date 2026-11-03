@@ -65,6 +65,8 @@
     <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></symbol>
     <symbol id="i-users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M21.5 20a6.5 6.5 0 0 0-4.5-6.2"/></symbol>
     <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3.5 3 14.5 0 18M12 3c-3 3.5-3 14.5 0 18"/></symbol>
+    <symbol id="i-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></symbol>
+    <symbol id="i-download" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></symbol>
     <symbol id="i-logout" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></symbol>
     <symbol id="i-bell" viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0"/></symbol>
     <symbol id="i-pc" viewBox="0 0 24 24"><rect x="2.5" y="4" width="19" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></symbol>
@@ -99,6 +101,7 @@
         <span class="user-name" id="user-name"></span>
         <button type="button" class="icon-btn small" id="logout-btn" data-i18n-title="auth.logout" title="Sair"><svg class="i"><use href="#i-logout"/></svg></button>
       </span>
+      <button type="button" class="icon-btn" id="settings-btn" data-i18n-title="settings.title" title="Configurações"><svg class="i"><use href="#i-gear"/></svg></button>
       <div class="lang-switch" id="ui-lang-switch" role="group" aria-label="Idioma">
         <button type="button" data-lang="pt-BR" class="active">PT</button>
         <button type="button" data-lang="en-US">EN</button>
@@ -262,6 +265,76 @@
         <p class="note warm"><svg class="i"><use href="#i-hangup"/></svg><span data-i18n="search.leaveTip">Se você cair com alguém com quem não quer falar, é só sair da chamada. Ninguém é avisado e você pode procurar de novo na hora.</span></p>
         <button type="button" class="btn-secondary" id="cancel-btn" data-i18n="search.cancel">Cancelar</button>
       </div>
+    </section>
+
+    <!-- CONFIGURAÇÕES -->
+    <section class="screen" id="screen-settings">
+      <button type="button" class="back" id="settings-back"><svg class="i"><use href="#i-back"/></svg><span data-i18n="back">Voltar</span></button>
+      <h1 class="settings-title" data-i18n="settings.title">Configurações</h1>
+
+      <section class="settings-card">
+        <h2 data-i18n="settings.lang">Idioma do app</h2>
+        <div class="lang-switch big" id="settings-lang">
+          <button type="button" data-lang="pt-BR">Português (BR)</button>
+          <button type="button" data-lang="en-US">English (US)</button>
+        </div>
+      </section>
+
+      <section class="settings-card">
+        <h2 data-i18n="install.title">Instalar o app</h2>
+        <p class="hint" data-i18n="install.intro">Não tem download na loja. O app é o próprio site: você abre o link e, se quiser, adiciona na tela inicial. Fica com ícone e abre em tela cheia, como um app normal.</p>
+        <p class="ok-note" id="install-done" hidden data-i18n="install.done">✅ Você já está usando o app instalado.</p>
+        <div class="device-tabs" id="device-tabs">
+          <button type="button" class="tab" data-device="android">Android</button>
+          <button type="button" class="tab" data-device="ios" data-i18n="install.tabIos">iPhone e iPad</button>
+          <button type="button" class="tab" data-device="pc">PC</button>
+        </div>
+
+        <div class="device-panel" id="device-android" hidden>
+          <button type="button" class="btn-primary" id="install-now" hidden><svg class="i"><use href="#i-download"/></svg><span data-i18n="install.now">Instalar agora</span></button>
+          <ol>
+            <li data-i18n="install.a1">Abra o link no <b>Chrome</b>.</li>
+            <li data-i18n="install.a2">Toque nos três pontos (⋮) no canto superior direito.</li>
+            <li data-i18n="install.a3">Toque em <b>Instalar app</b> (ou <b>Adicionar à tela inicial</b>).</li>
+            <li data-i18n="install.a4">O ícone do Game Together aparece junto com os outros apps.</li>
+          </ol>
+        </div>
+
+        <div class="device-panel" id="device-ios" hidden>
+          <ol>
+            <li data-i18n="install.i1">Abra o link no <b>Safari</b> (precisa ser o Safari, o Chrome do iPhone não instala).</li>
+            <li data-i18n="install.i2">Toque no botão de compartilhar (o quadrado com a seta para cima, embaixo no meio).</li>
+            <li data-i18n="install.i3">Role e toque em <b>Adicionar à Tela de Início</b>.</li>
+            <li data-i18n="install.i4">Toque em <b>Adicionar</b>. O ícone aparece na tela inicial.</li>
+          </ol>
+          <p class="hint" data-i18n="install.iosNote">Funciona no iOS 13.4 ou mais novo. Na primeira chamada o iPhone pede permissão do microfone; toque em <b>Permitir</b>.</p>
+        </div>
+
+        <div class="device-panel" id="device-pc" hidden>
+          <h3 data-i18n="install.winTitle">Windows, do jeito mais fácil: um .exe</h3>
+          <div class="dl-row">
+            <a class="btn-primary" href="https://github.com/enzojcovello-eng/game-together-/releases/latest/download/GameTogether-Setup.exe" rel="noopener"><svg class="i"><use href="#i-download"/></svg><span data-i18n="install.winSetup">Baixar instalador</span></a>
+            <a class="btn-secondary" href="https://github.com/enzojcovello-eng/game-together-/releases/latest/download/GameTogether-Portable.exe" rel="noopener"><svg class="i"><use href="#i-download"/></svg><span data-i18n="install.winPortable">Versão portátil (sem instalar)</span></a>
+          </div>
+          <p class="hint" data-i18n="install.winText">O instalador cria atalho na área de trabalho e no menu Iniciar; a portátil é só abrir. O app é o site numa janela própria, com o microfone já liberado, e se atualiza sozinho.</p>
+          <p class="bg-warn" data-i18n="install.smart">⚠️ Na primeira vez o Windows pode mostrar um aviso azul (SmartScreen), porque o app não tem assinatura paga. Clique em <b>Mais informações</b> e depois em <b>Executar assim mesmo</b>.</p>
+          <h3 data-i18n="install.browserTitle">Ou pelo navegador, com ícone próprio</h3>
+          <button type="button" class="btn-primary" id="install-now-pc" hidden><svg class="i"><use href="#i-download"/></svg><span data-i18n="install.now">Instalar agora</span></button>
+          <ul>
+            <li data-i18n="install.p1"><b>Chrome ou Edge</b>: clique no ícone de instalar na barra de endereço (um monitor com uma seta) ou vá no menu ⋮ e em <b>Instalar Game Together</b>.</li>
+            <li data-i18n="install.p2"><b>Firefox ou Safari</b>: use direto no navegador ou salve nos favoritos.</li>
+          </ul>
+        </div>
+
+        <h3 data-i18n="install.slowTitle">⏳ Se o site demorar para abrir</h3>
+        <p class="hint" data-i18n="install.slowText">O servidor desliga sozinho depois de uns 15 minutos sem ninguém usando. A primeira pessoa que abrir espera de 30 segundos a 1 minuto até ele ligar de novo. Depois disso abre na hora para todo mundo.</p>
+      </section>
+
+      <section class="settings-card">
+        <h2 data-i18n="settings.about">Sobre</h2>
+        <p class="hint"><span data-i18n="settings.version">Versão</span> <span id="settings-version"></span></p>
+        <p class="hint"><span data-i18n="settings.source">O site é aberto: o código fica no GitHub, e você pode sugerir jogos por lá.</span> <a href="https://github.com/enzojcovello-eng/game-together-" rel="noopener">github.com/enzojcovello-eng/game-together-</a></p>
+      </section>
     </section>
 
     <!-- CHAMADA -->
