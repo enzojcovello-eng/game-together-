@@ -476,3 +476,9 @@ body.mini-open .toast { bottom: calc(104px + env(safe-area-inset-bottom)); }
 .dl-row .btn-primary, .dl-row .btn-secondary, #install-now, #install-now-pc { display: inline-flex; align-items: center; gap: 8px; text-decoration: none; }
 #install-now, #install-now-pc { margin: 6px 0 10px; }
 .ok-note { color: var(--ok); font-weight: 600; }
+
+/* topo em telas estreitas: o botão de criar nickname vira só ícone para caber a engrenagem e o idioma */
+@media (max-width: 520px) {
+  #login-btn span { display: none; }
+  #login-btn { padding: 8px 10px; }
+}
