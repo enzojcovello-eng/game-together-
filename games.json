@@ -469,7 +469,9 @@
       "color": "#c76bd8",
       "maxPlayers": 4,
       "platforms": [
-        "pc"
+        "pc",
+        "playstation",
+        "switch"
       ],
       "crossplay": true,
       "cover": "covers/peak.jpg"
@@ -486,6 +488,20 @@
       ],
       "crossplay": true,
       "cover": "covers/gamble-with-your-friends.jpg"
+    },
+    {
+      "id": "grounded-2",
+      "name": "Grounded 2",
+      "short": "Grounded 2",
+      "emoji": "🐜",
+      "color": "#e8871e",
+      "maxPlayers": 4,
+      "platforms": [
+        "pc",
+        "xbox"
+      ],
+      "crossplay": true,
+      "cover": "covers/grounded-2.jpg"
     }
   ]
 }
