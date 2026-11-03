@@ -121,8 +121,9 @@ quantidade de pessoas e uma plataforma compatível.
 | Don't Starve Together | 4 | PC, PlayStation, Xbox, Switch | Não: cada plataforma só encontra a própria |
 | Counter-Strike 2 | 5 | PC | Só PC |
 | Stardew Valley | 3 | PC, PlayStation, Xbox, Switch, Celular | Não: cada plataforma só encontra a própria |
-| PEAK | 4 | PC | Só PC |
+| PEAK | 4 | PC, PlayStation, Switch | Sim |
 | Gamble With Your Friends | 4 | PC | Só PC |
+| Grounded 2 | 4 | PC, Xbox | Sim |
 
 Cada cartão de jogo mostra quantas pessoas estão em chamada e quantas estão
 procurando naquele jogo agora. No topo da tela inicial aparece o total.
@@ -421,6 +422,7 @@ ilustração. Formato bom: vertical, 600 x 800 pixels ou maior.
 | Stardew Valley | `stardew-valley.jpg` |
 | PEAK | `peak.jpg` |
 | Gamble With Your Friends | `gamble-with-your-friends.jpg` |
+| Grounded 2 | `grounded-2.jpg` |
 
 ---
 
@@ -544,8 +546,9 @@ call size and a compatible platform.
 | Don't Starve Together | 4 | PC, PlayStation, Xbox, Switch | No: each platform only finds its own |
 | Counter-Strike 2 | 5 | PC | PC only |
 | Stardew Valley | 3 | PC, PlayStation, Xbox, Switch, Mobile | No: each platform only finds its own |
-| PEAK | 4 | PC | PC only |
+| PEAK | 4 | PC, PlayStation, Switch | Yes |
 | Gamble With Your Friends | 4 | PC | PC only |
+| Grounded 2 | 4 | PC, Xbox | Yes |
 
 Each game card shows how many people are on a call and how many are
 searching in that game right now. The home screen shows the total at the top.
@@ -848,6 +851,7 @@ larger.
 | Stardew Valley | `stardew-valley.jpg` |
 | PEAK | `peak.jpg` |
 | Gamble With Your Friends | `gamble-with-your-friends.jpg` |
+| Grounded 2 | `grounded-2.jpg` |
 
 ## License
 
