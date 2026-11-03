@@ -63,7 +63,8 @@
     state.uiLang = lang;
     store.set('gt:uiLang', lang);
     document.documentElement.lang = lang;
-    $$('[data-i18n]').forEach((el) => { el.textContent = t(el.dataset.i18n); });
+    $$('[data-i18n]').forEach((el) => { const v = t(el.dataset.i18n); if (el.dataset.i18n.startsWith('install.')) el.innerHTML = v; else el.textContent = v; });
+    $$('#settings-lang button').forEach((b) => b.classList.toggle('active', b.dataset.lang === lang));
     $$('[data-i18n-placeholder]').forEach((el) => { el.placeholder = t(el.dataset.i18nPlaceholder); });
     $$('[data-i18n-title]').forEach((el) => { el.title = t(el.dataset.i18nTitle); });
     $$('#ui-lang-switch button').forEach((b) => b.classList.toggle('active', b.dataset.lang === lang));
@@ -145,6 +146,43 @@
     window.scrollTo({ top: 0 });
     placePanel();
     renderMini();
+  }
+
+  // ---------- configurações e tutorial de instalação ----------
+  let installPrompt = null; // Chrome/Edge: o navegador oferece instalar com um toque
+  window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); installPrompt = e; renderInstall(); });
+  window.addEventListener('appinstalled', () => { installPrompt = null; renderInstall(); });
+  const isStandalone = () => window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+  function guessDevice() {
+    const ua = navigator.userAgent;
+    if (/iPhone|iPad|iPod/i.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)) return 'ios';
+    if (/Android/i.test(ua)) return 'android';
+    return 'pc';
+  }
+  function showDevice(dev) {
+    $$('#device-tabs .tab').forEach((b) => b.classList.toggle('active', b.dataset.device === dev));
+    for (const d of ['android', 'ios', 'pc']) $(`#device-${d}`).hidden = d !== dev;
+  }
+  function renderInstall() {
+    const done = isStandalone();
+    $('#install-done').hidden = !done;
+    $('#install-now').hidden = !installPrompt || done;
+    $('#install-now-pc').hidden = !installPrompt || done;
+    $('#settings-version').textContent = state.config ? state.config.version : '';
+  }
+  async function installNow() {
+    if (!installPrompt) return;
+    const p = installPrompt; installPrompt = null;
+    try { await p.prompt(); } catch (_) {}
+    renderInstall();
+  }
+  function openSettings() {
+    renderInstall();
+    showDevice(guessDevice());
+    showScreen('screen-settings');
+  }
+  function closeSettings() {
+    showScreen(state.game ? 'screen-setup' : 'screen-home');
   }
 
   // ---------- chamada minimizada ----------
@@ -1734,6 +1772,12 @@
     if (state.room) { minimizeCall(); return; } // a chamada continua, minimizada
     showScreen('screen-home');
   });
+  $('#settings-btn').addEventListener('click', openSettings);
+  $('#settings-back').addEventListener('click', closeSettings);
+  $$('#device-tabs .tab').forEach((b) => b.addEventListener('click', () => showDevice(b.dataset.device)));
+  $$('#settings-lang button').forEach((b) => b.addEventListener('click', () => setUiLang(b.dataset.lang)));
+  $('#install-now').addEventListener('click', installNow);
+  $('#install-now-pc').addEventListener('click', installNow);
   $('#mini-open').addEventListener('click', restoreCall);
   $('#mini-back').addEventListener('click', restoreCall);
   $('#mini-mute').addEventListener('click', () => { toggleMute(); renderMini(); });
